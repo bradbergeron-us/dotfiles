@@ -14,7 +14,7 @@
     ~/.zlogin: prezto/runcoms/zlogin
     ~/.zprofile: prezto/runcoms/zprofile
     ~/.zshenv: prezto/runcoms/zshenv
-    ~/.zshrc: prezto/runcoms/zpreztorc
+    ~/.zshrc: prezto/runcoms/zshrc
     ~/.applescripts: applescripts/
     ~/.spotify.scpt: applescripts/spotify.scpt
     ~/.itunes.scpt: applescripts/itunes.scpt
