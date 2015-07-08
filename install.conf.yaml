@@ -1,3 +1,4 @@
+
 - clean: ['~']
 
 - link:
@@ -9,7 +10,7 @@
     ~/.vimrc: vim/vimrc
     ~/.psqlrc: psqlrc
     ~/.git: git/
-    ~/.prezto: prezto/
+    ~/.zprezto: prezto/
     ~/.zlogin: prezto/runcoms/zlogin
     ~/.zprofile: prezto/runcoms/zprofile
     ~/.zshenv: prezto/runcoms/zshenv
