@@ -5,12 +5,6 @@
 [submodule "prezto"]
 	path = prezto
 	url = https://github.com/bradbergeron-us/prezto.git
-[submodule "vim/UltiSnips"]
-    path = vim/UltiSnips
-      url = git@github.com:bradbergeron-us/vim-snippets.git
-[submodule "vim-snippets"]
-	path = vim-snippets
-	url = git@github.com:bradbergeron-us/vim-snippets.git
 [submodule "vim/UltiSnips/vim-snippets"]
 	path = vim/UltiSnips/vim-snippets
 	url = git@github.com:bradbergeron-us/vim-snippets.git
