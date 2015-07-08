@@ -1,0 +1,10 @@
+[
+  {
+    "caption": "Wget: My Sites",
+    "command": "wget_my_sites"
+  },
+  {
+    "caption": "Wget",
+    "command": "wget_input"
+  }
+]

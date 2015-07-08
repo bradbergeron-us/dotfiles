@@ -1,0 +1,44 @@
+{
+	"auto_upgrade_last_run": null,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"AdvancedNewFile",
+		"AngularJS (CoffeeScript)",
+		"Babel",
+		"Better CoffeeScript",
+		"Browser Integration",
+		"CoffeeScript",
+		"Cucumber",
+		"Derby",
+		"Dockerfile Syntax Highlighting",
+		"ElixirSublime",
+		"Elm Language Support",
+		"Emmet",
+		"Enhanced Clojure",
+		"Flow",
+		"Flux Snippets",
+		"GhostText",
+		"Gulp",
+		"Modific",
+		"Nettuts+ Fetch",
+		"Package Control",
+		"react-native-snippets",
+		"ReactJS",
+		"Ruby Markers",
+		"Schemr",
+		"SublimeGit",
+		"SublimeLinter",
+		"SublimeLinter-flow",
+		"SublimeLinter-jsxhint",
+		"Surround",
+		"Syntax Highlighting for Sass",
+		"Theme - Brogrammer",
+		"Theme - Flatland",
+		"Theme - Soda",
+		"Theme - Sodarized",
+		"Wget"
+	]
+}

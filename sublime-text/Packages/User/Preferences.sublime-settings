@@ -1,0 +1,89 @@
+{
+	"auto_complete_commit_on_tab": true,
+	"bold_folder_labels": true,
+	"caret_style": "wide",
+	"color_scheme": "Packages/User/SublimeLinter/Oceanic - Eighties (SL).tmTheme",
+	"create_window_at_startup": false,
+	"ensure_newline_at_eof_on_save": true,
+	"file_exclude_patterns":
+	[
+		".DS_Store"
+	],
+	"folder_exclude_patterns":
+	[
+		"bin",
+		".bundle",
+		".git",
+		".sass-cache",
+		"tmp"
+	],
+	"font_face": "Monaco",
+	"font_options":
+	[
+		"subpixel_antialias"
+	],
+	"font_size": 16.0,
+	"highlight_line": true,
+	"highlight_modified_tabs": true,
+	"ignored_packages":
+	[
+		"Add Folder To Project",
+		"All Autocomplete",
+		"AngularJS",
+		"Animate.css Snippets",
+		"ApacheConf.tmLanguage",
+		"AutoCompleteJS",
+		"AutoUpdateSourceHeader",
+		"Base16 Color Schemes",
+		"Bash Build System",
+		"Block Nav",
+		"Bootstrap 3 Snippets",
+		"Browser Integration",
+		"Browser Refresh",
+		"CodeKit Commands",
+		"Cucumber",
+		"eco",
+		"Emmet",
+		"Foundation 5 Snippets",
+		"foundation-sublime",
+		"Gem Browser",
+		"Google Closure Template snippets",
+		"Handlebars",
+		"HTML Page Snippets",
+		"HyperlinkHelper",
+		"JavaScript Snippets",
+		"jQuery",
+		"jQuery Snippets for Coffeescript",
+		"Libraries from CDN",
+		"Modific",
+		"npm",
+		"Polymer & Web Component Snippets",
+		"Sass",
+		"SassBeautify",
+		"ShaderLanguages",
+		"SideBarEnhancements",
+		"SideBarGit",
+		"SQL (simple-db-migrate)",
+		"Stylus",
+		"SublimeEnhancedUtilitiesSet",
+		"sublimelint",
+		"SublimeLinter-contrib-bootlint",
+		"Tomorrow Color Schemes",
+		"TrailingSpaces",
+		"Yesod"
+	],
+	"line_padding_bottom": 2,
+	"line_padding_top": 2,
+	"open_files_in_new_window": false,
+	"rulers":
+	[
+		80
+	],
+	"scroll_past_end": true,
+	"tab_size": 2,
+	"translate_tabs_to_spaces": true,
+	"trim_trailing_white_space_on_save": true,
+	"vintage_start_in_command_mode": true,
+	"wide_caret": true,
+	"word_wrap": false
+}

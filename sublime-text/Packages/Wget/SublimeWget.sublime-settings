@@ -1,0 +1,8 @@
+{
+  "sites": [
+    // {
+    //   "name":"", //Appears as filename in window e.g. "Bootstrap CSS"
+    //   "address":"" //The website to load e.g. "http://getbootstrap.com/css"
+    // }
+  ]
+}

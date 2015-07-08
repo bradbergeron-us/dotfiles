@@ -1,0 +1,1 @@
+{"dependencies": [], "sublime_text": ">=3000", "url": "http://sublimelinter.com", "platforms": ["*"], "version": "3.5.0", "description": "Interactive code linting framework for Sublime Text 3"}

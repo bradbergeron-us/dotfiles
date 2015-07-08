@@ -1,0 +1,4 @@
+SublimeWget 1.1.1 Changelog:
+
+Bug Fixes:
+ - Issue #4: The "My Sites" Command used to open the last item if cancelled, this is now fixed, cancelling works correctly

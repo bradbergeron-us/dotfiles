@@ -1,0 +1,53 @@
+sublime-text/Packages/bz2
+sublime-text/Packages/User/Package Control.cache
+sublime-text/Packages/User/Package Control.last-run
+sublime-text/Packages/User/Package Control.merged-ca-bundle
+sublime-text/Packages/User/Package Control.system-ca-bundle
+sublime-text/Packages/User/Package Control.user-ca-bundle
+
+doc/tags
+
+vim/bundle
+vim/.netrwhist
+
+gitconfig.local
+# OSX       taken from: https://github.com/github/gitignore/blob/master/Global/OSX.gitignore
+# ----------------------------------------------------------------------------------------------
+.DS_Store
+# Thumbnails
+._*
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Folder config file
+Desktop.ini
+
+# Tags      taken from: https://github.com/github/gitignore/blob/master/Global/Tags.gitignore
+# ----------------------------------------------------------------------------------------------
+# Ignore tags created by etags, ctags, gtags (GNU global) and cscope
+TAGS
+!TAGS/
+tags
+!tags/
+gtags.files
+GTAGS
+GRTAGS
+GPATH
+cscope.files
+cscope.out
+cscope.in.out
+cscope.po.out
+
+# Vim       taken from: https://github.com/github/gitignore/blob/master/Global/vim.gitignore
+# ----------------------------------------------------------------------------------------------
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+# SASS
+# ----------------------------------------------------------------------------------------------
+.sass-cache

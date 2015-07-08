@@ -1,0 +1,107 @@
+#!/bin/sh
+# give me what I need, brew!
+# ****************************************************
+#   Setup - Homebrew
+# ****************************************************
+
+# Make sure we’re using the latest Homebrew
+brew update
+
+# Upgrade any already-installed formulae
+brew upgrade
+
+# Ack
+# -> A tool like grep, optimized for programmers
+# brew install ack
+
+# Autojump
+# -> A cd command that learns
+brew install autojump
+
+
+
+# Development Tools
+brew install zsh
+brew install highlight
+brew install nvm
+brew install z
+brew install ctags
+
+# FFmpeg
+# -> Record, convert and stream audio and video
+brew install ffmpeg
+
+# Git
+# -> Version control
+brew install git
+
+# GHI
+# -> GitHub Issues on the command line
+brew install ghi
+
+# Git FTP
+brew install git-ftp
+
+# Hub
+# -> Command-line wrapper for git
+brew install hub
+
+# ImageMagick
+# -> Create, edit, compose, or convert bitmap images
+brew install imagemagick
+
+# NVM
+# -> Node Version Manager
+brew install nvm
+
+# Redis
+# -> Advanced key-value store
+brew install redis
+
+# Rename
+# -> Rename files in the command line
+brew install rename
+
+# Sitespeed.io
+# -> Analyze your website speed and performance
+brew install sitespeed.io
+
+# TheSilverSearcher
+# -> A code-searching tool similar to ack, but faster
+brew install the_silver_searcher
+
+# Tree
+# -> Recursive directory listing command
+brew install tree
+
+# Vim
+# -> Ye' old text editor
+brew install vim --with-lua
+brew install macvim --with-cscope --with-lua --HEAD --override-system-vim
+ln -s /usr/local/bin/mvim vim
+
+
+# Terminal Multiplexer
+brew install tmux
+
+# webkit2png
+# -> Command-line webpage screenshots
+brew install webkit2png
+
+# cli tool
+brew install wget
+brew install ping
+
+# development server setup
+brew install nginx
+brew install dnsmasq
+
+# pbcopy helper
+brew install reattach-to-user-namespace
+
+# gitsh
+brew tap thoughtbot/formulae
+brew install gitsh
+
+# Remove outdated versions from the cellar
+brew cleanup

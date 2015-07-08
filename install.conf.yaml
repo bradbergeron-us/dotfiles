@@ -1,0 +1,35 @@
+- clean: ['~']
+
+- link:
+    ~/.dotfiles: ''
+    ~/.bin: bin/
+    ~/.tmux.conf: tmux/tmux.conf
+    ~/.tmux: tmux/
+    ~/.vim: vim/
+    ~/.vimrc: vim/vimrc
+    ~/.psqlrc: psqlrc
+    ~/.git: git/
+    ~/.zsh: zsh/
+    ~/.zshrc: zsh/zshrc
+    ~/.applescripts: applescripts/
+    ~/.spotify.scpt: applescripts/spotify.scpt
+    ~/.itunes.scpt: applescripts/itunes.scpt
+    ~/.rdio.scpt:  applescripts/rdio.scpt
+    ~/.ackrc: ack/ackrc
+    ~/.agignore: ag/agignore
+    ~/.irb: irb/
+    ~/.pryrc: irb/pryrc
+    ~/.ctags: ctags/ctags
+    ~/.iterm: iterm/
+    ~/.nginx: nginx/
+    ~/.nginx.conf: nginx/nginx.conf/
+    ~/.rspec: rspec/rspec
+    ~/.gemrc: ruby/gemrc
+    ~/.rdebugrc: ruby/rdebugrc
+    ~/.jshintrc: jshintrc
+    ~/.jscrc: jscrc
+    ~/.gitconfig: git/gitconfig
+    ~/.gitignore_global: gitconfig_global
+- shell:
+  - [git submodule update --init --recursive, Installing submodule && 
+  git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim]

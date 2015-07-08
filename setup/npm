@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# ****************************************************
+#
+#   Setup - NPM
+#
+# ****************************************************
+
+packages=(
+  bower
+  browser-sync
+  grunt
+  grunt-cli
+  gulp
+  imageoptim-cli
+  jasmine-node
+  stylestats
+  svgo
+  pure-prompt
+  parker
+  psi
+  yo
+)
+
+for package in ${packages[@]}; do
+  npm install -g $package
+done

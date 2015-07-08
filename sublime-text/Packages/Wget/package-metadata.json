@@ -1,0 +1,1 @@
+{"dependencies": [], "sublime_text": ">=3000", "url": "https://github.com/Oblongmana/sublime-wget", "platforms": ["*"], "version": "1.1.1", "description": "Retrieve a web page (ad-hoc or from a list), turn it into markdown, and display in Sublime"}

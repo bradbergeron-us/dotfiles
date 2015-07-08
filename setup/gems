@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# ****************************************************
+#
+#   Setup - Gems
+#
+# ****************************************************
+
+gem install bundler
+gem install coffee-script
+gem install desktop
+gem install haml
+gem install middleman
+gem install rails
+gem install rdio-cli
+gem install sass
+gem install pry
+gem install sinatra
+gem install tmuxinator
+gem install seeing_is_believing
+gem install devise
+gem install rspec
+gem install capistrano
+gem install trailblazer
+gem install jekyll
