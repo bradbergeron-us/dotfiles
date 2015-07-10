@@ -52,9 +52,9 @@
       create: true
       path: tmux/tmux.conf
     ~/.vim: vim/
-    ~/.vimrc: vim/vimrc
+    ~/.vimrc:
       create: true
-      path: vimrc
+      path: vim/vimrc
     ~/.zprezto: prezto/
       create: true
       path: prezto/
