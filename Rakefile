@@ -5,41 +5,62 @@
 # ----- Original Locations ----- #
 
 original_locations                          = {}
-original_locations[:bin_directory]          = "#{ ENV['HOME'] }/.dotfiles/bin"
-original_locations[:applescripts_directory] = "#{ ENV['HOME'] }/.dotfiles/applescripts"
 original_locations[:ackrc]                  = "#{ ENV['HOME'] }/.dotfiles/ack/ackrc"
-original_locations[:ctags]                  = "#{ ENV['HOME'] }/.dotfiles/ctags/ctags"
 original_locations[:agignore]               = "#{ ENV['HOME'] }/.dotfiles/ag/agignore"
-original_locations[:rspec]                  = "#{ ENV['HOME'] }/.dotfiles/rspec/rspec"
+original_locations[:applescripts_directory] = "#{ ENV['HOME'] }/.dotfiles/applescripts"
+original_locations[:bin_directory]          = "#{ ENV['HOME'] }/.dotfiles/bin"
+original_locations[:ctags]                  = "#{ ENV['HOME'] }/.dotfiles/ctags/ctags"
+original_locations[:git_directory]          = "#{ ENV['HOME'] }/.dotfiles/git"
 original_locations[:gitconfig]              = "#{ ENV['HOME'] }/.dotfiles/git/gitconfig"
 original_locations[:gitignore]              = "#{ ENV['HOME'] }/.dotfiles/git/gitignore"
+original_locations[:gvimrc]                 = "#{ ENV['HOME'] }/.dotfiles/vim/gvimrc"
+original_locations[:hooks_directory]        = "#{ ENV['HOME'] }/.dotfiles/git/hooks"
+original_locations[:irb_directory]          = "#{ ENV['HOME'] }/.dotfiles/irb"
+original_locations[:jshintrc]               = "#{ ENV['HOME'] }/.dotfiles/jshintrc"
+original_locations[:jscsrcrc]               = "#{ ENV['HOME'] }/.dotfiles/jscrc"
+original_locations[:nginx_directory]        = "#{ ENV['HOME'] }/.dotfiles/nginx"
+original_locations[:prezto_directory]       = "#{ ENV['HOME'] }/.dotfiles/prezto"
+original_locations[:psqlrc]                 = "#{ ENV['HOME'] }/.dotfiles/psqlrc"
+original_locations[:ruby_directory]         = "#{ ENV['HOME'] }/.dotfiles/ruby"
+original_locations[:rspec]                  = "#{ ENV['HOME'] }/.dotfiles/rspec/rspec"
+original_locations[:template_directory]     = "#{ ENV['HOME'] }/.dotfiles/git/templates"
+original_locations[:tmux_directory]         = "#{ ENV['HOME'] }/.dotfiles/tmux"
+original_locations[:"tmux.conf"]            = "#{ ENV['HOME'] }/.dotfiles/tmux/tmux.conf"
 original_locations[:vim]                    = "#{ ENV['HOME'] }/.dotfiles/vim"
 original_locations[:vimrc]                  = "#{ ENV['HOME'] }/.dotfiles/vim/vimrc"
-original_locations[:gvimrc]                 = "#{ ENV['HOME'] }/.dotfiles/vim/gvimrc"
-original_locations[:ruby_directory]         = "#{ ENV['HOME'] }/ruby"
-original_locations[:irb_directory]          = "#{ ENV['HOME'] }/.dotfiles/irb"
-original_locations[:jshintrc_symlink]       = "#{ ENV['HOME'] }/.dotfiles/jshintrc"
-original_locations[:jscsrcrc]               = "#{ ENV['HOME'] }/.dotfiles/jscrc"
+
+
 
 # ----- New Locations ----- #
 
-new_locations                       = {}
-new_locations[:bin_directory]       = "#{ ENV['HOME'] }/.bin"
-new_locations[:applescripts]        = "#{ ENV['HOME'] }/.applescripts"
-new_locations[:ctags]               = "#{ ENV['HOME'] }/.ctags"
-new_locations[:ackrc]               = "#{ ENV['HOME'] }/.ackrc"
-new_locations[:agignore]            = "#{ ENV['HOME'] }/.agignore"
-new_locations[:rspec]               = "#{ ENV['HOME'] }/.rspec"
-new_locations[:gitconfig_local]     = "#{ ENV['HOME'] }/.gitconfig_local"
-new_locations[:gitconfig]           = "#{ ENV['HOME'] }/.gitconfig"
-new_locations[:gitignore]           = "#{ ENV['HOME'] }/.gitignore"
-new_locations[:vim]                 = "#{ ENV['HOME'] }/.vim"
-new_locations[:vimrc]               = "#{ ENV['HOME'] }/.vimrc"
-new_locations[:gvimrc]              = "#{ ENV['HOME'] }/.gvimrc"
-new_locations[:ruby_directory]      = "#{ ENV['HOME'] }/.ruby"
-new_locations[:irb_directory]       = "#{ENV['HOME'] }/.irb"
-new_locations[:jshintrc]    = "#{ ENV['HOME'] }/.jshintrc"
-new_locations[:jshintrc]    = "#{ ENV['HOME'] }/.jscrc"
+new_locations                           = {}
+new_locations[:ackrc]                   = "#{ ENV['HOME'] }/.ackrc"
+new_locations[:agignore]                = "#{ ENV['HOME'] }/.agignore"
+new_locations[:applescripts_directory]  = "#{ ENV['HOME'] }/.applescripts"
+new_locations[:bin_directory]           = "#{ ENV['HOME'] }/.bin"
+new_locations[:ctags]                   = "#{ ENV['HOME'] }/.ctags"
+new_locations[:git_directory]           = "#{ ENV['HOME'] }/.git"
+new_locations[:gitconfig]               = "#{ ENV['HOME'] }/.gitconfig"
+new_locations[:gitignore]               = "#{ ENV['HOME'] }/.gitignore"
+new_locations[:gvimrc]                  = "#{ ENV['HOME'] }/.gvimrc"
+new_locations[:hooks_directory]         = "#{ ENV['HOME'] }/.git/hooks"
+new_locations[:irb_directory]           = "#{ ENV['HOME'] }/.irb"
+new_locations[:jshintrc]                = "#{ ENV['HOME'] }/.jshintrc"
+new_locations[:jscrc]                   = "#{ ENV['HOME'] }/.jscrc"
+new_locations[:nginx_directory]         = "#{ ENV['HOME'] }/.nginx"
+new_locations[:prezto_directory]        = "#{ ENV['HOME'] }/.zprezto"
+new_locations[:psqlrc]                  = "#{ ENV['HOME'] }/.psqlrc"
+new_locations[:rspec]                   = "#{ ENV['HOME'] }/.rspec"
+new_locations[:ruby_directory]          = "#{ ENV['HOME'] }/.ruby"
+new_locations[:templates_directory]     = "#{ ENV['HOME'] }/.git/templates"
+new_locations[:ruby_directory]          = "#{ ENV['HOME'] }/.ruby"
+new_locations[:tmux_directory]          = "#{ ENV['HOME'] }/.tmux"
+new_locations[:tmux_directory]          = "#{ ENV['HOME'] }/.tmux.conf"
+new_locations[:vim]                     = "#{ ENV['HOME'] }/.vim"
+new_locations[:vimrc]                   = "#{ ENV['HOME'] }/.vimrc"
+
+
+
 
 # ----- Installation Order ----- #
 
@@ -129,6 +150,18 @@ task :install_zsh, :run do |task, args|
     message 'Installing personalized Prezto Fork ...'
 
     system 'bash setup/zsh'
+     sh "ln -s ~/.zprezto/runcoms/.zlogin"
+     sh "ln -s ~/.zprezto/runcoms/.zpreztorc"
+     sh "ln -s ~/.zprezto/runcoms/.zshrc"
+     sh "ln -s ~/.zprezto/runcoms/.zshenv"
+     sh "ln -s ~/.zprezto/runcoms/.zprofile"
+     sh "echo 'Symlinked ~/.zprezto modules and runcoms!')"
+     sh "chsh -s /bin/zsh"
+     sh "echo 'Prezto! Zsh has been configured'"
+done
+
+chsh -s /bin/zsh
+echo 'Changed Shell to ZSH'
 
     run installation_order[current_step] unless args[:run] == 'single'
   end

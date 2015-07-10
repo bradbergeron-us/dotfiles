@@ -1,0 +1,1 @@
+{"platforms": ["*"], "description": "Next generation JavaScript and React snippets for Sublime", "dependencies": [], "url": "https://babeljs.io", "sublime_text": "*", "version": "1.0.4"}

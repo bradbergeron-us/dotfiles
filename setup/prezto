@@ -8,17 +8,8 @@
 cd ~
 rm -rf ~/.z*
 echo 'cloning zsh prezto fork'
-git clone --recursive https://github.com/bradbergeron-us/zsh.git "${ZDOTDIR:-$HOME}/.zprezto"
+git clone --recursive https://github.com/bradbergeron-us/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 
 cd ~/.zprezto
 git pull && git submodule update --init --recursive
 echo 'Updatting submodules'
-
-setopt EXTENDED_GLOB
-for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
-     ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
-echo 'Symlinked ~/.zprezto modules and runcoms!'
-done
-
-chsh -s /bin/zsh
-echo 'Changed Shell to ZSH'

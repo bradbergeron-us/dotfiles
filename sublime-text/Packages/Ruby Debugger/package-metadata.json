@@ -1,0 +1,1 @@
+{"platforms": ["*"], "description": "Interactive debugger for sublime", "dependencies": [], "url": "https://github.com/shuky19/sublime_debugger", "sublime_text": "*", "version": "0.3.4"}
