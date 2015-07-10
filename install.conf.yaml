@@ -18,7 +18,6 @@
     ~/.applescripts: applescripts/
     ~/.spotify.scpt: applescripts/spotify.scpt
     ~/.itunes.scpt: applescripts/itunes.scpt
-    ~/.rdio.scpt:  applescripts/rdio.scpt
     ~/.ackrc: ack/ackrc
     ~/.agignore: ag/agignore
     ~/.irb: irb/
