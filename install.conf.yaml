@@ -25,7 +25,7 @@
       create: true
     ~/.jscrc: jscrc
       create: true
-    ~/.mongorc.js: mongorc.js
+    ~/.mongorc: mongorc
     ~/.nginx: nginx/
     ~/.nginx.conf: nginx/nginx.conf
     ~/.pryrc: irb/pryrc
