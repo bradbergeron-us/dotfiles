@@ -208,6 +208,7 @@ end
 # ====================================
 #   Install Homebrew Packages
 # ====================================
+
 task :install_homebrew_packages, :run do |task, args|
   current_step = current_step + 1
 
@@ -243,6 +244,7 @@ end
 # ====================================
 #   Install Gems
 # ====================================
+
 task :install_gems, :run do |task, args|
   current_step = current_step + 1
 
