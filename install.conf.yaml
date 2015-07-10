@@ -22,7 +22,7 @@
     ~/.gitignore_global: git/gitignore_global
     ~/.gvimrc: vim/gvimrc
       create: true
-      path vim/gvimrc
+      path: vim/gvimrc
     ~/.irb: irb/
     ~/.iterm: iterm/
     ~/.jshintrc: jshintrc
