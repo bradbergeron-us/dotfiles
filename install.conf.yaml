@@ -1,10 +1,10 @@
-- shell: 
-    - "git submodule foreach git pull origin master"
-    - "Updating submodules"
-
 - clean: ['~']
-    - "~"
-
+- shell:
+    - [git submodule update --init --recursive, Installing submodules]
+    - [git submodule update --remote  --recursive, Updating submodules]
+    - [cd dotbot && git checkout master && git pull, Moving dotbot submodule to branch master and pulling]
+    - [cd prezto && git checkout master && git pull, Moving prezto submodule to branch master and pulling]
+    - [cd vim/Ultisnips/vim-snippets && git checkout master && git pull, Moving vim-snippets submodule to branch master and pulling]
 - link:
     ~/.dotfiles: ''
     ~/.ackrc: ack/ackrc
@@ -12,13 +12,17 @@
     ~/.applescripts: applescripts/
     ~/.spotify.scpt: applescripts/spotify.scpt
     ~/.itunes.scpt: applescripts/itunes.scpt
-    ~/.bin: bin/
+    ~/.bin:
+      create: true
+      path: bin/
     ~/.ctags: ctags/ctags
     ~/.gemrc: ruby/gemrc
     ~/.git: git/
     ~/.gitconfig: git/gitconfig
     ~/.gitignore_global: git/gitignore_global
     ~/.gvimrc: vim/gvimrc
+      create: true
+      path vim/gvimrc
     ~/.irb: irb/
     ~/.iterm: iterm/
     ~/.jshintrc: jshintrc
@@ -27,35 +31,50 @@
       create: true
     ~/.mongorc: mongorc
     ~/.nginx: nginx/
-    ~/.nginx.conf: nginx/nginx.conf
-    ~/.pryrc: irb/pryrc
+    ~/.nginx.conf:
+      create: true
+      path: nginx/nginx.conf
+    ~/.pryrc: 
+      create: true
+      path: irb/pryrc
     ~/.psqlrc: psqlrc
-    ~/.rdebugrc: ruby/rdebugrc
-    ~/.rspec: rspec/rspec
+    ~/.rdebugrc: 
+      create: true
+      path: ruby/rdebugrc
+    ~/.rspec: 
+      create: true
+      path: rspec/rspec
     /Applications/Sublime\ Text.app/Contents/MacOS/Packages: sublime-text/packages/
-      force: true
-      path: /Applications/Sublime Text.app/Contents/MacOS/Packages"
     ~/.tmux: tmux/
-    ~/.tmux.conf: tmux/tmux.conf
+    ~/.tmux.conf: 
+      create: true
+      path: tmux/tmux.conf
     ~/.vim: vim/
     ~/.vimrc: vim/vimrc
-      relink: true
+      create: true
       path: vimrc
     ~/.zprezto: prezto/
-    ~/.zshrc: prezto/runcoms/zshrc
-      force: true
-      path: zshrc
-    ~/.zlogin: prezto/runcoms/zlogin
-    ~/.zprofile: prezto/runcoms/zprofile
-    ~/.zshenv: prezto/runcoms/zshenv
+      create: true
+      path: prezto/
+    ~/.zshrc:
+      create: true
+      path: prezto/runcoms/zshrc
+    ~/.zlogin:
+      create: true
+      path: prezto/runcoms/zlogin
+    ~/.zprofile:
+      create: true
+      path: prezto/runcoms/zprofile
+    ~/.zshenv:
+      create: true
+      path: prezto/runcoms/zshenv
 
 - shell:
+    - [curl https://sublime.wbond.net/Package%20Control.sublime-package -o ~/.config/sublime-text-3/Installed\\\ Packages/Package\\\ Control.sublime-package]
+    - [Installing Package Control]
   -
-    - "curl https://sublime.wbond.net/Package%20Control.sublime-package -o ~/.config/sublime-text-3/Installed\\\ Packages/Package\\\ Control.sublime-package"
-    - "Installing Package Control"
+    - [vim +BundleInstall; +qall]
+    - [Update bundles]
   -
-    - "vim +BundleInstall; +qall"
-    - "Update bundles"
-  -
-    - "git submodule update --init --recursive --remote"
-    - "Installing/updating submodules"
+    - [git submodule update --init --recursive --remote]
+    - [Installing/updating submodules]
