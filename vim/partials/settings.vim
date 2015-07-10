@@ -42,7 +42,6 @@ autocmd BufReadPost fugitive://* set bufhidden=delete
 " accessible by middle fingers are available 
 let g:EasyMotion_keys='asdfjkoweriop'
 nmap ,<ESC> ,,w
-
 nmap ,<S-ESC> ,,b
 "==================== Multiple Cursors ====="
 " Turn off default key mappings
@@ -60,6 +59,18 @@ let g:multi_cursor_quit_key='<Esc>'
 " ===================================================
 let g:airline_powerline_fonts = 1
 set laststatus=2
+let g:airline_left_sep = '»'
+let g:airline_left_sep = '▶'
+let g:airline_right_sep = '«'
+let g:airline_right_sep = '◀'
+let g:airline_left_sep = '»'
+let g:airline_left_sep = '▶'
+let g:airline_right_sep = '«'
+let g:airline_right_sep = '◀'
+" tabline
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
 " tabline
 let g:airline#extensions#tabline#enabled = 1
 
