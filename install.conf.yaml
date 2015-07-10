@@ -55,7 +55,7 @@
     ~/.vimrc:
       create: true
       path: vim/vimrc
-    ~/.zprezto: prezto/
+    ~/.zprezto:
       create: true
       path: prezto/
     ~/.zshrc:
