@@ -1,37 +1,61 @@
+-shell: 
+    - "git submodule foreach git pull origin master"
+    - "Updating submodules"
 
 - clean: ['~']
+    - "~"
 
 - link:
     ~/.dotfiles: ''
-    ~/.bin: bin/
-    ~/.tmux.conf: tmux/tmux.conf
-    ~/.tmux: tmux/
-    ~/.vim: vim/
-    ~/.vimrc: vim/vimrc
-    ~/.psqlrc: psqlrc
-    ~/.git: git/
-    ~/.zprezto: prezto/
-    ~/.zlogin: prezto/runcoms/zlogin
-    ~/.zprofile: prezto/runcoms/zprofile
-    ~/.zshenv: prezto/runcoms/zshenv
-    ~/.zshrc: prezto/runcoms/zshrc
+    ~/.ackrc: ack/ackrc
+    ~/.agignore: ag/agignore
     ~/.applescripts: applescripts/
     ~/.spotify.scpt: applescripts/spotify.scpt
     ~/.itunes.scpt: applescripts/itunes.scpt
-    ~/.ackrc: ack/ackrc
-    ~/.agignore: ag/agignore
-    ~/.irb: irb/
-    ~/.pryrc: irb/pryrc
+    ~/.bin: bin/
     ~/.ctags: ctags/ctags
-    ~/.iterm: iterm/
-    ~/.nginx: nginx/
-    ~/.nginx.conf: nginx/nginx.conf/
-    ~/.rspec: rspec/rspec
     ~/.gemrc: ruby/gemrc
-    ~/.rdebugrc: ruby/rdebugrc
-    ~/.jshintrc: jshintrc
-    ~/.jscrc: jscrc
+    ~/.git: git/
     ~/.gitconfig: git/gitconfig
-    ~/.gitignore_global: gitconfig_global
+    ~/.gitignore_global: git/gitignore_global
+    ~/.gvimrc: vim/gvimrc
+    ~/.irb: irb/
+    ~/.iterm: iterm/
+    ~/.jshintrc: jshintrc
+      create: true
+    ~/.jscrc: jscrc
+      create: true
+    ~/.mongorc.js: mongorc.js
+    ~/.nginx: nginx/
+    ~/.nginx.conf: nginx/nginx.conf
+    ~/.pryrc: irb/pryrc
+    ~/.psqlrc: psqlrc
+    ~/.rdebugrc: ruby/rdebugrc
+    ~/.rspec: rspec/rspec
+    /Applications/Sublime\ Text.app/Contents/MacOS/Packages: sublime-text/packages/
+      force: true
+      path: /Applications/Sublime Text.app/Contents/MacOS/Packages"
+    ~/.tmux: tmux/
+    ~/.tmux.conf: tmux/tmux.conf
+    ~/.vim: vim/
+    ~/.vimrc: vim/vimrc
+      relink: true
+      path: vimrc
+    ~/.zprezto: prezto/
+    ~/.zshrc: prezto/runcoms/zshrc
+      force: true
+      path: zshrc
+    ~/.zlogin: prezto/runcoms/zlogin
+    ~/.zprofile: prezto/runcoms/zprofile
+    ~/.zshenv: prezto/runcoms/zshenv
+
 - shell:
-  - git submodule update --init --recursive
+  -
+    - "curl https://sublime.wbond.net/Package%20Control.sublime-package -o ~/.config/sublime-text-3/Installed\\\ Packages/Package\\\ Control.sublime-package"
+    - "Installing Package Control"
+  -
+    - "vim +BundleInstall; +qall"
+    - "Update bundles"
+  -
+    - "git submodule update --init --recursive --remote"
+    - "Installing/updating submodules"
