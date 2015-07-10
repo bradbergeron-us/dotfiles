@@ -70,7 +70,6 @@
     ~/.zshenv:
       create: true
       path: prezto/runcoms/zshenv
-
 - shell:
     -
      - "curl https://sublime.wbond.net/Package%20Control.sublime-package -o ~/.config/sublime-text-3/Installed\\\ Packages/Package\\\ Control.sublime-package"
