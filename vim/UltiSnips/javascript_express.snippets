@@ -1,0 +1,23 @@
+# Express
+snippet expr "express" b
+var express = require('express');
+var app = express();
+
+${1}
+
+app.listen(3000);
+endsnippet
+
+# Express GET
+snippet appget
+app.get('${1}', function (request, response){
+	response.send('${2}')
+});
+endsnippet
+
+# Express POST
+snippet apppost
+app.post('${1}', fucntion(request, response){
+	response.send('${2}')
+});
+endsnippet
