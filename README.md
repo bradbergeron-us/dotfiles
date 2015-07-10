@@ -3,13 +3,15 @@ Dotfiles
 
 ###First Time Setup See -> [Setup Guide](https://github.com/bradbergeron-us/dotfiles/blob/master/setup.md)
 > Rakefile installs all dependencies [Homebrew, rbenv, pow, npm, prezto fork etc.] 
-> Great if you are starting from scratch but my preferred method of installation is below
+> Great if you are starting from scratch and have nothing installed the rake tasks can automate that process.
 
-### Idempotent install script
+### My Preferred method is the Idempotent install script
 > Installs Symlinks
 After cloning this repo, run `install` to automatically set up the development environment. Note that the install script is idempotent: it can safely be run multiple times.
 
-Dotfiles uses [Dotbot](https://github.com/anishathalye/dotbot) for installation.
+This Dotfiles Repository uses [Dotbot](https://github.com/anishathalye/dotbot) for installation.
+
+After Switching over to dotbot from the complicated Rakefile that is not optimized to be re-used like [Dotbot](https://github.com/anishathalye/dotbot) and that has helped me keep both of my Macs in sync without much irritation; aside from dealing with YAML files... for that reason I may rewrite the script in JSON when I have time. But I love being in sync with my custom settings wherever I am with this Provisioning script.
 
 Making Local Customizations
 ---------------------------
