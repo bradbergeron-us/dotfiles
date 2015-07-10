@@ -15,11 +15,19 @@
     ~/.bin:
       create: true
       path: bin/
-    ~/.ctags: ctags/
-    ~/.gemrc: ruby/gemrc
+    ~/.ctags: 
+      create: true
+      path: ctags
+    ~/.gemrc: 
+      create: true
+      path: ruby/gemrc
     ~/.git: git/
-    ~/.gitconfig: git/gitconfig
-    ~/.gitignore_global: git/gitignore_global
+    ~/.gitconfig:
+      create: true
+      path: git/gitconfig
+    ~/.gitignore_global: 
+      create: true
+      path: git/gitignore_global
     ~/.gvimrc:
       create: true
       path: vim/gvimrc
@@ -46,8 +54,9 @@
     ~/.rspec: 
       create: true
       path: rspec
-    /Applications/Sublime\ Text.app/Contents/MacOS/Packages: sublime-text/packages/
-    ~/.tmux: tmux/
+    ~/.tmux: 
+      create: true
+      path: tmux/
     ~/.tmux.conf: 
       create: true
       path: tmux/tmux.conf
@@ -75,5 +84,6 @@
     - [Installing Package Control]
     - [vim +BundleInstall; +qall]
     - [Update bundles]
+    - [cp -R sublime-text/Packages /Applications/Sublime\ Text.app/Contents/MacOS/Packages/]
     - [git submodule update --init --recursive --remote]
     - [Installing/updating submodules]
