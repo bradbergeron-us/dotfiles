@@ -25,10 +25,12 @@
       path: vim/gvimrc
     ~/.irb: irb/
     ~/.iterm: iterm/
-    ~/.jshintrc: jshintrc
+    ~/.jshintrc:
       create: true
-    ~/.jscrc: jscrc
+      path: jshintrc
+    ~/.jscrc:
       create: true
+      path: jscrc
     ~/.mongorc: mongorc
     ~/.nginx: nginx/
     ~/.nginx.conf:
