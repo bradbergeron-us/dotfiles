@@ -2,8 +2,11 @@ Dotfiles
 =========
 
 ###First Time Setup See -> [Setup Guide](https://github.com/bradbergeron-us/dotfiles/blob/master/setup.md)
+> Rakefile installs all dependencies [Homebrew, rbenv, pow, npm, prezto fork etc.] 
+> Great if you are starting from scratch but my preferred method of installation is below
 
-###How I install
+### Idempotent install script
+> Installs Symlinks
 After cloning this repo, run `install` to automatically set up the development environment. Note that the install script is idempotent: it can safely be run multiple times.
 
 Dotfiles uses [Dotbot](https://github.com/anishathalye/dotbot) for installation.
