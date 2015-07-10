@@ -15,7 +15,7 @@
     ~/.bin:
       create: true
       path: bin/
-    ~/.ctags: ctags/ctags
+    ~/.ctags: ctags/
     ~/.gemrc: ruby/gemrc
     ~/.git: git/
     ~/.gitconfig: git/gitconfig
@@ -45,7 +45,7 @@
       path: ruby/rdebugrc
     ~/.rspec: 
       create: true
-      path: rspec/rspec
+      path: rspec
     /Applications/Sublime\ Text.app/Contents/MacOS/Packages: sublime-text/packages/
     ~/.tmux: tmux/
     ~/.tmux.conf: 
