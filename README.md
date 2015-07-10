@@ -1,7 +1,7 @@
 Dotfiles 
 =========
 
-###First Time Setup See ->[Setup Guide](https://github.com/bradbergeron-us/dotfiles/blob/master/setup.md)
+###First Time Setup See -> [Setup Guide](https://github.com/bradbergeron-us/dotfiles/blob/master/setup.md)
 
 ###How I install
 After cloning this repo, run `install` to automatically set up the development environment. Note that the install script is idempotent: it can safely be run multiple times.
