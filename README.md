@@ -2,20 +2,21 @@ Dotfiles
 =========
 
 ###First Time Setup See -> [Setup Guide](https://github.com/bradbergeron-us/dotfiles/blob/master/setup.md)
-> Rakefile installs all dependencies [Homebrew, rbenv, pow, npm, prezto fork etc.] 
+> Uses Rakefile to delegate tasks including installing all dependencies [Homebrew, rbenv, pow, npm, prezto fork etc.]
+
 Great if you are starting from scratch and have nothing installed the rake tasks can automate that process.
 
-### My Preferred method -> Idempotent `install` script
+### My Preferred method -> Idempotent `$ ./install` script
 > Installs Symlinks
-After cloning this repo, run `install` to automatically set up the development environment. Note that the install script is idempotent: it can safely be run multiple times.
+After cloning this repo, run `$ ./install` to automatically set up the development environment. Note that the install script is idempotent: it can safely be run multiple times.
 
 This Dotfiles Repository uses [Dotbot](https://github.com/anishathalye/dotbot) for installation.
 
-Afteradding dotbot for streamlining symlinking dotfiles. I used to rely heavily on Rake but the Rakefile is not optimized to be re-used like [Dotbot](https://github.com/anishathalye/dotbot). Rake offers a multitude of tasks/multitasks but it is easier for me to just clone the repo and `$ install` which has helped me keep both of my Macs in synchronization and optimized for development.
+Afteradding dotbot for streamlining symlinking dotfiles. I used to rely heavily on Rake but the Rakefile is not optimized to be re-used like [Dotbot](https://github.com/anishathalye/dotbot). Rake offers a multitude of tasks/multitasks but it is easier for me to just clone the repo and `$ ./install` which has helped me keep both of my Macs in synchronization and optimized for development.
 
-A small bit of frusteration I had when configuring Dotbot was dealing with white-case sensitive YAML files... for that reason I may rewrite the script in JSON which is another valid format for Dotbot that I may rewrite in at some point. But after the frustration of configuring the YAML file it works! 
+A small bit of frusteration I had when configuring Dotbot was dealing with white-case significant YAML files... for that reason I may rewrite the script in JSON which is another valid format for Dotbot that I may rewrite in at some point. But after the frustration of configuring the YAML file it works, just watch out for that whitespace!
 
-The reward for maintaing a organized dotfile repository is being in sync with your custom settings wherever you are just a git clone and `$ install` command away from development bliss.
+The reward for maintaing a organized dotfile repository is being in sync with your custom settings wherever you are just a git clone and `$ ./install` command away from development bliss.
 
 Making Local Customizations
 ---------------------------
