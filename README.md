@@ -18,6 +18,18 @@ A small bit of frusteration I had when configuring Dotbot was dealing with white
 
 The reward for maintaing a organized dotfile repository is being in sync with your custom settings wherever you are just a git clone and `$ ./install` command away from development bliss.
 
+Troubleshooting Prezto Install
+------------------------------
+On occassion the Prezto configuration can load but not be linked properly.
+Just copy and paste this snippet if you do have a problem loading the shell theme.
+
+
+        setopt EXTENDED_GLOB
+        for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
+          ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
+        done
+
+
 Making Local Customizations
 ---------------------------
 
