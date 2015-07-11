@@ -1,6 +1,4 @@
 #
-# Displays ♫ & Artist in Terminal
-#
 # Authors:
 #    Bradley Bergeron <bergeron.bradley@gmail.com>
 #
