@@ -17,10 +17,12 @@ is_sublime_text_3 = int(sublime.version()) >= 3000
 if is_sublime_text_3:
     from .base_command import BaseCommand
     from .progress_notifier import ProgressNotifier
+    from .cross_platform_codecs import CrossPlaformCodecs
     import urllib.request as urllib2
 else:
     from base_command import BaseCommand
     from progress_notifier import ProgressNotifier
+    from cross_platform_codecs import CrossPlaformCodecs
     import urllib2
 
 class GulpCommand(BaseCommand):
@@ -140,8 +142,11 @@ class GulpCommand(BaseCommand):
             return
         log_path = self.working_dir + "/" + self.log_file_name
         header = "Remember that you can report errors and get help in https://github.com/NicoSantangelo/sublime-gulp" if not os.path.isfile(log_path) else ""
+        timestamp = str(datetime.datetime.now().strftime("%m-%d-%Y %H:%M"))
+
         with codecs.open(log_path, "a", "utf-8", errors='replace') as log_file:
-            log_file.write(header + "\n\n" + str(datetime.datetime.now().strftime("%m-%d-%Y %H:%M")) + ":\n" + text.decode('utf-8'))
+            decoded_stderr = CrossPlaformCodecs.force_decode(text)
+            log_file.write(header + "\n\n" + timestamp + ":\n" + decoded_stderr)
 
     def task_list_callback(self, task_index):
         if task_index > -1:
@@ -257,6 +262,7 @@ class GulpExitCommand(sublime_plugin.WindowCommand):
             self.window.run_command("gulp_kill")
         finally:
             self.window.run_command("exit")
+            
 
 class CrossPlatformProcess():
     def __init__(self, command, nonblocking=True):
@@ -298,18 +304,10 @@ class CrossPlatformProcess():
         while True:
             line = stream.readline()
             if not line: break
-            output_line = self.decode_line(line)
+            output_line = CrossPlaformCodecs.decode_line(line)
             output_text += output_line
             fn(output_line)
         return output_text
-
-    def decode_line(self, line):
-        line = line.rstrip()
-        decoded_line = codecs.decode(line, 'utf-8', 'replace') if sys.version_info >= (3, 0) else line
-        return str(decoded_line) + "\n"
-
-    def read(self, stream):
-        return stream.read().decode('utf-8')
 
     def terminate(self):
         if self.is_alive():
@@ -414,6 +412,7 @@ class PluginList():
     def quick_panel_list(self):
         return [ [plugin.name + ' (' + plugin.version + ')', plugin.description] for plugin in self.plugins ]
 
+
 class Plugin():
     def __init__(self, plugin_json):
         self.plugin = plugin_json
@@ -454,6 +453,7 @@ class PluginRegistryCall(Thread):
 
         self.error = err
         self.result = None
+
 
 class ThreadWithResult(Thread):
     def __init__(self, target, args):
