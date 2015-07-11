@@ -48,10 +48,15 @@ What's it Look Like?
 
 ### Welcome to Gotham City
 
-![Terminal-Vim] (https://s3.amazonaws.com/f.cl.ly/items/3j1s1M23230L3G201Q3s/Image%202015-06-02%20at%204.39.48%20AM.png "Terminal-Vim")
+![Terminal-Vim](https://s3.amazonaws.com/f.cl.ly/items/3j1s1M23230L3G201Q3s/Image%202015-06-02%20at%204.39.48%20AM.png "Terminal-Vim")
+
+Tmux Preview
+----------------------
+
+![Preview](https://www.evernote.com/l/ATnY6IXi2ytKqIBVR4uqtnfo1_WNO4VgY5QB/image.png)
 
 Heres What else I have Stashed So Far
--------------------------------------------------------------
+---------------------------------------
 - ZSH Shell with Pure Theme
 - Prezto Fork (Perfect for OSX users)
 - Git Custom Aliases
@@ -75,6 +80,4 @@ Inspirational Dotfiles
 
 3. [josemota/dotfiles](https://github.com/josemota/dotfiles)
 
-4. [Wistia/whim](https://github.com/wistia/whim)
-
-5. [skwp/dotfiles](https://github.com/skwp/dotfiles)
+4. [skwp/dotfiles](https://github.com/skwp/dotfiles)
