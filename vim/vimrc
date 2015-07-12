@@ -48,6 +48,14 @@ set ttimeoutlen=1
 " Remove dotted line on split windows
 set fillchars+=vert:\
 
+:set term=cons25
+
+" Fic vim arrow mapping on insert mode
+imap ^[OA <ESC>ki
+imap ^[OB <ESC>ji
+imap ^[OC <ESC>li
+imap ^[OD <ESC>hi
+
 " Leader key now -> ','
 map , <leader>
 map <Space> <leader>
