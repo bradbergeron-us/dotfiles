@@ -104,7 +104,7 @@ Plugin 'nono/vim-handlebars'
 " =======  Javascript ===========
 Plugin 'kchmck/vim-coffee-script'
 Plugin 'elzr/vim-json'
-
+Plugin 'burnettk/vim-angular'
 "======== Go Lang ===============
 Plugin 'fatih/vim-go'
 "Plugin 'Shougo/neocomplete.vim'
@@ -112,7 +112,7 @@ Plugin 'majutsushi/tagbar'
 
 " ======== Ruby ==================
 "Executes Ruby Code in Buffer
-Plugin 't9md/vim-ruby-xmpfilter'
+Plugin 'padde/vim-seeing-is-believing'
 
 "========= Elixir =================
 Plugin 'elixir-lang/vim-elixir'
