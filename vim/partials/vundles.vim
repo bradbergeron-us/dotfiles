@@ -112,6 +112,7 @@ Plugin 'majutsushi/tagbar'
 
 " ======== Ruby ==================
 "Executes Ruby Code in Buffer
+Plugin 't9md/vim-ruby-xmpfilter'
 Plugin 'hwartig/vim-seeing-is-believing'
 
 "========= Elixir =================
