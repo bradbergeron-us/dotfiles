@@ -1,17 +1,17 @@
-" XMP Filter / Seeing is Believing Settings
-" Execute Ruby code in the buffer ... Seeing is Believing
-let g:xmpfilter_cmd = "seeing_is_believing"
-autocmd FileType ruby nmap <buffer> <C-m> <Plug>(seeing_is_believing-mark)
-autocmd FileType ruby xmap <buffer> <C-m> <Plug>(seeing_is_believing-mark)
-autocmd FileType ruby imap <buffer> <C-m> <Plug>(seeing_is_believing-mark)
-autocmd FileType ruby nmap <buffer> <C-c> <Plug>(seeing_is_believing-clean)
-autocmd FileType ruby xmap <buffer> <C-c> <Plug>(seeing_is_believing-clean)
-autocmd FileType ruby imap <buffer> <C-c> <Plug>(seeing_is_believing-clean)
-" xmpfilter compatible
-autocmd FileType ruby nmap <buffer> <C-r> <Plug>(seeing_is_believing-run_-x)
-autocmd FileType ruby xmap <buffer> <C-r> <Plug>(seeing_is_believing-run_-x)
-autocmd FileType ruby imap <buffer> <C-r> <Plug>(seeing_is_believing-run_-x)
-" auto insert mark at appropriate spot.
-autocmd FileType ruby nmap <buffer> <F5> <Plug>(seeing_is_believing-run)
-autocmd FileType ruby xmap <buffer> <F5> <Plug>(seeing_is_believing-run)
-autocmd FileType ruby imap <buffer> <F5> <Plug>(seeing_is_believing-run)
+" Gvim
+nmap <buffer> <C-c> <Plug>(seeing-is-believing-run)
+xmap <buffer> <C-c> <Plug>(seeing-is-believing-run)
+imap <buffer> <C-c> <Plug>(seeing-is-believing-run)
+
+nmap <buffer> <C-m> <Plug>(seeing-is-believing-mark)
+xmap <buffer> <C-m> <Plug>(seeing-is-believing-mark)
+imap <buffer> <C-m> <Plug>(seeing-is-believing-mark)
+
+" Terminal
+nmap <buffer> <C-c> <Plug>(seeing-is-believing-run)
+xmap <buffer> <C-c> <Plug>(seeing-is-believing-run)
+imap <buffer> <C-c> <Plug>(seeing-is-believing-run)
+
+nmap <buffer> <C-m> <Plug>(seeing-is-believing-mark)
+xmap <buffer> <C-m> <Plug>(seeing-is-believing-mark)
+imap <buffer> <C-m> <Plug>(seeing-is-believing-mark)

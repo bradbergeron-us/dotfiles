@@ -112,7 +112,7 @@ Plugin 'majutsushi/tagbar'
 
 " ======== Ruby ==================
 "Executes Ruby Code in Buffer
-Plugin 'padde/vim-seeing-is-believing'
+Plugin 'hwartig/vim-seeing-is-believing'
 
 "========= Elixir =================
 Plugin 'elixir-lang/vim-elixir'
