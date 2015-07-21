@@ -39,7 +39,7 @@ autocmd BufReadPost fugitive://* set bufhidden=delete
 " We exclude semicolon because it's hard to read and
 " i and l are too easy to mistake for each other slowing
 " down recognition. The home keys and the immediate keys
-" accessible by middle fingers are available 
+" accessible by middle fingers are available
 let g:EasyMotion_keys='asdfjkoweriop'
 nmap ,<ESC> ,,w
 nmap ,<S-ESC> ,,b
@@ -58,7 +58,7 @@ let g:multi_cursor_quit_key='<Esc>'
 "  Bling Airline
 " ===================================================
 let g:airline_powerline_fonts = 1
-set laststatus= 2
+set laststatus=2
 let g:airline_left_sep = '»'
 let g:airline_left_sep = '▶'
 let g:airline_right_sep = '«'
@@ -76,6 +76,6 @@ let g:airline#extensions#tabline#enabled = 1
 
 " Rspec Running tests if you need to see full backtrace
 " output to debug use ^Z (ctrl+Z) to send Vim to background,
-" running the specs in terminal, and using fg to bring Vim 
+" running the specs in terminal, and using fg to bring Vim
 " back to the foreground
 let g:rspec_command = "Dispatch rspec {spec}"
