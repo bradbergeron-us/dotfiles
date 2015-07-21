@@ -65,6 +65,8 @@ map <leader>M :call ExecuteInShell("clear; make")<CR>
 map <leader>ct :silent !ctags -R .<CR>:redraw!<CR>
 " Copy whole file, store in register
 nnoremap <leader>co ggVG"*y
+
+" Tab Settings
 noremap 1 :tabnext 1<CR>
 noremap 2 :tabnext 2<CR>
 noremap 3 :tabnext 3<CR>

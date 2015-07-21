@@ -58,7 +58,7 @@ let g:multi_cursor_quit_key='<Esc>'
 "  Bling Airline
 " ===================================================
 let g:airline_powerline_fonts = 1
-set laststatus=2
+set laststatus= 2
 let g:airline_left_sep = '»'
 let g:airline_left_sep = '▶'
 let g:airline_right_sep = '«'
