@@ -38,7 +38,6 @@ HTML_ENTITY_RE = re.compile(r'&(?:(?:#(x)?([0-9a-fA-F]{1,4}))|(\w+));')
 
 
 class LinterMeta(type):
-
     """Metaclass for Linter and its subclasses."""
 
     def __init__(cls, name, bases, attrs):
@@ -175,7 +174,6 @@ class LinterMeta(type):
 
 
 class Linter(metaclass=LinterMeta):
-
     """
     The base class for linters.
 
@@ -280,6 +278,11 @@ class Linter(metaclass=LinterMeta):
     # Example: config_file = ('--config', '.jshintrc')
     #
     config_file = None
+
+    # Either '=' or ':'. if '=', the config file argument is joined with the config file
+    # path found by '=' and passed as a single argument. If ':', config file argument and
+    # the value are passed as separate arguments.
+    config_joiner = ':'
 
     # Tab width
     tab_width = 1
@@ -525,6 +528,7 @@ class Linter(metaclass=LinterMeta):
         ${project}: full path to the project's parent directory, if available.
         ${directory}: full path to the parent directory of the current view's file.
         ${home}: the user's $HOME directory.
+        ${sublime}: sublime text settings directory.
         ${env:x}: the environment variable 'x'.
 
         ${project} and ${directory} expansion are dependent on
@@ -533,7 +537,7 @@ class Linter(metaclass=LinterMeta):
         """
         def recursive_replace_value(expressions, value):
             if isinstance(value, dict):
-                value = recursive_replace(expressions, value)
+                value = recursive_replace(expressions, value, nested=True)
             elif isinstance(value, list):
                 value = [recursive_replace_value(expressions, item) for item in value]
             elif isinstance(value, str):
@@ -545,19 +549,20 @@ class Linter(metaclass=LinterMeta):
 
             return value
 
-        def recursive_replace(expressions, mutable_input):
+        def recursive_replace(expressions, mutable_input, nested=False):
             for key, value in mutable_input.items():
                 mutable_input[key] = recursive_replace_value(expressions, value)
+            if nested:
+                return mutable_input
 
         # Expressions are evaluated in list order.
         expressions = []
         window = self.view.window()
-
         if window:
             view = window.active_view()
 
             if window.project_file_name():
-                project = os.path.dirname(window.project_file_name())
+                project = os.path.dirname(window.project_file_name()).replace('\\', '/')
 
                 expressions.append({
                     'token': '${project}',
@@ -567,13 +572,18 @@ class Linter(metaclass=LinterMeta):
             expressions.append({
                 'token': '${directory}',
                 'value': (
-                    os.path.dirname(view.file_name()) if
+                    os.path.dirname(view.file_name()).replace('\\', '/') if
                     view and view.file_name() else "FILE NOT ON DISK")
             })
 
         expressions.append({
             'token': '${home}',
-            'value': os.path.expanduser('~').rstrip(os.sep).rstrip(os.altsep) or 'HOME NOT SET'
+            'value': os.path.expanduser('~').rstrip(os.sep).rstrip(os.altsep).replace('\\', '/') or 'HOME NOT SET'
+        })
+
+        expressions.append({
+            'token': '${sublime}',
+            'value': sublime.packages_path()
         })
 
         expressions.append({
@@ -1299,7 +1309,10 @@ class Linter(metaclass=LinterMeta):
                 )
 
                 if config:
-                    args += [self.config_file[0], config]
+                    if self.config_joiner == '=':
+                        args.append('{}={}'.format(self.config_file[0], config))
+                    elif self.config_joiner == ':':
+                        args += [self.config_file[0], config]
 
         return args
 
@@ -1339,6 +1352,19 @@ class Linter(metaclass=LinterMeta):
 
                     options[name] = value
 
+    def get_chdir(self, settings):
+        """Find the chdir to use with the linter."""
+        chdir = settings.get('chdir', None)
+
+        if chdir and os.path.isdir(chdir):
+            return chdir
+            persist.debug('chdir has been set to: {0}'.format(chdir))
+        else:
+            if self.filename:
+                return os.path.dirname(self.filename)
+            else:
+                return os.path.realpath('.')
+
     def lint(self, hit_time):
         """
         Perform the lint, retrieve the results, and add marks to the view.
@@ -1364,18 +1390,11 @@ class Linter(metaclass=LinterMeta):
             if cmd is not None and not cmd:
                 return
 
-        if self.filename:
-            cwd = os.getcwd()
+        settings = self.get_view_settings()
+        self.chdir = self.get_chdir(settings)
 
-            try:
-                os.chdir(os.path.dirname(self.filename))
-            except OSError:
-                pass
-
-        output = self.run(cmd, self.code)
-
-        if self.filename:
-            os.chdir(cwd)
+        with util.cd(self.chdir):
+            output = self.run(cmd, self.code)
 
         if not output:
             return
@@ -1427,17 +1446,18 @@ class Linter(metaclass=LinterMeta):
                             if demote_to_warning_match.match(message):
                                 demote_to_warning = True
 
-                            if persist.debug_mode():
-                                persist.printf(
-                                    '{} ({}): demote_to_warning_match: "{}" == "{}"'
-                                    .format(
-                                        self.name,
-                                        os.path.basename(self.filename) or '<unsaved>',
-                                        demote_to_warning_match.pattern,
-                                        message
+                                if persist.debug_mode():
+                                    persist.printf(
+                                        '{} ({}): demote_to_warning_match: "{}" == "{}"'
+                                        .format(
+                                            self.name,
+                                            os.path.basename(self.filename) or '<unsaved>',
+                                            demote_to_warning_match.pattern,
+                                            message
+                                        )
                                     )
-                                )
-                            break
+
+                                break
 
                     if demote_to_warning:
                         error_type = highlight.WARNING
@@ -1719,7 +1739,6 @@ class Linter(metaclass=LinterMeta):
 
         if self.multiline:
             errors = self.regex.finditer(output)
-
             if errors:
                 for error in errors:
                     yield self.split_match(error)
@@ -1785,7 +1804,7 @@ class Linter(metaclass=LinterMeta):
 
     def get_tempfile_suffix(self):
         """Return the mapped tempfile_suffix."""
-        if self.tempfile_suffix:
+        if self.tempfile_suffix and not self.view.file_name():
             if isinstance(self.tempfile_suffix, dict):
                 suffix = self.tempfile_suffix.get(persist.get_syntax(self.view), self.syntax)
             else:

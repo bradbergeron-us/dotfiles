@@ -50,6 +50,8 @@ MARK_COLOR_RE = (
     r'(\s*<string>sublimelinter\.{}</string>\s*\r?\n'
     r'\s*<key>settings</key>\s*\r?\n'
     r'\s*<dict>\s*\r?\n'
+    r'(?:\s*<key>(?:background|fontStyle)</key>\s*\r?\n'
+    r'\s*<string>.*?</string>\r?\n)*'
     r'\s*<key>foreground</key>\s*\r?\n'
     r'\s*<string>)#.+?(</string>\s*\r?\n)'
 )
@@ -306,92 +308,6 @@ def change_mark_colors(error_color, warning_color):
 
             with open(theme, encoding='utf8', mode='w') as f:
                 f.write(text)
-
-
-def install_syntaxes():
-    """Asynchronously call install_syntaxes_async."""
-    sublime.set_timeout_async(install_syntaxes_async, 0)
-
-
-def install_syntaxes_async():
-    """
-    Install fixed syntax packages.
-
-    Unfortunately the scope definitions in some syntax definitions
-    (HTML at the moment) incorrectly define embedded scopes, which leads
-    to spurious lint errors.
-
-    This method copies all of the syntax packages in fixed_syntaxes to Packages
-    so that they override the built in syntax package.
-
-    """
-
-    from . import persist
-
-    plugin_dir = os.path.dirname(os.path.dirname(__file__))
-    syntaxes_dir = os.path.join(plugin_dir, 'fixed-syntaxes')
-
-    for syntax in os.listdir(syntaxes_dir):
-        # See if our version of the syntax already exists in Packages
-        src_dir = os.path.join(syntaxes_dir, syntax)
-        version_file = os.path.join(src_dir, 'sublimelinter.version')
-
-        if not os.path.isdir(src_dir) or not os.path.isfile(version_file):
-            continue
-
-        with open(version_file, encoding='utf8') as f:
-            my_version = int(f.read().strip())
-
-        dest_dir = os.path.join(sublime.packages_path(), syntax)
-        version_file = os.path.join(dest_dir, 'sublimelinter.version')
-
-        if os.path.isdir(dest_dir):
-            if os.path.isfile(version_file):
-                with open(version_file, encoding='utf8') as f:
-                    try:
-                        other_version = int(f.read().strip())
-                    except ValueError:
-                        other_version = 0
-
-                persist.debug('found existing {} syntax, version {}'.format(syntax, other_version))
-                copy = my_version > other_version
-            else:
-                copy = sublime.ok_cancel_dialog(
-                    'An existing {} syntax definition exists, '.format(syntax) +
-                    'and SublimeLinter wants to overwrite it with its own version. ' +
-                    'Is that okay?')
-
-        else:
-            copy = True
-
-        if copy:
-            copy_syntax(syntax, src_dir, my_version, dest_dir)
-
-    update_syntax_map()
-
-
-def copy_syntax(syntax, src_dir, version, dest_dir):
-    """Copy a customized syntax and related files to Packages."""
-    from . import persist
-
-    try:
-        cached = os.path.join(sublime.cache_path(), syntax)
-
-        if os.path.isdir(cached):
-            shutil.rmtree(cached)
-
-        if not os.path.exists(dest_dir):
-            os.mkdir(dest_dir)
-
-        for filename in os.listdir(src_dir):
-            shutil.copy2(os.path.join(src_dir, filename), dest_dir)
-
-        persist.printf('copied {} syntax version {}'.format(syntax, version))
-    except OSError as ex:
-        persist.printf(
-            'ERROR: could not copy {} syntax package: {}'
-            .format(syntax, str(ex))
-        )
 
 
 def update_syntax_map():
@@ -733,7 +649,7 @@ def create_environment():
     paths = persist.settings.get('paths', {})
 
     if sublime.platform() in paths:
-        paths = convert_type(paths[sublime.platform()], [])
+        paths = [os.path.abspath(os.path.expanduser(path)) for path in convert_type(paths[sublime.platform()], [])]
     else:
         paths = []
 
@@ -999,7 +915,10 @@ def find_windows_python(version):
         # with the <major><minor> version number, so for matching with the version
         # passed in, strip any decimal points.
         stripped_version = version.replace('.', '')
-        prefix = os.path.abspath('\\Python')
+        prefix = os.path.abspath(os.path.join(
+            os.environ.get("SYSTEMROOT", "\\")[:2],
+            'Python'
+        ))
         prefix_len = len(prefix)
         dirs = sorted(glob(prefix + '*'), reverse=True)
         from . import persist
@@ -1028,7 +947,8 @@ def find_python_script(python_path, script):
     if sublime.platform() in ('osx', 'linux'):
         pyenv = which('pyenv')
         if pyenv:
-            out = run_shell_cmd((pyenv, 'which', script)).strip().decode()
+            out = run_shell_cmd((os.environ['SHELL'], '-l', '-c',
+                                 'echo ""; {} which {}'.format(pyenv, script))).strip().decode().split('\n')[-1]
             if os.path.isfile(out):
                 return out
         return which(script)
@@ -1464,6 +1384,23 @@ def center_region_in_view(region, view):
     if y2 == y1:
         view.set_viewport_position((x1, y1 - 1.0))
         view.show_at_center(region)
+
+
+class cd:
+    """Context manager for changing the current working directory."""
+
+    def __init__(self, newPath):
+        """Save the new wd."""
+        self.newPath = os.path.expanduser(newPath)
+
+    def __enter__(self):
+        """Save the old wd and change to the new wd."""
+        self.savedPath = os.getcwd()
+        os.chdir(self.newPath)
+
+    def __exit__(self, etype, value, traceback):
+        """Go back to the old wd."""
+        os.chdir(self.savedPath)
 
 
 # color-related constants

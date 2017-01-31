@@ -1,7 +1,9 @@
 {
 	"auto_upgrade_last_run": null,
+	"bootstrapped": true,
 	"in_process_packages":
 	[
+		"CoffeeScript"
 	],
 	"installed_packages":
 	[
@@ -58,7 +60,7 @@
 		"Ruby Markers",
 		"Ruby on Rails snippets",
 		"Ruby Slim",
-		"Rust",
+		"Rust Enhanced",
 		"RustAutoComplete",
 		"Sass",
 		"SASS Snippets",

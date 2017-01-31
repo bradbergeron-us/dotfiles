@@ -7,14 +7,22 @@ var path = require("path"),
 
 var cwd = process.cwd();
 
-var gulpfilePath = path.join(cwd, "gulpfile.js");
 var cachePath    = path.join(cwd, ".sublime-gulp.cache");
 var tmpfilePath  = path.join(cwd, ".sublime-gulp-tmp.js");
+var gulpfilePath = (function() {
+    var allowedExtensions = [".babel.js", ".js"];
+    for(var i = 0; i < allowedExtensions.length; i++) {
+        var filepath = path.join(cwd, "gulpfile" + allowedExtensions[i]);
+        if (fs.existsSync(filepath)) {
+            return filepath;
+        }
+    }
+})();
 
 var requireGulp = function(gulpfilePath) {
     // Creates a temporal file exporting gulp at the end (so it can be retrived by node) and then requires it (related: http://goo.gl/QYzRAO)
     var fileSrc = fs.readFileSync(gulpfilePath);
-    fileSrc += ";module.exports = gulp;";
+    fileSrc += "\n/**/;module.exports = gulp;";
     fs.writeFileSync(tmpfilePath, fileSrc);
     try {
         return require(tmpfilePath);
@@ -52,7 +60,10 @@ var _forEachTask3x = function(fn) {
 };
 
 var _forEachTask4x = function(fn) {
-    gulp.tree({ deep: true }).forEach(function(task) {
+    var tasksTree = gulp.tree({ deep: true })
+    var iterable = tasksTree.forEach ? tasksTree : tasksTree.nodes
+
+    iterable.forEach(function(task) {
         if (task.type === "task") {
             var deps = [];
             task.nodes.forEach(function(node) {
