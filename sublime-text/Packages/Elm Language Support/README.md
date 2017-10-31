@@ -11,6 +11,24 @@
 
 - Compatible with [Sublime Text 2] and [Sublime Text 3]
 - Syntax highlighting
+- Snippets for common Elm syntax (function, `case` … `of`, `let` … `in`, etc.)
+
+| Tab Trigger    | Description                                      |
+|----------------|--------------------------------------------------|
+| cof            | ``case … of``                                    |
+| cofm           | ``case … of (Maybe)``                            |
+| cofr           | ``case … of (Result)``                           |
+| fn             | ``Function (a -> b)``                            |
+| fn2            | ``Function (a -> b -> c)``                       |
+| fn3            | ``Function (a -> b -> c -> d)``                  |
+| fn4            | ``Function (a -> b -> c -> d -> e)``             |
+| imp            | ``import``                                       |
+| impas          | ``import … as``                                  |
+| let            | ``let … in …``                                   |
+| mod            | ``module``                                       |
+| type           | ``type``                                         |
+| typea          | ``type alias (Record)``                          |
+
 - Autocompletions plus type signature and documentation display for all functions inside packages in your `elm-package.json` file (requires [elm-oracle](https://www.npmjs.com/package/elm-oracle), which you can install with `npm install -g elm-oracle`)
     1. Bring up the type panel with `alt+up` or through the right-click context menu
     2. Close the type panel with `alt+down`
@@ -43,7 +61,8 @@
     2. Add the absolute path of the directory containing `elm-oracle` to the `elm_paths` setting in your Elm Language Support User settings
 - I have `elm-format` installed, but it's not working
     1. Make sure `elm-format` is on your PATH, or
-    2. Add the absolute path of the directory containing `elm-format` to the `elm_paths` setting in your Elm Language Support User settings. Note that you can combine paths with the above, so an example might be `"elm_paths": "/users/alex/elm-format:/users/alex/elm-oracle"`
+    2. If using an alternate name for the binary (`elm-format-0.17` or `elm-format-0.18`) add it to the `elm_format_binary` setting in your Elm Language Support User settings; an example might be `"elm_format_binary": "elm-format-0.18",`, or
+    3. Add the absolute path of the directory containing `elm-format` to the `elm_paths` setting in your Elm Language Support User settings. Note that you can combine paths with the above, so an example might be `"elm_paths": "/users/alex/elm-format:/users/alex/elm-oracle"`
 - Elm format automatically runs every time I save a file, but there are some files I don't want it to run on
     1. If there are certain Elm source files you don't want to automatically run `elm-format` on, for example elm-css based files, you can set a regex filter which will search the full filename (including the path to the file). If the regex matches, then it will not automatically run `elm-format` on the file when you save. For example, the following filter would prevent automatic `elm-format` on a file named `elm-css/src/Css/TopBar.elm`:
         `"elm_format_filename_filter": "elm-css/src/Css/.*\\.elm$"`
@@ -52,25 +71,19 @@
 
 Don't know Elm? Great first step!
 
-- [Official Elm Hub][]
-- [Community Forum][]
-- [Pragmatic Studio][]
-- [ElmCast][]
+- [Elm Website][]
+- [elm-discuss group][]
+- [Pragmatic Studio: Building Web Apps with Elm][pragmatic]
+- [Elm Town Podcast][]
 
-## Coming Soon
-
-The following features are being worked on next:
-- Built in `elm-package` support. Install packages, open docs in the browser, and pull package stats from GitHub
-- Improved snippets to help with common patterns. Create a new Elm Architecture project or submodule with a basic skeleton in just a few keystrokes. Less manual boilerplate
-    
-[Community Forum]: https://groups.google.com/d/forum/elm-discuss
+[elm-discuss group]: https://groups.google.com/d/forum/elm-discuss
 [Elm]: http://elm-lang.org/install
-[ElmCast]: http://elmcast.io
+[Elm Town Podcast]: https://elmtown.github.io
+[Elm Website]: http://elm-lang.org
 [Highlight Build Errors]: https://packagecontrol.io/packages/Highlight%20Build%20Errors
 [NPM]: https://nodejs.org
-[Official Elm Hub]: http://elm-lang.org
 [Package Control]: https://packagecontrol.io/installation
-[Pragmatic Studio]: https://pragmaticstudio.com/elm
+[pragmatic]: https://pragmaticstudio.com/elm
 [SublimeREPL]: https://packagecontrol.io/packages/SublimeREPL
 [Sublime Text 2]: http://www.sublimetext.com/2
 [Sublime Text 3]: http://www.sublimetext.com/3

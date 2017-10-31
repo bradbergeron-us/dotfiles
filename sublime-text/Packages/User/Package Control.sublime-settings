@@ -3,7 +3,8 @@
 	"bootstrapped": true,
 	"in_process_packages":
 	[
-		"CoffeeScript"
+		"CoffeeScript",
+		"Package Control"
 	],
 	"installed_packages":
 	[

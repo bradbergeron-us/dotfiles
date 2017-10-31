@@ -100,6 +100,7 @@ l = log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%C
     excludesfile = ~/.gitignore_global
     pager = less -FXRS -x2
     editor = vim
+	trustctime = false
 [fetch]
   prune = true
 [rebase]
@@ -115,8 +116,9 @@ l = log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%C
 	helper = osxkeychain
 
 [filter "lfs"]
-	clean = git lfs clean %f
-	smudge = git lfs smudge %f
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
 	required = true
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
@@ -128,3 +130,5 @@ l = log --graph --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%C
 	clean = git hawser clean %f
 	smudge = git hawser smudge %f
 	required = true
+[pull]
+	rebase = true
