@@ -42,18 +42,16 @@
     "git.autofetch": true,
     "git.confirmSync": false,
     "git.enableSmartCommit": true,
+    "git.showInlineOpenFileAction": true,
+    "gitlens.currentLine.enabled": true,
+    "gitlens.hovers.currentLine.over": "line",
+    "gitlens.blame.highlight.enabled": true,
+    "conventionalCommits.scopes": [],
 
     // ------------------
     // GitHub Copilot
     // ------------------
     "github.copilot.nextEditSuggestions.enabled": true,
-
-    // ------------------
-    // Continue (local AI via Ollama)
-    // ------------------
-    "continue.model.provider": "ollama",
-    "continue.model.name": "mistral",
-    "continue.model.serverUrl": "http://localhost:11434",
 
     // ------------------
     // Privacy / telemetry
