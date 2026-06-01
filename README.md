@@ -13,27 +13,39 @@ Personal macOS dotfiles for zsh, tmux, starship, git, and Hyper.
 | `hyper.js` | `~/.hyper.js` | Hyper terminal — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt config |
 
-## Install
+## Install on a new Mac
 
-Clone and run the install script:
+Clone and run the bootstrap script — it installs all dependencies and symlinks
+everything in one step:
 
 ```sh
 git clone https://github.com/bradbergeron-us/dotfiles.git ~/dotfiles
-zsh ~/dotfiles/install.sh
+bash ~/dotfiles/bootstrap.sh
 ```
 
-The script symlinks each file into `$HOME`. Any existing files are backed up to `~/.dotfiles_backup/<timestamp>/` before being replaced.
+`bootstrap.sh` will:
+1. Install Xcode CLI Tools (if needed — re-run after they finish)
+2. Install Homebrew (works on both Apple Silicon and Intel)
+3. Install brew packages: `chruby`, `ruby-install`, `nvm`, `starship`, `tmux`, `zoxide`, `git-lfs`, `openssl@3`
+4. Install Ruby 3.3.6 via `ruby-install`
+5. Install the `colorls` gem
+6. Symlink all dotfiles into `$HOME` (backing up any existing files)
+7. Create `~/.zshrc.local` from the template if it doesn't exist yet
 
-## Dependencies
+Then install manually: [Hyper](https://hyper.is) and [VS Code](https://code.visualstudio.com).
 
-Install these before running `install.sh`:
+## Machine-specific config
 
-- [Homebrew](https://brew.sh) — package manager
-- [chruby](https://github.com/postmodern/chruby) + [ruby-install](https://github.com/postmodern/ruby-install) — Ruby version management
-- [nvm](https://github.com/nvm-sh/nvm) — Node version management
-- [Starship](https://starship.rs) — shell prompt (`brew install starship`)
-- [tmux](https://github.com/tmux/tmux) — terminal multiplexer (`brew install tmux`)
-- [colorls](https://github.com/athityakumar/colorls) — enhanced `ls` (`gem install colorls`)
+Anything specific to a machine (project paths, aliases, licenses, extra PATH
+entries, Java paths, etc.) lives in `~/.zshrc.local`. This file is sourced at
+the end of `.zshrc` but is **never committed** to the repo (it's in `.gitignore`).
+
+A template is provided:
+
+```sh
+cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
+# then edit ~/.zshrc.local
+```
 
 ## Shell performance
 

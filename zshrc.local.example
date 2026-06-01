@@ -1,0 +1,45 @@
+# ~/.zshrc.local — machine-specific configuration
+# This file is sourced at the end of ~/.zshrc but is NOT committed to the dotfiles repo.
+# Copy to ~/.zshrc.local and fill in values for the current machine.
+
+# ------------------
+# Postgres
+# ------------------
+# export PG_CONFIG=/Applications/Postgres.app/Contents/Versions/latest/bin/pg_config
+
+# ------------------
+# Extra PATH entries (tools installed outside of Homebrew)
+# ------------------
+# export PATH="$PATH:/path/to/your/tool/bin"
+
+# ------------------
+# Sidekiq Pro/Enterprise license
+# ------------------
+# export BUNDLE_ENTERPRISE__CONTRIBSYS__COM=<your-key>
+
+# ------------------
+# Project aliases
+# ------------------
+# alias proj='cd ~/your-project'
+
+# ------------------
+# Maven (if not via Homebrew)
+# ------------------
+# export PATH="$PATH:/path/to/apache-maven/bin"
+# alias mci='mvn clean install'
+# alias mvninstall='mvn clean install -Dmaven.test.skip=true'
+# alias mvnt='mvn clean test'
+
+# ------------------
+# Java version management
+# ------------------
+# export JAVA_8_HOME=/Library/Java/JavaVirtualMachines/...jdk/Contents/Home
+# export JAVA_17_HOME=/Library/Java/JavaVirtualMachines/...jdk/Contents/Home
+#
+# function use-java() {
+#   if [[ "$1" == "8" ]]; then
+#     export JAVA_HOME=$JAVA_8_HOME
+#   elif [[ "$1" == "17" ]]; then
+#     export JAVA_HOME=$JAVA_17_HOME
+#   fi
+# }

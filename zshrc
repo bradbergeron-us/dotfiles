@@ -4,7 +4,6 @@
 
 export EDITOR=code
 export NVM_DIR="$HOME/.nvm"
-export PG_CONFIG=/Applications/Postgres.app/Contents/Versions/latest/bin/pg_config
 
 # ------------------
 # PATH Manipulations
@@ -14,16 +13,17 @@ if [ -f ~/.bash_profile ]; then
   source ~/.bash_profile
 fi
 
-# chruby
-export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3)"
-source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
-source /opt/homebrew/opt/chruby/share/chruby/auto.sh
-
-export LDFLAGS="-L/opt/homebrew/opt/openssl@3.0/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/openssl@3.0/include"
-export CPPFLAGS="-I/usr/local/opt/libpq/include"
-
-chruby ruby-3.3.6
+# chruby (guarded — install via: brew install chruby ruby-install)
+if command -v brew &>/dev/null; then
+  _chruby_sh="$(brew --prefix chruby 2>/dev/null)/share/chruby/chruby.sh"
+  if [[ -f "$_chruby_sh" ]]; then
+    export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3 2>/dev/null)"
+    source "$_chruby_sh"
+    source "${_chruby_sh:h}/auto.sh"
+    chruby ruby-3.3.6 2>/dev/null || true
+  fi
+  unset _chruby_sh
+fi
 
 # Lazy-load NVM — defers sourcing until first use of nvm/node/npm/npx
 _nvm_load() {
@@ -35,14 +35,7 @@ node() { _nvm_load; node "$@"; }
 npm()  { _nvm_load; npm  "$@"; }
 npx()  { _nvm_load; npx  "$@"; }
 
-export PATH="$PATH:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-export PATH="$PATH:/usr/local/opt/libpq/bin:/usr/local/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/openssl@3.0/bin"
-export PATH="$PATH:/Users/bradley.bergeron/Project-VA/install-binaries/apache-maven-3.6.3/bin"
-export CALVARY_PROJ_ROOT=/Users/bradley.bergeron/Project-VA
-export ODM_HOME=/Applications/IBM/ODM89
-export LOCAL_RULE_APP_JAR=/Users/bradley.bergeron/Project-VA/ch33-lts-app/Product/Production/Services/jRules/Ch33RuleApp/target/Ch33RuleApp.jar
-export PATH="$PATH:/Applications/Fortify/Fortify_SCA_and_Apps_20.1.1/bin"
-export BUNDLE_ENTERPRISE__CONTRIBSYS__COM=REMOVED_FROM_HISTORY
+export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 # ------------------
 # Zsh hooks
@@ -118,16 +111,7 @@ alias glog='git log --oneline --decorate --color --graph'
 
 alias src='source ~/.zshrc'
 alias c='clear'
-alias pj='cd ~/Project-VA'
-alias deploy='cd ~/Project-VA/ch33-deploy-artifacts'
-alias basevm='cd ~/Project-VA/afs-base-vms'
-alias stack='cd ~/Project-VA/ch33-lts-afs-stack'
-alias ch33='cd ~/Project-VA/ch33-lts-app'
-alias editbash='nano ~/.bash_profile'
 alias edithost='sudo nano /etc/hosts'
-alias mci='mvn clean install'
-alias mvninstall='mvn clean install -Dmaven.test.skip=true'
-alias mvnt='mvn clean test'
 
 alias ..='../..'
 alias ...='../../..'
@@ -141,9 +125,6 @@ alias ls='colorls -h --group-directories-first -1'
 alias change="code ~/.zshrc"
 alias update="source ~/.zshrc"
 alias history='history 0'
-
-alias setjdk8='export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_261.jdk/Contents/Home; java -version'
-alias setjdk11='export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.12.jdk/Contents/Home; java -version'
 
 eval "$(starship init zsh)"
 test -f ~/afs_localprops.sh && source ~/afs_localprops.sh
@@ -194,28 +175,7 @@ fi
 if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init --path)"
 fi
-# Java Version Management
-export JAVA_8_HOME="/Library/Java/JavaVirtualMachines/amazon-corretto-8.jdk/Contents/Home"
-export JAVA_17_HOME="/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home"
 
-# Function to switch Java versions
-function use-java() {
-    if [[ "$1" == "8" ]]; then
-        export JAVA_HOME=$JAVA_8_HOME
-        echo "Switched to Java 8: $(java -version)"
-    elif [[ "$1" == "17" ]]; then
-        export JAVA_HOME=$JAVA_17_HOME
-        echo "Switched to Java 17: $(java -version)"
-    else
-        echo "Usage: use-java [8|17]"
-        echo "Current Java version: $(java -version | head -1)"
-    fi
-}
-
-# Set Java 8 as default for this project
-if [[ "$PWD" == *"dgi-java-vets-service"* ]]; then
-    export JAVA_HOME=$JAVA_8_HOME
-fi
-
-
+# Machine-specific overrides (not committed to dotfiles)
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 . "$HOME/.local/bin/env"

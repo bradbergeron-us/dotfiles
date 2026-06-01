@@ -1,6 +1,6 @@
-eval "$(/opt/homebrew/bin/brew shellenv)"
-
-# Setting PATH for Python 3.11
-# The original version is saved in .zprofile.pysave
-PATH="/Library/Frameworks/Python.framework/Versions/3.11/bin:${PATH}"
-export PATH
+# Homebrew (Apple Silicon: /opt/homebrew, Intel: /usr/local)
+if [[ -f /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -f /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
