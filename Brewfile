@@ -31,6 +31,7 @@ brew "gh"             # GitHub CLI
 brew "mise"           # polyglot version manager (Ruby, Node, Python, etc.)
 brew "openssl@3"      # required for building Ruby via mise
 brew "maven"          # Java build tool — required for Maven projects
+brew "uv"             # fast Python package and project manager (replaces pip + virtualenv)
 
 # ------------------
 # Terminal multiplexer

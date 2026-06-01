@@ -144,6 +144,17 @@ mise exec ruby@3.3.6 -- gem install colorls
 success "colorls"
 
 # ------------------
+# tmux plugin manager (TPM)
+# ------------------
+if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
+  info "Installing tmux plugin manager (TPM)..."
+  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" --depth=1
+  success "TPM installed — open tmux and press prefix+I to install plugins"
+else
+  success "TPM already installed"
+fi
+
+# ------------------
 # git-lfs
 # ------------------
 git lfs install --skip-repo

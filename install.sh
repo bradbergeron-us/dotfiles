@@ -47,6 +47,10 @@ symlink "$DOTFILES_DIR/gitignore_global" "$HOME/.gitignore_global"
 # Ruby — skip docs on every gem install
 symlink "$DOTFILES_DIR/gemrc" "$HOME/.gemrc"
 
+# Ruby REPL defaults (IRB + Pry)
+symlink "$DOTFILES_DIR/irbrc" "$HOME/.irbrc"
+symlink "$DOTFILES_DIR/pryrc" "$HOME/.pryrc"
+
 # PostgreSQL client defaults (pairs with Postgres.app)
 symlink "$DOTFILES_DIR/psqlrc" "$HOME/.psqlrc"
 
