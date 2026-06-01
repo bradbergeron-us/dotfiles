@@ -13,8 +13,6 @@ bash ~/dotfiles/bootstrap.sh
 
 `bootstrap.sh` runs once on a fresh Mac and handles everything: Homebrew, all packages, runtimes (Ruby, Node, Java, Python, Go, Rust), dotfile symlinks, and macOS defaults. Open a new terminal when it finishes.
 
-Everything installs automatically — including [Hyper](https://hyper.is) via the Brewfile.
-
 <details>
 <summary>What bootstrap.sh does, step by step</summary>
 
