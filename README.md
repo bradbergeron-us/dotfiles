@@ -13,7 +13,7 @@ bash ~/dotfiles/bootstrap.sh
 
 `bootstrap.sh` runs once on a fresh Mac and handles everything: Homebrew, all packages, runtimes (Ruby, Node, Java, Python, Go, Rust), dotfile symlinks, and macOS defaults. Open a new terminal when it finishes.
 
-**Only manual step:** install [Hyper](https://hyper.is) — everything else installs automatically.
+Everything installs automatically — including [Hyper](https://hyper.is) via the Brewfile.
 
 <details>
 <summary>What bootstrap.sh does, step by step</summary>
@@ -34,13 +34,21 @@ bash ~/dotfiles/bootstrap.sh
 
 </details>
 
-### Re-running on an existing machine
+### Keeping everything current
+
+```sh
+bash ~/dotfiles/update.sh
+```
+
+Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Safe to run any time.
+
+### Re-symlinking only
 
 ```sh
 zsh ~/dotfiles/install.sh
 ```
 
-Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are skipped; existing files are backed up to `~/.dotfiles_backup/<timestamp>/`.
+Re-symlinks everything without updating packages. Safe to run repeatedly — already-correct symlinks are skipped; existing files are backed up to `~/.dotfiles_backup/<timestamp>/`.
 
 ### Terminal preview
 
@@ -141,6 +149,8 @@ Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are 
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code settings |
 | `vscode/extensions.txt` | _(auto-installed)_ | Core VS Code extensions |
 | `Brewfile` | _(used by bootstrap)_ | All Homebrew packages and casks |
+| `npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
+| `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems |
 | `macos.sh` | _(run once)_ | macOS developer defaults |
 | `zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 

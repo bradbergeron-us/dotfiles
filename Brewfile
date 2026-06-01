@@ -72,3 +72,4 @@ cask "visual-studio-code"  # editor
 cask "postgres-app"        # Postgres.app — PostgreSQL with a macOS GUI
 cask "dbeaver-community"   # universal database GUI (Postgres, MySQL, SQLite, etc.)
 cask "orbstack"            # fast, lightweight Docker Desktop replacement + Linux VMs
+cask "hyper"               # terminal built on web technologies (Tokyo Night theme configured in hyper.js)

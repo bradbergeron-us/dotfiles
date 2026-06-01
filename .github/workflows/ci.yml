@@ -79,7 +79,7 @@ jobs:
             .gitconfig .gitignore_global \
             .tmux.conf .hyper.js \
             .gemrc .psqlrc .editorconfig \
-            .irbrc .pryrc; do
+            .irbrc .pryrc .npmrc; do
             if [[ -L "$HOME/$link" ]]; then
               echo "OK  $link"
             else

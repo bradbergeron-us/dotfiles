@@ -199,10 +199,12 @@ step "🖥️  tmux plugin manager (TPM)"
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
   info "Installing tmux plugin manager (TPM)..."
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" --depth=1
-  success "TPM installed — open tmux and press prefix+I to install plugins"
-else
-  success "TPM already installed"
+  success "TPM cloned"
 fi
+# Install plugins headlessly (no tmux session required)
+info "Installing tmux plugins..."
+TMUX='' "$HOME/.tmux/plugins/tpm/bin/install_plugins" &>/dev/null
+success "tmux plugins installed (tmux-sensible, tmux-resurrect, tmux-continuum)"
 
 step "📁  git-lfs"
 git lfs install --skip-repo
@@ -248,5 +250,5 @@ echo ""
 printf "  ${BOLD}Next steps${RESET}\n"
 printf "  1. Edit ${CYAN}~/.zshrc.local${RESET} with machine-specific config\n"
 printf "  2. Open a new terminal  (or: ${CYAN}source ~/.zshrc${RESET})\n"
-printf "  3. Install Hyper (not in Homebrew): ${CYAN}https://hyper.is${RESET}\n"
+printf "  3. Keep everything current: ${CYAN}bash ~/dotfiles/update.sh${RESET}\n"
 echo ""
