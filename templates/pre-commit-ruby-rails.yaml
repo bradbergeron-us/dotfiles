@@ -15,7 +15,7 @@ repos:
   # General hygiene
   # ------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -33,7 +33,7 @@ repos:
   # Remove any additional_dependencies your project doesn't use.
   # ------------------
   - repo: https://github.com/rubocop/rubocop
-    rev: v1.65.0  # keep in sync with Gemfile; update with: pre-commit autoupdate
+    rev: v1.87.0  # keep in sync with Gemfile; update with: pre-commit autoupdate
     hooks:
       - id: rubocop
         args:

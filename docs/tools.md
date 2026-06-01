@@ -32,6 +32,19 @@ A `find` replacement that is faster, uses sensible defaults (ignores hidden file
 ### [tree](https://oldmanprogrammer.net/source.php?page=tree)
 Prints a visual directory tree. Useful for quickly understanding an unfamiliar project structure or documenting a directory layout in a README.
 
+### [lsd](https://github.com/lsd-rs/lsd)
+A modern `ls` replacement written in Rust. Shows file icons, colors, permission indicators, and Git status by default. Ships as a single binary — no Ruby runtime, no `gem install`, no version manager activation required. Works correctly in non-interactive shells and scripts where `colorls` would fail silently.
+
+Aliased in `zshrc` as `ls`, `la`, `l`, `ll`, and `lc`:
+
+```sh
+lsd                              # listing with icons and colors (aliased as ls)
+lsd -lA --group-dirs first       # long format, hidden files, dirs first (aliased as ll)
+lsd --tree --depth 2             # inline tree view without a separate command
+```
+
+Replaces `colorls`, which required an active mise Ruby context and could produce broken output in cron jobs, git hooks, or any non-interactive shell where Ruby was not in PATH.
+
 ---
 
 ## Git
@@ -134,7 +147,7 @@ The `gitconfig` in this repo sets `core.hooksPath = ~/.config/git/hooks`, which 
 |----------|---------|
 | `templates/pre-commit-ruby-rails.yaml` | Ruby on Rails — RuboCop (with all plugins), Brakeman, bundler-audit |
 | `templates/pre-commit-javascript.yaml` | JavaScript/React — ESLint, Stylelint, Prettier |
-| `templates/pre-commit-java.yaml` | Java/Maven — Google Java Format, Checkstyle; SpotBugs optional |
+| `templates/pre-commit-java.yaml` | Java/Maven — Checkstyle; Google Java Format (see comments — mirror archived); SpotBugs optional |
 | `templates/pre-commit-config.yaml` | General purpose — hygiene hooks + RuboCop + secrets detection |
 
 **Adding pre-commit to a project:**
@@ -262,6 +275,14 @@ ruff format .           # format (Black-compatible)
 ruff check --select I . # import sorting only
 ```
 
+**`~/.npmrc`** — the npm client reads this file on startup for every install. This config sets:
+- `save-exact=true` — pin exact versions instead of `^` or `~` ranges, preventing dependency drift across team members
+- `fund=false` — suppress funding messages on every install
+- `audit-level=moderate` — only warn on moderate or higher vulnerabilities; info-level noise is suppressed
+- `update-notifier=false` — suppress npm version update prompts
+
+`install.sh` symlinks it to `~/.npmrc`. To override a setting for a specific project, add a `.npmrc` at the project root — npm reads closest-first.
+
 ---
 
 ## Ruby REPLs
@@ -335,3 +356,24 @@ For window management: go to Settings → Extensions → Window Management and a
 For Clipboard History: assign `Cmd+Shift+V` in Settings → Extensions → Clipboard History.
 
 **Official guide:** [manual.raycast.com](https://manual.raycast.com) — [YouTube channel](https://www.youtube.com/@raycastapp) has short walkthroughs of snippets, script commands, and extensions.
+
+---
+
+## Scripts
+
+### [`update.sh`](../update.sh)
+A one-command maintenance script that keeps the machine current without a full re-bootstrap. Run it weekly or after returning from extended time off.
+
+```sh
+bash ~/dotfiles/update.sh
+```
+
+Runs 6 steps in sequence, each color-coded and numbered:
+1. **Dotfiles** — `git pull --rebase --autostash` from origin
+2. **Symlinks** — re-runs `install.sh` (idempotent; picks up new files without clobbering existing ones)
+3. **Homebrew** — `brew update && brew upgrade && brew cleanup`
+4. **Runtimes** — `mise upgrade` across all managed runtimes
+5. **Rust** — `rustup update` to latest stable
+6. **Ruby gems** — `gem update --system` for global gem infrastructure
+
+To schedule it automatically via launchd, see the inline comment at the top of `update.sh` for the `.plist` template and `launchctl load` command.
