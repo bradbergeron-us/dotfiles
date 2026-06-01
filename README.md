@@ -117,29 +117,43 @@ and why it's worth having.
 
 The `gitconfig` in this repo sets `core.hooksPath = ~/.config/git/hooks`, which points to a global hook stub installed by `install.sh`. This means pre-commit runs automatically in **any repo** that has a `.pre-commit-config.yaml` — no need to run `pre-commit install` in each project individually.
 
+**Available templates:**
+
+| Template | Use for |
+|----------|---------|
+| `templates/pre-commit-vets-api.yaml` | Ruby on Rails — RuboCop (with all plugins), Brakeman security scan, bundler-audit |
+| `templates/pre-commit-vets-website.yaml` | JavaScript/React — ESLint, Stylelint, Prettier |
+| `templates/pre-commit-config.yaml` | General purpose — hygiene hooks + RuboCop + secrets detection |
+
 **Adding pre-commit to a project:**
 
 ```sh
-# Copy the template into your project
-cp ~/dotfiles/templates/pre-commit-config.yaml your-project/.pre-commit-config.yaml
+# Pick the right template for your project and copy it in
+cp ~/dotfiles/templates/pre-commit-vets-api.yaml ~/code/vets-api/.pre-commit-config.yaml
+cp ~/dotfiles/templates/pre-commit-vets-website.yaml ~/code/vets-website/.pre-commit-config.yaml
 
-# Pre-fetch all hook environments (speeds up the first commit)
-pre-commit install --install-hooks
+# Pre-fetch all hook environments (makes the first commit fast)
+cd ~/code/vets-api && pre-commit install --install-hooks
 
-# Run all hooks against every file right now
+# Run against every file to see what would have failed before now
 pre-commit run --all-files
 ```
+
+**How `local` vs remote hooks work:**
+
+The vets-api and vets-website templates use `repo: local` for tools like Brakeman, ESLint, and Stylelint. This means pre-commit runs the tool that's already installed in the project rather than fetching a fresh copy from the internet. The benefit is that it always uses the exact version pinned in your `Gemfile.lock` or `package.json` — the same version CI uses — so there are no version drift surprises.
+
+The trade-off: `local` hooks require `bundle install` / `npm install` to have been run first. If you clone a fresh repo and try to commit before installing dependencies, the hooks will fail.
 
 **Common commands:**
 
 ```sh
-pre-commit run                   # run hooks on staged files only
-pre-commit run --all-files       # run hooks on every file in the repo
-pre-commit autoupdate            # bump all hook versions to latest
-git commit --no-verify           # skip hooks for a single commit (use sparingly)
+pre-commit run                   # run hooks on staged files only (default)
+pre-commit run --all-files       # run against every file in the repo
+pre-commit run rubocop           # run a single hook by name
+pre-commit autoupdate            # bump all remote hook versions to latest
+git commit --no-verify           # skip hooks entirely (use sparingly)
 ```
-
-The template includes: trailing whitespace, end-of-file newlines, YAML/JSON validation, merge conflict detection, large file warnings, RuboCop with autocorrect for Ruby files, an optional ESLint section for JavaScript/TypeScript (commented out), and secrets detection via `detect-secrets`.
 
 ### Runtime management
 
@@ -190,8 +204,6 @@ For Clipboard History: assign `Cmd+Shift+V` as a direct hotkey in Settings → E
 ## Future considerations
 
 Things worth evaluating as the setup evolves.
-
-**Commit signing with GPG or SSH** — signing commits proves they actually came from you, which matters on shared repositories and is increasingly expected on open-source projects. GitHub supports both GPG keys and SSH signing keys. Worth setting up once and adding the relevant `gitconfig` entries (`gpg.format`, `commit.gpgSign`, `user.signingkey`) to this repo.
 
 **`1Password CLI` (`op`)** — if using 1Password, the CLI can serve as a secrets manager for the shell. It can inject secrets as environment variables at runtime (`op run -- your-command`) so sensitive values never need to live in `.zshrc.local` or any dotfile at all.
 

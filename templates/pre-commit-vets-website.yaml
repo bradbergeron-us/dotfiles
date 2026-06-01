@@ -1,0 +1,79 @@
+# .pre-commit-config.yaml for vets-website
+#
+# Usage:
+#   cp ~/dotfiles/templates/pre-commit-vets-website.yaml .pre-commit-config.yaml
+#   pre-commit install --install-hooks
+#
+# Run manually against all files:
+#   pre-commit run --all-files
+#
+# Skip for a single commit (emergencies only):
+#   git commit --no-verify
+#
+# Note: These hooks use `local` repo type, which means they run using the
+# tools already installed in the project (npm packages). Make sure you've
+# run `yarn install` or `npm install` first.
+
+repos:
+  # ------------------
+  # General hygiene
+  # ------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'          # markdown intentional trailing spaces
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # ------------------
+  # ESLint — JavaScript / JSX linting
+  # Uses the project's own .eslintrc.js config.
+  # vets-website has a separate .eslintrc.changed.js for changed-file linting;
+  # pre-commit already only runs on staged files, so the regular config is used.
+  # ------------------
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        entry: npx eslint
+        language: system
+        types: [javascript, jsx]
+        args:
+          - --fix               # auto-fix fixable issues
+          - --max-warnings=0    # treat warnings as errors
+
+  # ------------------
+  # Stylelint — SCSS / CSS linting
+  # Matches the `npm run lint:sass` command used in CI.
+  # ------------------
+  - repo: local
+    hooks:
+      - id: stylelint
+        name: Stylelint
+        entry: npx stylelint
+        language: system
+        types_or: [scss, sass, css]
+        args:
+          - --fix               # auto-fix fixable issues
+
+  # ------------------
+  # Prettier — code formatting
+  # Checks that files are already formatted. Run `npx prettier --write .`
+  # to fix formatting before committing.
+  # ------------------
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier (format check)
+        entry: npx prettier
+        language: system
+        types_or: [javascript, jsx, json, markdown, yaml]
+        args:
+          - --write             # auto-format in place

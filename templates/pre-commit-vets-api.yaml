@@ -1,0 +1,79 @@
+# .pre-commit-config.yaml for vets-api
+#
+# Usage:
+#   cp ~/dotfiles/templates/pre-commit-vets-api.yaml .pre-commit-config.yaml
+#   pre-commit install --install-hooks
+#
+# Run manually against all files:
+#   pre-commit run --all-files
+#
+# Skip for a single commit (emergencies only):
+#   git commit --no-verify
+
+repos:
+  # ------------------
+  # General hygiene
+  # ------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # ------------------
+  # RuboCop
+  # Runs with all plugins vets-api uses. The project's .rubocop.yml
+  # is respected automatically — no extra args needed.
+  # ------------------
+  - repo: https://github.com/rubocop/rubocop
+    rev: v1.65.0  # keep in sync with Gemfile; update with: pre-commit autoupdate
+    hooks:
+      - id: rubocop
+        args:
+          - --autocorrect          # auto-fix safe offenses before failing
+          - --format=progress
+        types: [ruby]
+        additional_dependencies:
+          - rubocop-rails
+          - rubocop-rspec
+          - rubocop-rspec_rails
+          - rubocop-capybara
+          - rubocop-factory_bot
+
+  # ------------------
+  # Brakeman — Rails security scanner
+  # Runs against the whole app (not per-file), so pass_filenames: false.
+  # Uses `bundle exec` so it picks up the exact gem versions in Gemfile.lock.
+  # ------------------
+  - repo: local
+    hooks:
+      - id: brakeman
+        name: Brakeman (security scan)
+        entry: bundle exec brakeman
+        language: system
+        types: [ruby]
+        pass_filenames: false
+        args:
+          - --no-pager
+          - --quiet
+          - --exit-on-warn     # treat warnings as failures
+
+  # ------------------
+  # bundler-audit — checks gems against known vulnerability advisories
+  # Fetches latest advisory DB before scanning.
+  # ------------------
+  - repo: local
+    hooks:
+      - id: bundler-audit
+        name: bundler-audit (gem vulnerabilities)
+        entry: bundle exec bundler-audit check --update
+        language: system
+        pass_filenames: false
+        files: Gemfile\.lock
