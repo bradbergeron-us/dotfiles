@@ -134,10 +134,9 @@ else
 fi
 
 step "⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)"
-info "Installing Ruby, Node, Java, Python, and Go via mise..."
 mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
 mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
-success "Ruby, Node, Java, Python, and Go installed via mise"
+success "Ruby 3.3.6 · Node 22 · Java 21 · Python 3.12 · Go 1.24  (via mise)"
 
 step "💎  Ruby gems"
 info "Installing colorls..."
@@ -207,7 +206,7 @@ fi
 
 step "📁  git-lfs"
 git lfs install --skip-repo
-success "git-lfs"
+success "git-lfs configured (large file pointer tracking enabled globally)"
 
 step "🔗  Dotfile symlinks"
 zsh "$DOTFILES_DIR/install.sh"
@@ -219,11 +218,22 @@ fi
 
 step "⚙️  macOS developer defaults"
 echo ""
-read -rp "  Apply recommended macOS defaults? (key repeat, Dock, Finder, screenshots) [y/N] " apply_macos
+printf "  Will apply:\n"
+printf "  • Keyboard   — fast key repeat, disable autocorrect & smart quotes\n"
+printf "  • Trackpad   — enable tap-to-click\n"
+printf "  • Finder     — show hidden files & all extensions, path bar, list view\n"
+printf "  • Dock       — auto-hide, instant animation, no recent apps\n"
+printf "  • Screenshots → ~/Desktop/screenshots/ (PNG, no shadow)\n"
+printf "  • TextEdit   — plain text mode by default\n"
+printf "  • Mission Control — faster animation, don't rearrange Spaces\n"
+echo ""
+read -rp "  Apply these settings? [y/N] " apply_macos
 if [[ "$apply_macos" =~ ^[Yy]$ ]]; then
   bash "$DOTFILES_DIR/macos.sh"
+  success "macOS defaults applied — Finder and Dock restarted automatically"
+  warn "Key repeat and trackpad changes take full effect after logout"
 else
-  info "Skipped macOS defaults. Run manually later: bash ~/dotfiles/macos.sh"
+  info "Skipped. Run manually any time: bash ~/dotfiles/macos.sh"
 fi
 
 _elapsed=$(( SECONDS - BOOTSTRAP_START ))
