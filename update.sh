@@ -91,6 +91,12 @@ else
   warn "gem not found — skipping (mise Ruby may not be active)"
 fi
 
+# uv tool upgrade — updates globally installed tools (black, ruff, etc.)
+# brew upgrade updates the uv binary itself; this updates tools managed by uv
+if command -v uv &>/dev/null; then
+  uv tool upgrade --all 2>/dev/null || true
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 _elapsed=$(( SECONDS - UPDATE_START ))
 _mins=$(( _elapsed / 60 ))
