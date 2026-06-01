@@ -22,7 +22,9 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 UPDATE_START=$SECONDS
+# shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
+# shellcheck disable=SC2034
 TOTAL_STEPS=7
 
 # shellcheck source=scripts/bootstrap_helpers.sh
