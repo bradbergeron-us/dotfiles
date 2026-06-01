@@ -2,6 +2,8 @@
 
 Personal macOS dotfiles for zsh, tmux, starship, git, Hyper, and a full suite of developer tooling.
 
+![CI](https://github.com/bradbergeron-us/dotfiles/actions/workflows/ci.yml/badge.svg)
+
 ## Scripts
 
 There are two scripts with distinct purposes:
@@ -272,6 +274,8 @@ For Clipboard History: assign `Cmd+Shift+V` as a direct hotkey in Settings → E
 ## Future considerations
 
 Things worth evaluating as the setup evolves.
+
+**Dependabot for GitHub Actions** — configured in `.github/dependabot.yml` to open weekly PRs that keep pinned Action versions (e.g. `actions/checkout@v4`) current. PRs are labelled `dependabot` and target `main`.
 
 **`1Password CLI` (`op`)** — if using 1Password, the CLI can serve as a secrets manager for the shell. It can inject secrets as environment variables at runtime (`op run -- your-command`) so sensitive values never need to live in `.zshrc.local` or any dotfile at all.
 
