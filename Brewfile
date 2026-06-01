@@ -53,6 +53,8 @@ brew "watch"          # re-run a command on an interval (e.g. watch kubectl get 
 brew "direnv"         # per-directory environment variables via .envrc files
 brew "newman"         # CLI runner for Insomnia/Postman collections (useful in CI)
 brew "redis"          # in-memory data store — background jobs (Sidekiq), caching, sessions
+brew "imagemagick"    # image conversion and manipulation (resize, crop, format conversion)
+brew "pdftk-java"     # PDF toolkit — merge, split, fill forms, extract pages
 
 # ------------------
 # Fonts
