@@ -1,0 +1,60 @@
+# .pre-commit-config.yaml
+# Copy this file to the root of your project and run: pre-commit install
+#
+# Hooks run automatically before every commit. To run manually:
+#   pre-commit run --all-files
+#
+# To skip hooks for a single commit (use sparingly):
+#   git commit --no-verify
+
+repos:
+  # ------------------
+  # General hygiene
+  # ------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace       # remove trailing spaces
+      - id: end-of-file-fixer         # ensure files end with a newline
+      - id: check-yaml                # validate YAML syntax
+      - id: check-json                # validate JSON syntax
+      - id: check-merge-conflict      # catch leftover conflict markers
+      - id: check-added-large-files   # warn on files > 500KB
+        args: ['--maxkb=500']
+      - id: mixed-line-ending         # normalize line endings
+        args: ['--fix=lf']
+
+  # ------------------
+  # Ruby / Rails
+  # ------------------
+  - repo: https://github.com/rubocop/rubocop
+    rev: v1.65.0  # pin to a version; update with: pre-commit autoupdate
+    hooks:
+      - id: rubocop
+        args:
+          - --autocorrect          # fix auto-correctable offenses automatically
+          - --format=progress      # concise output
+        # Only run on staged Ruby files — keeps it fast
+        types: [ruby]
+
+  # ------------------
+  # JavaScript / Node (uncomment if needed)
+  # ------------------
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: v8.57.0
+  #   hooks:
+  #     - id: eslint
+  #       types: [javascript, jsx, ts, tsx]
+  #       additional_dependencies:
+  #         - eslint@8
+  #         - eslint-config-prettier
+
+  # ------------------
+  # Secrets detection
+  # ------------------
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.lock.json

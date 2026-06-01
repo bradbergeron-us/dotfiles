@@ -113,6 +113,34 @@ and why it's worth having.
 
 **[shellcheck](https://www.shellcheck.net)** — a static analysis tool for shell scripts that catches bugs, bad practices, and portability issues before they become problems. Run `shellcheck script.sh` on any shell script you write.
 
+**[pre-commit](https://pre-commit.com)** — a framework for managing git pre-commit hooks. Hooks are defined in a `.pre-commit-config.yaml` file at the root of each project and run automatically before every `git commit`. This repo includes a template at `templates/pre-commit-config.yaml` covering Ruby/Rails projects.
+
+The `gitconfig` in this repo sets `core.hooksPath = ~/.config/git/hooks`, which points to a global hook stub installed by `install.sh`. This means pre-commit runs automatically in **any repo** that has a `.pre-commit-config.yaml` — no need to run `pre-commit install` in each project individually.
+
+**Adding pre-commit to a project:**
+
+```sh
+# Copy the template into your project
+cp ~/dotfiles/templates/pre-commit-config.yaml your-project/.pre-commit-config.yaml
+
+# Pre-fetch all hook environments (speeds up the first commit)
+pre-commit install --install-hooks
+
+# Run all hooks against every file right now
+pre-commit run --all-files
+```
+
+**Common commands:**
+
+```sh
+pre-commit run                   # run hooks on staged files only
+pre-commit run --all-files       # run hooks on every file in the repo
+pre-commit autoupdate            # bump all hook versions to latest
+git commit --no-verify           # skip hooks for a single commit (use sparingly)
+```
+
+The template includes: trailing whitespace, end-of-file newlines, YAML/JSON validation, merge conflict detection, large file warnings, RuboCop with autocorrect for Ruby files, an optional ESLint section for JavaScript/TypeScript (commented out), and secrets detection via `detect-secrets`.
+
 ### Runtime management
 
 **[mise](https://mise.jdx.dev)** — a polyglot version manager written in Rust that replaces `chruby`, `nvm`, and `pyenv` with a single tool. It manages Ruby, Node, Python, Java, Go, and dozens of other runtimes from one interface. Versions are set globally in `~/.config/mise/config.toml` and can be overridden per project using `.mise.toml`, `.ruby-version`, or `.nvmrc` — so existing projects need no changes. Activation is a single line in `zshrc` and adds ~5ms to startup. Common commands:
@@ -166,8 +194,6 @@ Things worth evaluating as the setup evolves.
 **Commit signing with GPG or SSH** — signing commits proves they actually came from you, which matters on shared repositories and is increasingly expected on open-source projects. GitHub supports both GPG keys and SSH signing keys. Worth setting up once and adding the relevant `gitconfig` entries (`gpg.format`, `commit.gpgSign`, `user.signingkey`) to this repo.
 
 **`1Password CLI` (`op`)** — if using 1Password, the CLI can serve as a secrets manager for the shell. It can inject secrets as environment variables at runtime (`op run -- your-command`) so sensitive values never need to live in `.zshrc.local` or any dotfile at all.
-
-**`pre-commit`** — a framework for managing git pre-commit hooks across projects. Rather than relying on each repo to configure its own hooks, `pre-commit` provides a standard way to run linters, formatters, and checks automatically before every commit.
 
 ## Machine-specific config (`~/.zshrc.local`)
 

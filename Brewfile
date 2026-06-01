@@ -42,6 +42,7 @@ brew "tmux"
 brew "jq"             # JSON processor
 brew "shellcheck"     # shell script linter
 brew "tree"           # directory tree view
+brew "pre-commit"     # git hook framework (per-project, runs on commit)
 
 # ------------------
 # Apps (casks)

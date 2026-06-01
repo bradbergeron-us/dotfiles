@@ -44,6 +44,22 @@ symlink "$DOTFILES_DIR/hyper.js"  "$HOME/.hyper.js"
 # Git global ignore
 symlink "$DOTFILES_DIR/gitignore_global" "$HOME/.gitignore_global"
 
+# Global git hooks (pre-commit runs in any repo with .pre-commit-config.yaml)
+mkdir -p "$HOME/.config/git/hooks"
+if [[ ! -f "$HOME/.config/git/hooks/pre-commit" ]]; then
+  cat > "$HOME/.config/git/hooks/pre-commit" << 'EOF'
+#!/usr/bin/env bash
+# Runs pre-commit if the repo has a config file
+if command -v pre-commit &>/dev/null && [[ -f ".pre-commit-config.yaml" ]]; then
+  pre-commit run --hook-stage commit
+fi
+EOF
+  chmod +x "$HOME/.config/git/hooks/pre-commit"
+  success "Created global pre-commit hook"
+else
+  success "Already exists: global pre-commit hook"
+fi
+
 # ~/.config symlinks
 mkdir -p "$HOME/.config"
 symlink "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"

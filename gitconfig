@@ -12,6 +12,7 @@
 [core]
 	pager = delta
 	excludesfile = ~/.gitignore_global
+	hooksPath = ~/.config/git/hooks
 
 [delta]
 	navigate = true
