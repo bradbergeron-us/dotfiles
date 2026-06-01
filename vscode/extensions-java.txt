@@ -1,0 +1,10 @@
+# Java VS Code extensions — install on machines doing Java development
+# Install all: cat ~/dotfiles/vscode/extensions-java.txt | grep -v '^#' | xargs -L1 code --install-extension
+
+vscjava.vscode-java-pack
+vscjava.vscode-java-debug
+vscjava.vscode-java-test
+vscjava.vscode-java-dependency
+vscjava.vscode-maven
+vscjava.vscode-gradle
+redhat.java

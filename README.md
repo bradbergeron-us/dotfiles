@@ -21,10 +21,13 @@ What it does, in order:
 2. Installs Homebrew — detects Apple Silicon (`/opt/homebrew`) or Intel (`/usr/local`) automatically
 3. Runs `brew bundle` from `Brewfile` — installs all packages, casks, and mise
 4. Sets up `fzf` shell integration (key bindings + tab completion)
-5. Installs Ruby 3.3.6 and Node 22 via `mise install` and sets them as global defaults
-6. Installs the `colorls` gem into the mise-managed Ruby
-7. Calls `install.sh` to symlink the dotfiles
-8. Creates `~/.zshrc.local` from `zshrc.local.example` if it doesn't already exist
+5. Authenticates `gh` (GitHub CLI) if not already logged in
+6. Generates an SSH key for commit signing and prompts you to add it to GitHub
+7. Installs Ruby 3.3.6, Node 22, and Java 17 (Temurin) via mise
+8. Installs the `colorls` gem
+9. Calls `install.sh` to symlink all dotfiles including VS Code settings and mise config
+10. Creates `~/.zshrc.local` from `zshrc.local.example`
+11. Optionally applies macOS developer defaults (`macos.sh`)
 
 After running, install manually: [Hyper](https://hyper.is) and [VS Code](https://code.visualstudio.com).
 
@@ -54,6 +57,12 @@ already-correct symlinks are left untouched.
 | `hyper.js` | `~/.hyper.js` | Hyper terminal — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt — Ruby module disabled, 2s timeout |
 | `Brewfile` | _(used by bootstrap)_ | Declarative list of all Homebrew packages and casks |
+| `config/mise.toml` | `~/.config/mise/config.toml` | mise global runtime versions (Ruby, Node, Java) |
+| `ssh_config` | `~/.ssh/config` | SSH agent + Keychain config |
+| `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code editor, terminal, and git settings |
+| `vscode/extensions.txt` | _(installed by install.sh)_ | Core VS Code extensions for every machine |
+| `vscode/extensions-java.txt` | _(manual install)_ | Java-specific VS Code extensions |
+| `macos.sh` | _(run once manually)_ | macOS developer defaults (key repeat, Dock, Finder, etc.) |
 | `zshrc.local.example` | _(template only)_ | Template for machine-specific overrides |
 
 ## Package management (Brewfile)
@@ -135,13 +144,22 @@ pre-commit automatically in any repo that has a `.pre-commit-config.yaml`.
 ```sh
 # Ruby on Rails project
 cp ~/dotfiles/templates/pre-commit-ruby-rails.yaml your-project/.pre-commit-config.yaml
+cd your-project && pre-commit run --all-files
 
 # JavaScript / React project
 cp ~/dotfiles/templates/pre-commit-javascript.yaml your-project/.pre-commit-config.yaml
+cd your-project && npm install  # local hooks need this
+pre-commit run --all-files
 
-# Run against every file immediately to catch existing issues
-cd your-project && pre-commit run --all-files
+# Java / Maven project
+cp ~/dotfiles/templates/pre-commit-java.yaml your-project/.pre-commit-config.yaml
+cd your-project && mvn install -DskipTests  # local hooks need a built project
+pre-commit run --all-files
 ```
+
+The first `pre-commit run --all-files` is important — it runs all hooks against
+every existing file so you see what would have failed before now, and gives you
+a chance to fix things before they block commits.
 
 **How `local` vs remote hooks work:**
 

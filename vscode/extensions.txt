@@ -1,0 +1,18 @@
+# Core VS Code extensions — installed on every machine
+# Install all: cat ~/dotfiles/vscode/extensions.txt | grep -v '^#' | xargs -L1 code --install-extension
+
+# Git
+donjayamanne.githistory
+huizhou.githd
+
+# Linting
+dbaeumer.vscode-eslint
+stylelint.vscode-stylelint
+
+# IntelliSense
+visualstudioexptteam.vscodeintellicode
+visualstudioexptteam.intellicode-api-usage-examples
+
+# Themes
+github.github-vscode-theme
+equinusocio.vsc-community-material-theme

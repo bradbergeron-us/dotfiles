@@ -73,5 +73,28 @@ fi
 mkdir -p "$HOME/.config"
 symlink "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
 
+# mise global config (pinned Ruby + Node versions)
+mkdir -p "$HOME/.config/mise"
+symlink "$DOTFILES_DIR/config/mise.toml" "$HOME/.config/mise/config.toml"
+
+# SSH config
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+symlink "$DOTFILES_DIR/ssh_config" "$HOME/.ssh/config"
+
+# VS Code settings
+VSCODE_DIR="$HOME/Library/Application Support/Code/User"
+if [[ -d "$VSCODE_DIR" ]]; then
+  symlink "$DOTFILES_DIR/vscode/settings.json" "$VSCODE_DIR/settings.json"
+  success "VS Code settings linked"
+  if command -v code &>/dev/null; then
+    info "Installing VS Code extensions..."
+    grep -v '^#' "$DOTFILES_DIR/vscode/extensions.txt" | xargs -L1 code --install-extension --force 2>/dev/null
+    success "VS Code extensions installed"
+  fi
+else
+  info "VS Code not installed — skipping settings symlink"
+fi
+
 echo ""
 success "Done! Open a new shell or run: source ~/.zshrc"
