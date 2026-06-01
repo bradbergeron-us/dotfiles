@@ -6,6 +6,7 @@
 [user]
 	name = Brad Bergeron
 	email = bergeron.bradley@gmail.com
+	signingkey = ~/.ssh/id_ed25519.pub
 [credential]
 	helper = osxkeychain
 
@@ -33,3 +34,15 @@
 
 [rebase]
 	autoStash = true
+
+[gpg]
+	format = ssh
+
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
+
+[commit]
+	gpgSign = true
+
+[tag]
+	gpgSign = true
