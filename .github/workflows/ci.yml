@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+# Three parallel jobs:
+#   shellcheck       — lint bash scripts (ubuntu, fast)
+#   zsh-syntax       — zsh -n on all shell files + Brewfile parse check (macos)
+#   install-smoke    — run install.sh against a temp HOME, verify every symlink (macos)
+
+jobs:
+  # ------------------------------------------------------------------
+  # 1. shellcheck — static analysis on bash scripts
+  #    Runs on ubuntu-latest to avoid consuming macOS runner minutes.
+  #    install.sh is zsh — checked in the zsh-syntax job instead.
+  # ------------------------------------------------------------------
+  shellcheck:
+    name: Lint bash scripts (shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: shellcheck bootstrap.sh
+        run: shellcheck -S warning bootstrap.sh
+
+      - name: shellcheck macos.sh
+        run: shellcheck -S warning macos.sh
+
+  # ------------------------------------------------------------------
+  # 2. zsh-syntax — syntax-check every shell file + parse the Brewfile
+  #    Uses macOS because zsh -n on zsh-specific syntax needs a real zsh.
+  # ------------------------------------------------------------------
+  zsh-syntax:
+    name: Zsh syntax + Brewfile validation
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax-check all shell files
+        run: |
+          for f in zshrc zprofile install.sh bootstrap.sh macos.sh; do
+            echo "zsh -n $f"
+            zsh -n "$f"
+          done
+          echo "All shell files pass zsh syntax check."
+
+      - name: Validate Brewfile parses cleanly
+        # brew bundle list reads the Brewfile DSL without installing anything.
+        # A malformed entry (bad tap, typo in formula name format) will exit non-zero.
+        run: brew bundle list --all --file=Brewfile
+
+  # ------------------------------------------------------------------
+  # 3. install-smoke — run install.sh against an isolated temp $HOME
+  #    Verifies that every expected symlink is created and none are missing.
+  # ------------------------------------------------------------------
+  install-smoke:
+    name: install.sh smoke test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run install.sh against temp HOME
+        run: |
+          export HOME=$(mktemp -d)
+          echo "Isolated HOME: $HOME"
+          zsh install.sh
+          echo ""
+          echo "--- Verifying symlinks ---"
+
+          # Home-level dotfiles
+          for link in \
+            .zshrc .zprofile \
+            .gitconfig .gitignore_global \
+            .tmux.conf .hyper.js \
+            .gemrc .psqlrc .editorconfig; do
+            if [[ -L "$HOME/$link" ]]; then
+              echo "OK  $link"
+            else
+              echo "MISSING  $link" && exit 1
+            fi
+          done
+
+          # XDG config files
+          for cfg in \
+            .config/starship.toml \
+            .config/mise/config.toml; do
+            if [[ -L "$HOME/$cfg" ]]; then
+              echo "OK  $cfg"
+            else
+              echo "MISSING  $cfg" && exit 1
+            fi
+          done
+
+          # SSH config
+          if [[ -L "$HOME/.ssh/config" ]]; then
+            echo "OK  .ssh/config"
+          else
+            echo "MISSING  .ssh/config" && exit 1
+          fi
+
+          echo ""
+          echo "All symlinks verified."
