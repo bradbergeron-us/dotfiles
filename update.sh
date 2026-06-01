@@ -16,31 +16,20 @@
 #   4. Upgrades all mise-managed runtimes
 #   5. Updates the Rust toolchain via rustup
 #   6. Updates global Ruby gems
+#   7. Runs verify.sh health check
 
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 UPDATE_START=$SECONDS
+# shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
-TOTAL_STEPS=6
+# shellcheck disable=SC2034
+TOTAL_STEPS=7
 
-# ── Colors ────────────────────────────────────────────────────────────────────
-if [[ -t 1 ]]; then
-  RESET='\033[0m'; BOLD='\033[1m'; DIM='\033[2m'
-  GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'; BLUE='\033[1;34m'
-else
-  RESET=''; BOLD=''; DIM=''; GREEN=''; YELLOW=''; CYAN=''; BLUE=''
-fi
-
-info()    { printf "${CYAN}  → %s${RESET}\n" "$*"; }
-success() { printf "${GREEN}  ✓ %s${RESET}\n" "$*"; }
-warn()    { printf "${YELLOW}  ⚠ %s${RESET}\n" "$*"; }
-
-section() {
-  STEP=$((STEP + 1))
-  echo ""
-  printf "${BOLD}${BLUE}  ▸ [%d/%d]  %s${RESET}\n" "$STEP" "$TOTAL_STEPS" "$*"
-}
+# shellcheck source=scripts/bootstrap_helpers.sh
+source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
+setup_colors
 
 # ── Banner ────────────────────────────────────────────────────────────────────
 echo ""
@@ -52,21 +41,21 @@ echo "  ────────────────────────
 
 # ── Steps ─────────────────────────────────────────────────────────────────────
 
-section "🔃  Dotfiles"
+step "🔃  Dotfiles"
 git -C "$DOTFILES_DIR" pull --rebase --autostash
 success "Dotfiles pulled"
 
-section "🔗  Symlinks"
+step "🔗  Symlinks"
 zsh "$DOTFILES_DIR/install.sh"
 
-section "🍺  Homebrew"
+step "🍺  Homebrew"
 brew update
 brew upgrade
 brew autoremove
 brew cleanup --prune=7  # remove downloads older than 7 days
 success "Homebrew packages upgraded"
 
-section "⚡  Runtimes (mise)"
+step "⚡  Runtimes (mise)"
 if command -v mise &>/dev/null; then
   mise upgrade
   success "Runtimes upgraded: $(mise current | tr '\n' ' ')"
@@ -74,7 +63,7 @@ else
   warn "mise not installed — skipping runtime upgrades"
 fi
 
-section "🦀  Rust"
+step "🦀  Rust"
 if command -v rustup &>/dev/null; then
   rustup update
   success "Rust toolchain updated: $(rustc --version 2>/dev/null)"
@@ -82,7 +71,7 @@ else
   warn "rustup not installed — skipping"
 fi
 
-section "💎  Ruby gems"
+step "💎  Ruby gems"
 if command -v gem &>/dev/null; then
   gem update --system --no-document 2>/dev/null
   success "Global gems updated"
@@ -95,6 +84,9 @@ fi
 if command -v uv &>/dev/null; then
   uv tool upgrade --all 2>/dev/null || true
 fi
+
+step "🔍  Health check"
+bash "$DOTFILES_DIR/verify.sh" || warn "Some checks need attention — see output above"
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 _elapsed=$(( SECONDS - UPDATE_START ))
