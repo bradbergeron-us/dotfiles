@@ -129,12 +129,12 @@ else
 fi
 
 # ------------------
-# Ruby + Node + Java via mise
+# Runtimes via mise (Ruby, Node, Java, Python, Go)
 # ------------------
-info "Installing Ruby 3.3.6, Node 22, Java 21, and Python 3.12 via mise..."
-mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12
-mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12
-success "Ruby, Node, Java, and Python installed via mise"
+info "Installing Ruby, Node, Java, Python, and Go via mise..."
+mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
+mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
+success "Ruby, Node, Java, Python, and Go installed via mise"
 
 # ------------------
 # Gems
@@ -142,6 +142,64 @@ success "Ruby, Node, Java, and Python installed via mise"
 info "Installing colorls..."
 mise exec ruby@3.3.6 -- gem install colorls
 success "colorls"
+
+# ------------------
+# Rust via rustup
+# ------------------
+# Note: we check for `rustup`, NOT `rustc` — a system/Homebrew rustc does not
+# give you toolchain management (stable/nightly/components). rustup does.
+# If `brew install rust` (the static formula) is present alongside rustup,
+# remove it to avoid PATH conflicts: brew uninstall rust
+if brew list rust &>/dev/null 2>&1; then
+  warn "'brew install rust' (static formula) detected — it conflicts with rustup."
+  warn "Remove it to avoid PATH confusion: brew uninstall rust"
+  warn "rustup (installed via Brewfile) manages the Rust toolchain from here."
+fi
+if ! command -v rustup &>/dev/null; then
+  info "Initializing Rust toolchain via rustup..."
+  # --no-modify-path: zshrc sources ~/.cargo/env directly
+  rustup-init -y --no-modify-path
+  # shellcheck source=/dev/null
+  . "$HOME/.cargo/env"
+  rustup component add rustfmt clippy
+  success "Rust installed via rustup (stable + rustfmt + clippy)"
+else
+  success "rustup already installed: $(rustc --version 2>/dev/null || echo 'rustc not yet in PATH')"
+fi
+
+# ------------------
+# NVM → mise migration
+# ------------------
+# mise handles Node. If NVM is installed, detect whether it has versions:
+#   - Empty/ghost install → offer to remove it automatically
+#   - Has versions installed → warn and show migration steps (do NOT remove)
+_nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+if [[ -d "$_nvm_dir" ]]; then
+  _nvm_count=$(ls "$_nvm_dir/versions/node/" 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "${_nvm_count:-0}" -eq 0 ]]; then
+    echo ""
+    warn "NVM is installed at $_nvm_dir but has no Node versions (ghost install)."
+    warn "mise handles Node — NVM is no longer needed on this machine."
+    read -rp "Remove NVM automatically? [y/N] " _rm_nvm
+    if [[ "$_rm_nvm" =~ ^[Yy]$ ]]; then
+      rm -rf "$_nvm_dir"
+      brew uninstall nvm 2>/dev/null || true
+      unset NVM_DIR
+      success "NVM removed — mise manages Node from here"
+    else
+      warn "Keeping NVM. The zshrc NVM guard will silence it since no versions are installed."
+      unset _rm_nvm
+    fi
+  else
+    echo ""
+    warn "NVM has $_nvm_count Node version(s) installed. Recommended migration path:"
+    warn "  1. For each Node version you use, run: mise use --global node@<version>"
+    warn "  2. Test your projects with mise-managed Node"
+    warn "  3. Once satisfied: brew uninstall nvm && rm -rf ~/.nvm"
+    warn "Continuing without touching NVM — both mise and NVM can coexist during migration."
+  fi
+fi
+unset _nvm_dir _nvm_count
 
 # ------------------
 # tmux plugin manager (TPM)

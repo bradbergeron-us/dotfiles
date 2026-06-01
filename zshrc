@@ -8,11 +8,31 @@ export EDITOR=code
 # PATH Manipulations
 # ------------------
 
-# mise — polyglot version manager (replaces chruby + nvm)
-# Reads .ruby-version and .nvmrc automatically per project
+# NVM conflict guard: only suppress NVM if it has no versions installed.
+# If NVM has versions, it's still in use — leave it alone and let the user
+# migrate to mise manually (see zshrc.local.example for migration notes).
+# Once NVM is empty: bootstrap.sh offers to remove it, or run manually:
+#   brew uninstall nvm && rm -rf ~/.nvm
+if [[ -n "${NVM_DIR:-}" ]]; then
+  _nvm_node_dir="${NVM_DIR}/versions/node"
+  if [[ ! -d "$_nvm_node_dir" ]] || [[ -z "$(ls -A "$_nvm_node_dir" 2>/dev/null)" ]]; then
+    unset NVM_DIR  # ghost install — mise owns Node, nothing is lost
+  fi
+  unset _nvm_node_dir
+fi
+
+# mise — polyglot version manager (replaces chruby + nvm + pyenv)
+# Reads .ruby-version, .nvmrc, .python-version automatically per project
 if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"
 fi
+
+# Rust (cargo) — add to PATH if rustup is installed
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+
+# Go — tools installed via `go install` land in ~/go/bin
+export GOPATH="${GOPATH:-$HOME/go}"
+[[ -d "$GOPATH/bin" ]] && export PATH="$PATH:$GOPATH/bin"
 
 export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 

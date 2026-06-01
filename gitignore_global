@@ -32,6 +32,13 @@ hs_err_pid*
 .classpath
 .factorypath
 
+# Go
+*.test           # compiled test binaries (go test -c)
+__debug_bin*     # Delve debugger output
+
+# Rust
+# target/ already covered by the Java section above
+
 # OS
 Thumbs.db
 ehthumbs.db

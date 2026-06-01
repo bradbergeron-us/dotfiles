@@ -16,7 +16,33 @@
 # ==================================================
 # Add internal tooling, vendored binaries, or anything not managed by Homebrew.
 # export PATH="$PATH:/opt/internal-tools/bin"
-# export PATH="$PATH:$HOME/go/bin"
+
+# ==================================================
+# Go
+# ==================================================
+# GOPATH is set globally in zshrc (~/go/bin is already in PATH).
+# Override here if a project requires a non-default workspace:
+# export GOPATH="$HOME/go-work"
+#
+# Vendored dependencies (projects using `go mod vendor`):
+# export GOFLAGS=-mod=vendor
+#
+# Install common Go dev tools once globally:
+#   go install golang.org/x/tools/gopls@latest    # language server (VS Code / vim)
+#   go install github.com/air-verse/air@latest     # live reload for Go web apps
+#   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+# ==================================================
+# Rust
+# ==================================================
+# ~/.cargo/env is sourced in zshrc — cargo and rustup are already in PATH.
+# Override toolchain for a specific machine or project:
+# rustup default nightly   # switch to nightly globally
+# rustup override set 1.75 # pin a specific project directory (run inside it)
+#
+# Non-default install locations (e.g. shared/remote machines):
+# export CARGO_HOME="$HOME/.cargo"
+# export RUSTUP_HOME="$HOME/.rustup"
 
 # ==================================================
 # Postgres
