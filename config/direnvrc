@@ -16,13 +16,20 @@ layout_python() {
   local venv=".venv"
 
   if [[ ! -d "$venv" ]]; then
-    log_status "Creating virtualenv: $venv (using $python)"
-    "$python" -m venv "$venv"
+    if command -v uv &>/dev/null; then
+      # uv is ~10-100x faster than python -m venv
+      log_status "Creating virtualenv with uv: $venv"
+      uv venv "$venv" --python "$python" 2>/dev/null || uv venv "$venv"
+    else
+      log_status "Creating virtualenv: $venv (using $python)"
+      "$python" -m venv "$venv"
+    fi
   fi
 
-  # Activate the virtualenv
   export VIRTUAL_ENV="$(pwd)/$venv"
   PATH_add "$VIRTUAL_ENV/bin"
+  # Tell pip and uv where the venv is
+  export UV_PROJECT_ENVIRONMENT="$VIRTUAL_ENV"
 }
 
 # layout_node — add node_modules/.bin to PATH

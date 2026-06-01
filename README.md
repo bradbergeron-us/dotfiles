@@ -199,6 +199,44 @@ pre-commit autoupdate            # bump all remote hook versions to latest
 git commit --no-verify           # skip hooks entirely (use sparingly)
 ```
 
+### tmux
+**[tmux](https://github.com/tmux/tmux)** — a terminal multiplexer that lets you run multiple terminal sessions within a single window, detach from them without losing state, and restore them later. Essential for long-running processes, remote development, and keeping a structured workspace across panes and windows.
+
+This config uses `C-a` as the prefix (instead of the default `C-b`) to mirror GNU Screen muscle memory.
+
+**Key bindings (prefix = `C-a`):**
+
+| Binding | Action |
+|---|---|
+| `prefix + \` | Split pane horizontally |
+| `prefix + -` | Split pane vertically |
+| `prefix + c` | New window (remembers current path) |
+| `prefix + b` | Break pane into its own window |
+| `prefix + r` | Reload `tmux.conf` live |
+| `C-h/j/k/l` | Navigate panes (vim-aware — works across Vim splits too) |
+| `v` in copy-mode | Begin selection (vim-style) |
+| `y` in copy-mode | Copy selection to macOS clipboard |
+
+**Plugins (managed by [TPM](https://github.com/tmux-plugins/tpm)):**
+
+`bootstrap.sh` clones TPM automatically. After first install, open tmux and press `prefix + I` to install plugins.
+
+| Plugin | What it does |
+|---|---|
+| [tmux-sensible](https://github.com/tmux-plugins/tmux-sensible) | Sensible defaults everyone agrees on — fixes common papercuts |
+| [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) | Save and restore sessions across reboots. `prefix + Ctrl-s` to save, `prefix + Ctrl-r` to restore |
+| [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) | Auto-saves sessions every 15 minutes; auto-restores on tmux start |
+
+With resurrect + continuum, a machine restart no longer means losing your workspace layout — windows, panes, and working directories all come back.
+
+**Adding a new plugin:**
+```sh
+# In tmux.conf, add:
+set -g @plugin 'author/plugin-name'
+# Then in tmux:
+prefix + I   # install
+```
+
 ### Runtime management
 
 **[mise](https://mise.jdx.dev)** — a polyglot version manager written in Rust that replaces `chruby`, `nvm`, and `pyenv` with a single tool. It manages Ruby, Node, Python, Java, Go, and dozens of other runtimes from one interface. Versions are set globally in `~/.config/mise/config.toml` and can be overridden per project using `.mise.toml`, `.ruby-version`, or `.nvmrc` — so existing projects need no changes. Activation is a single line in `zshrc` and adds ~5ms to startup. Common commands:
@@ -215,6 +253,26 @@ mise ls                       # list all installed versions
 This replaced `chruby` + `ruby-install` + `nvm` — three separate tools, three shell init blocks, ~500ms of startup overhead between them.
 
 **`~/.gemrc`** — a one-line config (`gem: --no-document`) that tells Rubygems to skip generating `ri` and `rdoc` documentation on every `gem install`. This makes gem installs noticeably faster and avoids accumulating hundreds of megabytes of documentation that most developers never read locally.
+
+**[uv](https://docs.astral.sh/uv/)** — a fast Python package and project manager written in Rust by [Astral](https://astral.sh) (the same team behind `ruff`). It replaces `pip`, `virtualenv`, `pipx`, and `pip-tools` with a single tool that is 10–100× faster. Common usage:
+```sh
+uv venv                   # create .venv in the current directory
+uv pip install requests   # install into the active venv
+uv run python script.py   # run in the project's venv without activating it
+uv tool install black     # install a CLI tool globally (like pipx)
+```
+The `direnvrc` `layout_python` helper uses `uv` automatically when it's available — so `echo 'layout python' >> .envrc && direnv allow` is all you need to get an auto-activating virtualenv in any Python project.
+
+### Ruby REPLs
+
+**`~/.irbrc`** — IRB is Ruby's built-in REPL and powers `rails console`. This config enables tab completion, persistent history (2000 entries in `~/.irb_history`), auto-indent, syntax-highlighted output, and a cleaner `>>` prompt. The `q` alias exits without typing `exit` or `quit`.
+
+**`~/.pryrc`** — [Pry](https://github.com/pry/pry) is an enhanced Ruby REPL with syntax highlighting, source/doc browsing, and a debugger plugin ecosystem. It's often used as the default Rails console (`gem 'pry-rails'`). This config sets a short prompt, defines shell-like aliases (`q`, `c`/`n`/`s` for byebug stepping when `pry-byebug` is available), enables the pager for long output, and stores history in `~/.pry_history`.
+
+Install Pry once, globally:
+```sh
+gem install pry pry-byebug   # pry-rails is installed per-project via Gemfile
+```
 
 ### Database
 

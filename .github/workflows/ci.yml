@@ -78,7 +78,8 @@ jobs:
             .zshrc .zprofile \
             .gitconfig .gitignore_global \
             .tmux.conf .hyper.js \
-            .gemrc .psqlrc .editorconfig; do
+            .gemrc .psqlrc .editorconfig \
+            .irbrc .pryrc; do
             if [[ -L "$HOME/$link" ]]; then
               echo "OK  $link"
             else
