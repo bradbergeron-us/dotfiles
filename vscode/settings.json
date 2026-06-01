@@ -3,7 +3,7 @@
     // Editor
     // ------------------
     "editor.fontSize": 16,
-    "editor.fontFamily": "JetBrainsMono Nerd Font, Fira Code, Menlo, monospace",
+    "editor.fontFamily": "Fira Code, JetBrainsMono Nerd Font, Menlo, monospace",
     "editor.fontLigatures": true,
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
@@ -42,6 +42,18 @@
     "git.autofetch": true,
     "git.confirmSync": false,
     "git.enableSmartCommit": true,
+
+    // ------------------
+    // GitHub Copilot
+    // ------------------
+    "github.copilot.nextEditSuggestions.enabled": true,
+
+    // ------------------
+    // Continue (local AI via Ollama)
+    // ------------------
+    "continue.model.provider": "ollama",
+    "continue.model.name": "mistral",
+    "continue.model.serverUrl": "http://localhost:11434",
 
     // ------------------
     // Privacy / telemetry
