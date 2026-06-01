@@ -43,6 +43,10 @@ brew "jq"             # JSON processor
 brew "shellcheck"     # shell script linter
 brew "tree"           # directory tree view
 brew "pre-commit"     # git hook framework (per-project, runs on commit)
+brew "tldr"           # simplified man pages (community-maintained examples)
+brew "httpie"         # human-friendly HTTP client (replaces curl for interactive use)
+brew "watch"          # re-run a command on an interval (e.g. watch kubectl get pods)
+brew "direnv"         # per-directory environment variables via .envrc files
 
 # ------------------
 # Fonts
@@ -57,3 +61,4 @@ cask "raycast"             # launcher, clipboard history, window management
 cask "visual-studio-code"  # editor
 cask "postgres-app"        # Postgres.app — PostgreSQL with a macOS GUI
 cask "dbeaver-community"   # universal database GUI (Postgres, MySQL, SQLite, etc.)
+cask "orbstack"            # fast, lightweight Docker Desktop replacement + Linux VMs

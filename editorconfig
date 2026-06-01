@@ -1,0 +1,41 @@
+# .editorconfig — global fallback (symlinked to ~/.editorconfig)
+# Editors and IDEs that support EditorConfig will use this when a project
+# doesn't have its own .editorconfig. Projects with their own override this.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Java / Kotlin / Groovy (Maven/Gradle convention)
+[*.{java,kt,kts,groovy}]
+indent_size = 4
+
+# Go uses tabs
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# Ruby
+[*.rb]
+indent_size = 2
+
+# Makefiles require hard tabs
+[Makefile]
+indent_style = tab
+
+# Markdown — preserve trailing spaces (two spaces = line break)
+[*.{md,mdx}]
+trim_trailing_whitespace = false
+
+# YAML
+[*.{yaml,yml}]
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+indent_size = 2

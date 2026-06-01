@@ -44,6 +44,15 @@ symlink "$DOTFILES_DIR/hyper.js"  "$HOME/.hyper.js"
 # Git global ignore
 symlink "$DOTFILES_DIR/gitignore_global" "$HOME/.gitignore_global"
 
+# Ruby — skip docs on every gem install
+symlink "$DOTFILES_DIR/gemrc" "$HOME/.gemrc"
+
+# PostgreSQL client defaults (pairs with Postgres.app)
+symlink "$DOTFILES_DIR/psqlrc" "$HOME/.psqlrc"
+
+# EditorConfig global fallback (project-level .editorconfig overrides this)
+symlink "$DOTFILES_DIR/editorconfig" "$HOME/.editorconfig"
+
 # Local git config (signing key, work email overrides — not committed)
 mkdir -p "$HOME/.config/git"
 if [[ ! -f "$HOME/.config/git/local.gitconfig" ]]; then

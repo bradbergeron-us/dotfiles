@@ -115,11 +115,21 @@ fi
 zmodload -i zsh/complist 2>/dev/null || true
 
 autoload -Uz compinit
-compinit
+# Only rebuild completion dump once per day — saves ~30-50ms per shell start
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
 
 # zoxide
 if command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init zsh)"
+fi
+
+# direnv — per-directory environment variables (.envrc files)
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook zsh)"
 fi
 
 # Angular CLI autocompletion
