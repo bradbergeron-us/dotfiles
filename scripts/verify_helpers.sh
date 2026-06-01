@@ -140,6 +140,88 @@ check_required_tools() {
   done
 }
 
+# check_ssh_key [KEY_FILE]
+# Checks that the SSH key file exists and is loaded in the SSH agent.
+# Defaults to ~/.ssh/id_ed25519 when KEY_FILE is omitted.
+# Sets:
+#   SSH_KEY_OK    — true if key file exists and agent has it loaded
+#   SSH_KEY_ISSUE — human-readable problem description (empty when OK)
+check_ssh_key() {
+  local key_file="${1:-$HOME/.ssh/id_ed25519}"
+  SSH_KEY_OK=false
+  SSH_KEY_ISSUE=""
+
+  if [[ ! -f "$key_file" ]]; then
+    SSH_KEY_ISSUE="$key_file not found — run bootstrap.sh to generate"
+    return
+  fi
+
+  local fingerprint
+  fingerprint=$(ssh-keygen -lf "$key_file" 2>/dev/null | awk '{print $2}') || true
+
+  if [[ -z "$fingerprint" ]]; then
+    SSH_KEY_ISSUE="could not read fingerprint from $key_file"
+    return
+  fi
+
+  if ssh-add -l 2>/dev/null | grep -qF "$fingerprint"; then
+    SSH_KEY_OK=true
+  else
+    SSH_KEY_ISSUE="key not loaded in SSH agent — run: ssh-add --apple-use-keychain ~/.ssh/id_ed25519"
+  fi
+}
+
+# check_git_lfs_global
+# Checks that git-lfs is installed and initialized in the global git config.
+# Sets:
+#   GIT_LFS_OK    — true if git-lfs is installed and globally initialized
+#   GIT_LFS_ISSUE — human-readable problem description (empty when OK)
+check_git_lfs_global() {
+  GIT_LFS_OK=false
+  GIT_LFS_ISSUE=""
+
+  if ! command -v git-lfs &>/dev/null; then
+    GIT_LFS_ISSUE="git-lfs not installed — run: brew install git-lfs"
+    return
+  fi
+
+  local clean_filter
+  clean_filter=$(git config --global filter.lfs.clean 2>/dev/null) || true
+
+  if [[ -n "$clean_filter" ]]; then
+    GIT_LFS_OK=true
+  else
+    GIT_LFS_ISSUE="git-lfs not initialized globally — run: git lfs install --skip-repo"
+  fi
+}
+
+# check_mise_installed TOML_FILE
+# Checks that the tools declared in TOML_FILE are actually installed via mise.
+# Silently skips if mise is not on PATH (check_required_tools covers that).
+# Sets:
+#   MISE_UNINSTALLED_COUNT — number of tools not installed
+#   MISE_UNINSTALLED_LIST  — array of problem descriptions
+check_mise_installed() {
+  local toml_file="$1"
+  MISE_UNINSTALLED_COUNT=0
+  MISE_UNINSTALLED_LIST=()
+
+  command -v mise &>/dev/null || return 0
+
+  local tools=(ruby node java python go)
+  for tool in "${tools[@]}"; do
+    local toml_ver
+    toml_ver=$(grep -E "^${tool}[[:space:]]*=" "$toml_file" 2>/dev/null \
+      | sed 's/.*=[[:space:]]*"\(.*\)".*/\1/' | tr -d '[:space:]')
+    [[ -z "$toml_ver" ]] && continue
+
+    if ! mise where "$tool" &>/dev/null 2>&1; then
+      MISE_UNINSTALLED_COUNT=$(( MISE_UNINSTALLED_COUNT + 1 ))
+      MISE_UNINSTALLED_LIST+=("$tool@$toml_ver not installed — run: mise install")
+    fi
+  done
+}
+
 # check_stale_backups BACKUP_DIR [DAYS]
 # Finds backup directories inside BACKUP_DIR that are older than DAYS (default: 30).
 # Sets:

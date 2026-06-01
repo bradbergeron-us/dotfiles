@@ -24,11 +24,10 @@ bash ~/dotfiles/bootstrap.sh
 6. SSH key for commit signing — generated, added to Keychain, copied to clipboard
 7. Ruby 3.3.6, Node 22, Java 21, Python 3.12, Go 1.24 via mise
 8. Rust stable via rustup (+ rustfmt, clippy)
-9. `colorls` gem
-10. TPM (tmux plugin manager)
-11. `install.sh` — symlinks all dotfiles
-12. `~/.zshrc.local` from template
-13. macOS developer defaults (optional prompt)
+9. TPM (tmux plugin manager)
+10. `install.sh` — symlinks all dotfiles
+11. `~/.zshrc.local` from template
+12. macOS developer defaults (optional prompt)
 
 </details>
 
@@ -38,7 +37,11 @@ bash ~/dotfiles/bootstrap.sh
 bash ~/dotfiles/update.sh
 ```
 
-Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Finishes with a health check — also runnable standalone: `bash ~/dotfiles/verify.sh`. Safe to run any time.
+Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Finishes with a health check. Safe to run any time.
+
+To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/setup-scheduler.sh`
+
+To run the health check standalone: `bash ~/dotfiles/verify.sh`
 
 To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
@@ -54,42 +57,39 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
   Date     Mon Jun 01 2026  08:00
   ─────────────────────────────────────────────────
 
-  ▸ [1/13]  🛠️  Xcode Command Line Tools
+  ▸ [1/12]  🛠️  Xcode Command Line Tools
   ✓ Xcode CLI Tools
 
-  ▸ [2/13]  🍺  Homebrew
+  ▸ [2/12]  🍺  Homebrew
   ✓ Homebrew 4.5.2
 
-  ▸ [3/13]  📦  Packages (brew bundle)
+  ▸ [3/12]  📦  Packages (brew bundle)
   → Installing packages from Brewfile...
   ✓ Brew packages installed
 
-  ▸ [4/13]  🔍  fzf shell integration
+  ▸ [4/12]  🔍  fzf shell integration
   ✓ fzf configured
 
-  ▸ [5/13]  🔑  SSH key for commit signing
+  ▸ [5/12]  🔑  SSH key for commit signing
   ✓ SSH key already exists at ~/.ssh/id_ed25519 — skipping
 
-  ▸ [6/13]  🐙  GitHub CLI authentication
+  ▸ [6/12]  🐙  GitHub CLI authentication
   ✓ GitHub CLI already authenticated
 
-  ▸ [7/13]  ⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)
+  ▸ [7/12]  ⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)
   → Installing Ruby, Node, Java, Python, and Go via mise...
   ✓ Ruby, Node, Java, Python, and Go installed via mise
 
-  ▸ [8/13]  💎  Ruby gems
-  ✓ colorls
-
-  ▸ [9/13]  🦀  Rust (rustup)
+  ▸ [8/12]  🦀  Rust (rustup)
   ✓ rustup already installed: rustc 1.86.0
 
-  ▸ [10/13]  🖥️  tmux plugin manager (TPM)
+  ▸ [9/12]  🖥️  tmux plugin manager (TPM)
   ✓ TPM already installed
 
-  ▸ [11/13]  📁  git-lfs
+  ▸ [10/12]  📁  git-lfs
   ✓ git-lfs
 
-  ▸ [12/13]  🔗  Dotfile symlinks
+  ▸ [11/12]  🔗  Dotfile symlinks
 
   🔗  dotfiles  ─  symlinking from ~/dotfiles
   ─────────────────────────────────────────────────
@@ -102,7 +102,7 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
   ✓ 3 linked  ·  14 current  ·  0 backed up
   ✓ 🎉  Done — open a new shell or: source ~/.zshrc
 
-  ▸ [13/13]  ⚙️  macOS developer defaults
+  ▸ [12/12]  ⚙️  macOS developer defaults
   Apply recommended macOS defaults? [y/N]: y
 
   ─────────────────────────────────────────────────
@@ -144,6 +144,7 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
 | `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, version drift, missing tools, stale backups |
+| `setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
 | `macos.sh` | _(run once)_ | macOS developer defaults |
 | `zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 

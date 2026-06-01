@@ -349,6 +349,122 @@ else
   fail "check_stale_backups: stale dir path in STALE_BACKUP_LIST" "got: $stale_paths"
 fi
 
+# ── check_ssh_key ───────────────────────────────────────────────────────────────
+echo ""
+echo "=== check_ssh_key ==="
+
+# Case 1: key file does not exist → SSH_KEY_OK=false, SSH_KEY_ISSUE non-empty
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  check_ssh_key "$TMPDIR_BASE/nonexistent_key"
+  [[ "$SSH_KEY_OK" == "false" ]] || { printf "  FAIL  SSH_KEY_OK should be false\n"; exit 1; }
+  [[ -n "$SSH_KEY_ISSUE" ]] || { printf "  FAIL  SSH_KEY_ISSUE should be non-empty\n"; exit 1; }
+); then
+  pass "check_ssh_key: missing key file → SSH_KEY_OK=false, issue set"
+else
+  fail "check_ssh_key: missing key file" "subshell exited non-zero"
+fi
+
+# Case 2: key file exists but agent doesn't have it → SSH_KEY_OK=false
+# Generate a throwaway key in a temp dir; it won't be in the agent.
+TMP_KEY="$TMPDIR_BASE/test_id_ed25519"
+ssh-keygen -t ed25519 -f "$TMP_KEY" -N "" -C "test" &>/dev/null
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  check_ssh_key "$TMP_KEY"
+  # Key exists but almost certainly not in this subshell's agent
+  [[ "$SSH_KEY_OK" == "false" ]] || [[ "$SSH_KEY_OK" == "true" ]] || { printf "  FAIL  SSH_KEY_OK must be boolean\n"; exit 1; }
+  # SSH_KEY_ISSUE should be empty only if somehow loaded
+  [[ -n "$SSH_KEY_ISSUE" || "$SSH_KEY_OK" == "true" ]] || { printf "  FAIL  expected issue or ok=true\n"; exit 1; }
+); then
+  pass "check_ssh_key: key exists but not in agent → SSH_KEY_OK=false (or OK if agent has it)"
+else
+  fail "check_ssh_key: key exists, agent check" "subshell exited non-zero"
+fi
+
+# ── check_git_lfs_global ───────────────────────────────────────────────────
+echo ""
+echo "=== check_git_lfs_global ==="
+
+# Case 1: git-lfs not initialized (empty global config)
+TMP_GIT_CONFIG="$TMPDIR_BASE/gitconfig_empty"
+touch "$TMP_GIT_CONFIG"
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export GIT_CONFIG_GLOBAL="$TMP_GIT_CONFIG"
+  check_git_lfs_global
+  # If git-lfs is installed on this machine, it should report not-initialized
+  # If git-lfs is not installed, GIT_LFS_ISSUE should mention "not installed"
+  [[ "$GIT_LFS_OK" == "false" ]] || { printf "  FAIL  GIT_LFS_OK should be false with empty config\n"; exit 1; }
+  [[ -n "$GIT_LFS_ISSUE" ]] || { printf "  FAIL  GIT_LFS_ISSUE should be non-empty\n"; exit 1; }
+); then
+  pass "check_git_lfs_global: empty config → GIT_LFS_OK=false, issue set"
+else
+  fail "check_git_lfs_global: empty config" "subshell exited non-zero"
+fi
+
+# Case 2: config has filter.lfs.clean set → GIT_LFS_OK=true (only if git-lfs is installed)
+TMP_GIT_CONFIG_WITH_LFS="$TMPDIR_BASE/gitconfig_lfs"
+cat > "$TMP_GIT_CONFIG_WITH_LFS" << 'EOF'
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+EOF
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export GIT_CONFIG_GLOBAL="$TMP_GIT_CONFIG_WITH_LFS"
+  check_git_lfs_global
+  if command -v git-lfs &>/dev/null; then
+    [[ "$GIT_LFS_OK" == "true" ]] || { printf "  FAIL  GIT_LFS_OK should be true when lfs config present\n"; exit 1; }
+  else
+    # git-lfs not installed — GIT_LFS_OK=false regardless of config
+    [[ "$GIT_LFS_OK" == "false" ]] || { printf "  FAIL  GIT_LFS_OK should be false without git-lfs binary\n"; exit 1; }
+  fi
+); then
+  pass "check_git_lfs_global: lfs config present → GIT_LFS_OK matches binary availability"
+else
+  fail "check_git_lfs_global: lfs config present" "subshell exited non-zero"
+fi
+
+# ── check_mise_installed ──────────────────────────────────────────────────
+echo ""
+echo "=== check_mise_installed ==="
+
+# Case 1: mise not on PATH → silently returns count=0 (no-op)
+mkdir -p "$TMPDIR_BASE/empty_bin"
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export PATH="$TMPDIR_BASE/empty_bin"
+  check_mise_installed "$TMPDIR_BASE/mise_match.toml"
+  [[ "$MISE_UNINSTALLED_COUNT" -eq 0 ]] || { printf "  FAIL  count should be 0 when mise absent, got %s\n" "$MISE_UNINSTALLED_COUNT"; exit 1; }
+); then
+  pass "check_mise_installed: mise not on PATH → silently skipped (count=0)"
+else
+  fail "check_mise_installed: mise not on PATH" "subshell exited non-zero"
+fi
+
+# Case 2: all tools installed (reuse TOML_MATCH from earlier; only runs if mise is present)
+if command -v mise &>/dev/null; then
+  if (
+    source "$SCRIPT_DIR/verify_helpers.sh"
+    check_mise_installed "$TOML_MATCH"
+    # We can't assert count=0 since tools may not be installed in CI,
+    # but we can verify the function runs without error and sets the globals.
+    [[ -n "${MISE_UNINSTALLED_COUNT+set}" ]] || { printf "  FAIL  MISE_UNINSTALLED_COUNT not set\n"; exit 1; }
+  ); then
+    pass "check_mise_installed: mise present → runs without error, count is set"
+  else
+    fail "check_mise_installed: mise present" "subshell exited non-zero"
+  fi
+else
+  pass "check_mise_installed: mise not installed — skipped"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"

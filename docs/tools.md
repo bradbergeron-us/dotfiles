@@ -362,18 +362,65 @@ For Clipboard History: assign `Cmd+Shift+V` in Settings → Extensions → Clipb
 ## Scripts
 
 ### [`update.sh`](../update.sh)
-A one-command maintenance script that keeps the machine current without a full re-bootstrap. Run it weekly or after returning from extended time off.
+A one-command maintenance script that keeps the machine current without a full re-bootstrap. Run it manually any time, or automate it with `setup-scheduler.sh`.
 
 ```sh
 bash ~/dotfiles/update.sh
 ```
 
-Runs 6 steps in sequence, each color-coded and numbered:
+Runs 7 steps in sequence, each color-coded and numbered:
 1. **Dotfiles** — `git pull --rebase --autostash` from origin
 2. **Symlinks** — re-runs `install.sh` (idempotent; picks up new files without clobbering existing ones)
 3. **Homebrew** — `brew update && brew upgrade && brew cleanup`
 4. **Runtimes** — `mise upgrade` across all managed runtimes
 5. **Rust** — `rustup update` to latest stable
 6. **Ruby gems** — `gem update --system` for global gem infrastructure
+7. **Health check** — runs `verify.sh` and surfaces any warnings before the session ends
 
-To schedule it automatically via launchd, see the inline comment at the top of `update.sh` for the `.plist` template and `launchctl load` command.
+Logs are written to `~/dotfiles/logs/update.log` when running via launchd.
+
+---
+
+### [`verify.sh`](../verify.sh)
+A standalone environment health check. Run it any time to confirm the machine is in a good state — useful when returning to a machine after time away, after a failed update, or when something feels broken.
+
+```sh
+bash ~/dotfiles/verify.sh
+```
+
+Runs 7 checks, exits 0 unless broken symlinks are found:
+
+| Check | Severity |
+|-------|----------|
+| Broken or missing symlinks | **error** — exits 1 |
+| Version drift (`mise.toml` vs `bootstrap.sh`) | warning |
+| Missing required tools | warning |
+| Stale backups (>30 days in `~/.dotfiles_backup`) | warning |
+| SSH key present and loaded in agent | warning |
+| git-lfs globally initialized | warning |
+| mise runtimes actually installed | warning |
+
+Errors require action (run `install.sh`). Warnings are informational — the exit code stays 0 so `update.sh` can surface them without aborting.
+
+---
+
+### [`setup-scheduler.sh`](../setup-scheduler.sh)
+Installs a launchd `LaunchAgent` that runs `update.sh` daily at 9 AM. Uses the modern `launchctl bootstrap`/`bootout` API.
+
+```sh
+bash ~/dotfiles/setup-scheduler.sh             # install
+bash ~/dotfiles/setup-scheduler.sh --uninstall # remove
+```
+
+What it does:
+- Substitutes the actual dotfiles path into `LaunchAgents/com.dotfiles.update.plist`
+- Copies the plist to `~/Library/LaunchAgents/`
+- Calls `launchctl bootstrap gui/<uid>` to activate it immediately (no login required)
+- Creates `~/dotfiles/logs/` for capturing stdout/stderr
+
+The plist template is tracked at `LaunchAgents/com.dotfiles.update.plist`. To change the schedule, edit `Hour` and `Minute` in that file and re-run `setup-scheduler.sh`.
+
+Logs land at `~/dotfiles/logs/update.log`. To monitor:
+```sh
+tail -f ~/dotfiles/logs/update.log
+```
