@@ -129,7 +129,7 @@ else
 fi
 
 # ------------------
-# Ruby + Node + Java via mise
+# Runtimes via mise (Ruby, Node, Java, Python, Go)
 # ------------------
 info "Installing Ruby, Node, Java, Python, and Go via mise..."
 mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
@@ -148,6 +148,13 @@ success "colorls"
 # ------------------
 # Note: we check for `rustup`, NOT `rustc` — a system/Homebrew rustc does not
 # give you toolchain management (stable/nightly/components). rustup does.
+# If `brew install rust` (the static formula) is present alongside rustup,
+# remove it to avoid PATH conflicts: brew uninstall rust
+if brew list rust &>/dev/null 2>&1 && ! brew list rustup &>/dev/null 2>&1; then
+  warn "'brew install rust' (static formula) is installed without rustup."
+  warn "Consider switching: brew uninstall rust && brew install rustup"
+  warn "The static formula cannot switch toolchains or manage components."
+fi
 if ! command -v rustup &>/dev/null; then
   info "Initializing Rust toolchain via rustup..."
   # --no-modify-path: zshrc sources ~/.cargo/env directly
@@ -169,7 +176,7 @@ fi
 _nvm_dir="${NVM_DIR:-$HOME/.nvm}"
 if [[ -d "$_nvm_dir" ]]; then
   _nvm_count=$(ls "$_nvm_dir/versions/node/" 2>/dev/null | wc -l | tr -d ' ')
-  if [[ "$_nvm_count" -eq 0 ]]; then
+  if [[ "${_nvm_count:-0}" -eq 0 ]]; then
     echo ""
     warn "NVM is installed at $_nvm_dir but has no Node versions (ghost install)."
     warn "mise handles Node — NVM is no longer needed on this machine."

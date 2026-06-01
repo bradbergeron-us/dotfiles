@@ -263,6 +263,36 @@ uv tool install black     # install a CLI tool globally (like pipx)
 ```
 The `direnvrc` `layout_python` helper uses `uv` automatically when it's available — so `echo 'layout python' >> .envrc && direnv allow` is all you need to get an auto-activating virtualenv in any Python project.
 
+**Go (via mise)** — managed by mise like Ruby and Node. The `zshrc` also adds `~/go/bin` to `PATH`, so tools installed with `go install` are immediately available without any additional setup. Install common tools once globally:
+```sh
+mise use --global go@1.24             # set the active Go version
+mise use --local go@1.21              # pin a project to an older version
+go install golang.org/x/tools/gopls@latest           # language server (VS Code, Neovim)
+go install github.com/air-verse/air@latest            # live reload for Go web apps
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+
+**[Rust](https://www.rust-lang.org) (via [rustup](https://rustup.rs))** — managed by `rustup` rather than mise because the Rust project maintains it and it natively supports toolchain switching (stable/beta/nightly), cross-compilation targets, and component management in a way mise cannot fully replicate. `bootstrap.sh` installs `rustup` via Homebrew, runs `rustup-init`, and adds `rustfmt` (formatter) and `clippy` (linter). The `zshrc` sources `~/.cargo/env` to add `cargo` and all Rust binaries to `PATH`.
+```sh
+rustup update                          # update to latest stable
+rustup toolchain list                  # show installed toolchains
+rustup default nightly                 # switch to nightly
+cargo new my-project                   # create a new project
+cargo build --release                  # compile with optimizations
+cargo test                             # run all tests
+cargo clippy                           # lint
+cargo fmt                              # format
+```
+**Note:** if `brew install rust` (the static formula) is present on a machine, remove it to avoid PATH conflicts: `brew uninstall rust`. `rustup` supersedes it and is the correct way to manage Rust for development.
+
+**[ruff](https://docs.astral.sh/ruff/)** — an extremely fast Python linter and formatter from [Astral](https://astral.sh) (same team as `uv`), written in Rust. Replaces `flake8`, `pylint`, `isort`, and `black` in a single binary that runs 10–100× faster. Zero config out of the box; configurable via `pyproject.toml`.
+```sh
+ruff check .              # lint all Python files
+ruff check --fix .        # lint and auto-fix safe issues
+ruff format .             # format (Black-compatible output)
+ruff check --select I .   # import sorting only (isort replacement)
+```
+
 ### Ruby REPLs
 
 **`~/.irbrc`** — IRB is Ruby's built-in REPL and powers `rails console`. This config enables tab completion, persistent history (2000 entries in `~/.irb_history`), auto-indent, syntax-highlighted output, and a cleaner `>>` prompt. The `q` alias exits without typing `exit` or `quit`.
@@ -332,6 +362,8 @@ For Clipboard History: assign `Cmd+Shift+V` as a direct hotkey in Settings → E
 ## Future considerations
 
 Things worth evaluating as the setup evolves.
+
+**NVM → mise migration** — `bootstrap.sh` detects NVM automatically and handles two cases: if NVM has no versions installed (ghost install), it prompts to remove it cleanly (`rm -rf ~/.nvm && brew uninstall nvm`); if NVM has versions, it prints a step-by-step migration guide and leaves it untouched. The `zshrc` NVM guard mirrors this — it only silences NVM if the versions directory is empty, so machines mid-migration are not broken.
 
 **Dependabot for GitHub Actions** — configured in `.github/dependabot.yml` to open weekly PRs that keep pinned Action versions (e.g. `actions/checkout@v4`) current. PRs are labelled `dependabot` and target `main`.
 

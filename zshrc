@@ -30,6 +30,10 @@ fi
 # Rust (cargo) — add to PATH if rustup is installed
 [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 
+# Go — tools installed via `go install` land in ~/go/bin
+export GOPATH="${GOPATH:-$HOME/go}"
+[[ -d "$GOPATH/bin" ]] && export PATH="$PATH:$GOPATH/bin"
+
 export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 # fzf (fuzzy finder — Ctrl+R history, Ctrl+T file picker)

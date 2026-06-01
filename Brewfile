@@ -32,7 +32,7 @@ brew "mise"           # polyglot version manager (Ruby, Node, Python, Java, Go)
 brew "openssl@3"      # required for building Ruby via mise
 brew "maven"          # Java build tool — required for Maven projects
 brew "uv"             # fast Python package and project manager (replaces pip + virtualenv)
-brew "rustup"         # Rust toolchain manager (run: rustup-init -y after install)
+brew "rustup"         # Rust toolchain manager — bootstrap.sh runs rustup-init automatically
 brew "ruff"           # extremely fast Python linter and formatter (from Astral, same team as uv)
 
 # ------------------
