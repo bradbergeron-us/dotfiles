@@ -42,6 +42,81 @@ zsh ~/dotfiles/install.sh
 
 Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are skipped; existing files are backed up to `~/.dotfiles_backup/<timestamp>/`.
 
+### Terminal preview
+
+<details>
+<summary>What bootstrap.sh looks like when it runs</summary>
+
+```
+  🚀  dotfiles bootstrap  —  macOS developer setup
+  ─────────────────────────────────────────────────
+  Machine  Brad's MacBook Pro
+  Date     Mon Jun 01 2026  08:00
+  ─────────────────────────────────────────────────
+
+  ▸ [1/13]  🛠️  Xcode Command Line Tools
+  ✓ Xcode CLI Tools
+
+  ▸ [2/13]  🍺  Homebrew
+  ✓ Homebrew 4.5.2
+
+  ▸ [3/13]  📦  Packages (brew bundle)
+  → Installing packages from Brewfile...
+  ✓ Brew packages installed
+
+  ▸ [4/13]  🔍  fzf shell integration
+  ✓ fzf configured
+
+  ▸ [5/13]  🔑  SSH key for commit signing
+  ✓ SSH key already exists at ~/.ssh/id_ed25519 — skipping
+
+  ▸ [6/13]  🐙  GitHub CLI authentication
+  ✓ GitHub CLI already authenticated
+
+  ▸ [7/13]  ⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)
+  → Installing Ruby, Node, Java, Python, and Go via mise...
+  ✓ Ruby, Node, Java, Python, and Go installed via mise
+
+  ▸ [8/13]  💎  Ruby gems
+  ✓ colorls
+
+  ▸ [9/13]  🦀  Rust (rustup)
+  ✓ rustup already installed: rustc 1.86.0
+
+  ▸ [10/13]  🖥️  tmux plugin manager (TPM)
+  ✓ TPM already installed
+
+  ▸ [11/13]  📁  git-lfs
+  ✓ git-lfs
+
+  ▸ [12/13]  🔗  Dotfile symlinks
+
+  🔗  dotfiles  ─  symlinking from ~/dotfiles
+  ─────────────────────────────────────────────────
+  ✓  current   ~/.zshrc
+  ✓  current   ~/.gitconfig
+  ✓  linked    ~/.irbrc
+  ✓  linked    ~/.pryrc
+  ...
+  ─────────────────────────────────────────────────
+  ✓  3 linked  ·  14 current  ·  0 backed up
+  🎉  Done — open a new shell or: source ~/.zshrc
+
+  ▸ [13/13]  ⚙️  macOS developer defaults
+  Apply recommended macOS defaults? [y/N]: y
+
+  ─────────────────────────────────────────────────
+  🎉  Bootstrap complete  in 4m 23s
+  ─────────────────────────────────────────────────
+
+  Next steps
+  1. Edit ~/.zshrc.local with machine-specific config
+  2. Open a new terminal  (or: source ~/.zshrc)
+  3. Install Hyper: https://hyper.is
+```
+
+</details>
+
 ---
 
 ## Dotfiles
@@ -111,6 +186,9 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 | [watch](https://linux.die.net/man/1/watch) | Re-run a command on an interval |
 | [direnv](https://direnv.net) | Per-directory env vars via `.envrc` — auto-loads on `cd` |
 | [newman](https://github.com/postmanlabs/newman) | CLI runner for Insomnia/Postman collections |
+| [redis](https://redis.io) | In-memory data store — background jobs, caching, sessions |
+| [imagemagick](https://imagemagick.org) | Image conversion — resize, crop, format conversion |
+| [pdftk-java](https://gitlab.com/pdftk-java/pdftk) | PDF toolkit — merge, split, fill forms, extract pages |
 | [pre-commit](https://pre-commit.com) | Git hook framework — templates for Ruby, JS, Java |
 
 ### Runtime Management
