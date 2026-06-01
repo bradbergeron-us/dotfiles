@@ -1,45 +1,91 @@
 # ~/.zshrc.local — machine-specific configuration
 # This file is sourced at the end of ~/.zshrc but is NOT committed to the dotfiles repo.
 # Copy to ~/.zshrc.local and fill in values for the current machine.
+#
+# cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
+# Then uncomment and edit the sections that apply to this machine.
 
-# ------------------
+# ==================================================
+# Machine identity
+# ==================================================
+# Give this machine a name so scripts/prompts can distinguish it.
+# export MACHINE_NAME=work-mbp
+
+# ==================================================
+# Work-specific PATH entries
+# ==================================================
+# Add internal tooling, vendored binaries, or anything not managed by Homebrew.
+# export PATH="$PATH:/opt/internal-tools/bin"
+# export PATH="$PATH:$HOME/go/bin"
+
+# ==================================================
 # Postgres
-# ------------------
+# ==================================================
+# Point bundler / gem native extensions at Postgres.app's pg_config.
 # export PG_CONFIG=/Applications/Postgres.app/Contents/Versions/latest/bin/pg_config
 
-# ------------------
-# Extra PATH entries (tools installed outside of Homebrew)
-# ------------------
-# export PATH="$PATH:/path/to/your/tool/bin"
-
-# ------------------
-# Sidekiq Pro/Enterprise license
-# ------------------
-# export BUNDLE_ENTERPRISE__CONTRIBSYS__COM=<your-key>
-
-# ------------------
-# Project aliases
-# ------------------
-# alias proj='cd ~/your-project'
-
-# ------------------
-# Maven (if not via Homebrew)
-# ------------------
-# export PATH="$PATH:/path/to/apache-maven/bin"
+# ==================================================
+# Maven aliases
+# ==================================================
 # alias mci='mvn clean install'
-# alias mvninstall='mvn clean install -Dmaven.test.skip=true'
 # alias mvnt='mvn clean test'
+# alias mvninstall='mvn clean install -DskipTests'
 
-# ------------------
-# Java version management
-# ------------------
-# export JAVA_8_HOME=/Library/Java/JavaVirtualMachines/...jdk/Contents/Home
-# export JAVA_17_HOME=/Library/Java/JavaVirtualMachines/...jdk/Contents/Home
+# ==================================================
+# Multi-Java switching (via mise)
+# ==================================================
+# Switch the active Java version in the current shell.
+# Relies on mise having the requested version installed:
+#   mise install java@temurin-17  &&  mise install java@temurin-21
 #
-# function use-java() {
-#   if [[ "$1" == "8" ]]; then
-#     export JAVA_HOME=$JAVA_8_HOME
-#   elif [[ "$1" == "17" ]]; then
-#     export JAVA_HOME=$JAVA_17_HOME
+# use-java() {
+#   local version="$1"
+#   if [[ -z "$version" ]]; then
+#     echo "Usage: use-java <version>  (e.g. use-java 17, use-java 21)"
+#     return 1
 #   fi
+#   mise use --global java@temurin-"$version"
+#   export JAVA_HOME="$(mise where java)"
+#   echo "Switched to Java $version — JAVA_HOME=$JAVA_HOME"
 # }
+
+# ==================================================
+# direnv — per-project environment variables
+# ==================================================
+# direnv automatically loads .envrc files when you cd into a project.
+# Example .envrc for a Rails work project:
+#
+#   export DATABASE_URL=postgres://localhost:5432/myapp_development
+#   export REDIS_URL=redis://localhost:6379/0
+#   export RAILS_ENV=development
+#
+# After creating the .envrc, run: direnv allow
+
+# ==================================================
+# Corporate proxy (uncomment if behind a proxy)
+# ==================================================
+# export HTTP_PROXY=http://proxy.corp.example.com:8080
+# export HTTPS_PROXY=http://proxy.corp.example.com:8080
+# export NO_PROXY=localhost,127.0.0.1,.corp.example.com
+
+# ==================================================
+# Work-specific git config
+# ==================================================
+# Override the global git email for work repos. This sets the default for
+# all repos; use per-repo .gitconfig or includeIf in ~/.gitconfig for
+# finer control.
+# git config --global user.email "brad@work-domain.com"
+
+# ==================================================
+# Sidekiq Pro / Enterprise license
+# ==================================================
+# Required by bundler to pull Sidekiq Pro/Enterprise gems.
+# export BUNDLE_ENTERPRISE__CONTRIBSYS__COM=<your-license-key>
+# export BUNDLE_GEMS__CONTRIBSYS__COM=<your-license-key>
+
+# ==================================================
+# Project aliases
+# ==================================================
+# alias proj='cd ~/code/your-project'
+# alias api='cd ~/code/vets-api'
+# alias web='cd ~/code/vets-website'

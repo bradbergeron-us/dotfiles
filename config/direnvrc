@@ -1,0 +1,38 @@
+# ~/.config/direnv/direnvrc — global direnv helpers
+#
+# This file is sourced by direnv before every .envrc evaluation.
+# Any function defined here is available in all .envrc files without
+# repeating the definition. Symlinked by install.sh:
+#   ~/dotfiles/config/direnvrc → ~/.config/direnv/direnvrc
+
+# layout_python — auto-create and activate a .venv virtualenv
+#
+# Usage in .envrc:
+#   layout python
+#   layout python python3.12   # use a specific Python binary
+#
+layout_python() {
+  local python="${1:-python3}"
+  local venv=".venv"
+
+  if [[ ! -d "$venv" ]]; then
+    log_status "Creating virtualenv: $venv (using $python)"
+    "$python" -m venv "$venv"
+  fi
+
+  # Activate the virtualenv
+  export VIRTUAL_ENV="$(pwd)/$venv"
+  PATH_add "$VIRTUAL_ENV/bin"
+}
+
+# layout_node — add node_modules/.bin to PATH
+#
+# Usage in .envrc:
+#   layout node
+#
+# This lets you run locally-installed binaries (eslint, prettier, tsc, etc.)
+# without npx or ./node_modules/.bin/ prefixes.
+#
+layout_node() {
+  PATH_add "node_modules/.bin"
+}

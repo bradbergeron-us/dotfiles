@@ -82,6 +82,10 @@ fi
 mkdir -p "$HOME/.config"
 symlink "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
 
+# direnv global helpers (layout_python, layout_node)
+mkdir -p "$HOME/.config/direnv"
+symlink "$DOTFILES_DIR/config/direnvrc" "$HOME/.config/direnv/direnvrc"
+
 # mise global config (pinned Ruby + Node versions)
 mkdir -p "$HOME/.config/mise"
 symlink "$DOTFILES_DIR/config/mise.toml" "$HOME/.config/mise/config.toml"
