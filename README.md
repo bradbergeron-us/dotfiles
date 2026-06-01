@@ -2,7 +2,7 @@
 
 Personal macOS dotfiles — zsh, tmux, git, and a full developer toolchain.
 
-![CI](https://github.com/bradbergeron-us/dotfiles/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/bradbergeron-us/dotfiles/actions/workflows/test-bootstrap.yml/badge.svg)
 
 ## Quick start
 
@@ -38,7 +38,7 @@ bash ~/dotfiles/bootstrap.sh
 bash ~/dotfiles/update.sh
 ```
 
-Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Safe to run any time.
+Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Finishes with a health check — also runnable standalone: `bash ~/dotfiles/verify.sh`. Safe to run any time.
 
 To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
@@ -142,7 +142,8 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `vscode/extensions.txt` | _(auto-installed)_ | Core VS Code extensions |
 | `Brewfile` | _(used by bootstrap)_ | All Homebrew packages and casks |
 | `npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
-| `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems |
+| `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
+| `verify.sh` | _(run to verify)_ | Health check — symlinks, version drift, missing tools, stale backups |
 | `macos.sh` | _(run once)_ | macOS developer defaults |
 | `zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 

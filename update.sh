@@ -16,6 +16,7 @@
 #   4. Upgrades all mise-managed runtimes
 #   5. Updates the Rust toolchain via rustup
 #   6. Updates global Ruby gems
+#   7. Runs verify.sh health check
 
 set -euo pipefail
 
@@ -24,17 +25,9 @@ UPDATE_START=$SECONDS
 STEP=0
 TOTAL_STEPS=7
 
-# ── Colors ────────────────────────────────────────────────────────────────────
-if [[ -t 1 ]]; then
-  RESET='\033[0m'; BOLD='\033[1m'; DIM='\033[2m'
-  GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'; BLUE='\033[1;34m'
-else
-  RESET=''; BOLD=''; DIM=''; GREEN=''; YELLOW=''; CYAN=''; BLUE=''
-fi
-
-info()    { printf "${CYAN}  → %s${RESET}\n" "$*"; }
-success() { printf "${GREEN}  ✓ %s${RESET}\n" "$*"; }
-warn()    { printf "${YELLOW}  ⚠ %s${RESET}\n" "$*"; }
+# shellcheck source=scripts/bootstrap_helpers.sh
+source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
+setup_colors
 
 section() {
   STEP=$((STEP + 1))

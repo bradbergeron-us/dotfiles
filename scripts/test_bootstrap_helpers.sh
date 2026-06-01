@@ -184,58 +184,6 @@ else
   fail "output helpers" "subshell exited non-zero"
 fi
 
-# ── check_nvm_status ─────────────────────────────────────────────────────────
-echo ""
-echo "=== check_nvm_status ==="
-
-TMPDIR_BASE=$(mktemp -d)
-trap 'rm -rf "$TMPDIR_BASE"' EXIT
-
-# Case 1: NVM_DIR does not exist
-if (
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
-  export NVM_DIR="$TMPDIR_BASE/nonexistent"
-  check_nvm_status
-  [[ "$NVM_PRESENT" == "false" ]] || { echo "  FAIL  NVM_PRESENT should be false"; exit 1; }
-  [[ "$NVM_VERSION_COUNT" -eq 0 ]] || { echo "  FAIL  NVM_VERSION_COUNT should be 0"; exit 1; }
-); then
-  pass "check_nvm_status: NVM_DIR missing → NVM_PRESENT=false, count=0"
-else
-  fail "check_nvm_status: NVM_DIR missing" "unexpected values"
-fi
-
-# Case 2: NVM_DIR exists but no versions/node/ subdirectory
-fake_nvm_empty="$TMPDIR_BASE/nvm_empty"
-mkdir -p "$fake_nvm_empty"
-if (
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
-  export NVM_DIR="$fake_nvm_empty"
-  check_nvm_status
-  [[ "$NVM_PRESENT" == "true" ]] || { echo "  FAIL  NVM_PRESENT should be true"; exit 1; }
-  [[ "$NVM_VERSION_COUNT" -eq 0 ]] || { echo "  FAIL  NVM_VERSION_COUNT should be 0, got $NVM_VERSION_COUNT"; exit 1; }
-); then
-  pass "check_nvm_status: NVM_DIR exists, no versions → NVM_PRESENT=true, count=0"
-else
-  fail "check_nvm_status: NVM_DIR exists, no versions" "unexpected values"
-fi
-
-# Case 3: NVM_DIR exists with 3 dummy node versions
-fake_nvm_full="$TMPDIR_BASE/nvm_full"
-mkdir -p "$fake_nvm_full/versions/node/v18.0.0"
-mkdir -p "$fake_nvm_full/versions/node/v20.1.0"
-mkdir -p "$fake_nvm_full/versions/node/v22.0.0"
-if (
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
-  export NVM_DIR="$fake_nvm_full"
-  check_nvm_status
-  [[ "$NVM_PRESENT" == "true" ]] || { echo "  FAIL  NVM_PRESENT should be true"; exit 1; }
-  [[ "$NVM_VERSION_COUNT" -eq 3 ]] || { echo "  FAIL  NVM_VERSION_COUNT should be 3, got $NVM_VERSION_COUNT"; exit 1; }
-); then
-  pass "check_nvm_status: 3 node versions → NVM_PRESENT=true, count=3"
-else
-  fail "check_nvm_status: 3 node versions" "unexpected values"
-fi
-
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"

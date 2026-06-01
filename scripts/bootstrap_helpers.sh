@@ -24,19 +24,3 @@ step() {
   echo ""
   printf "${BOLD}${BLUE}  ▸ [%d/%d]  %s${RESET}\n" "$STEP" "$TOTAL_STEPS" "$*"
 }
-
-# ── NVM detection (read-only) ─────────────────────────────────────────────────
-# Sets NVM_PRESENT (true/false) and NVM_VERSION_COUNT (integer).
-# Does NOT remove anything or prompt.
-check_nvm_status() {
-  local nvm_dir="${NVM_DIR:-$HOME/.nvm}"
-
-  if [[ -d "$nvm_dir" ]]; then
-    NVM_PRESENT=true
-    NVM_VERSION_COUNT=$(find "$nvm_dir/versions/node/" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
-    NVM_VERSION_COUNT="${NVM_VERSION_COUNT:-0}"
-  else
-    NVM_PRESENT=false
-    NVM_VERSION_COUNT=0
-  fi
-}

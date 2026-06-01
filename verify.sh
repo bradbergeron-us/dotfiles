@@ -16,6 +16,10 @@ DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 VERIFY_START=$SECONDS
 ERRORS=0
 WARNINGS=0
+# shellcheck disable=SC2034 — used by step() in helpers
+STEP=0
+# shellcheck disable=SC2034
+TOTAL_STEPS=4
 
 # shellcheck source=scripts/bootstrap_helpers.sh
 source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
@@ -40,8 +44,7 @@ printf "  ${DIM}Date${RESET}     %s\n" "$(date '+%a %b %d %Y  %H:%M')"
 echo "  ─────────────────────────────────────────────────"
 
 # ── 1. Symlinks ───────────────────────────────────────────────────────────────
-echo ""
-printf "${BOLD}${BLUE}  ▸ [1/4]  🔗  Symlinks${RESET}\n"
+step "🔗  Symlinks"
 check_symlinks "$DOTFILES_DIR" "$HOME"
 
 if [[ "$SYMLINK_BROKEN_COUNT" -eq 0 ]]; then
@@ -55,8 +58,7 @@ else
 fi
 
 # ── 2. Version drift ──────────────────────────────────────────────────────────
-echo ""
-printf "${BOLD}${BLUE}  ▸ [2/4]  📌  Version drift (mise.toml vs bootstrap.sh)${RESET}\n"
+step "📌  Version drift (mise.toml vs bootstrap.sh)"
 check_mise_version_drift "$DOTFILES_DIR/config/mise.toml" "$DOTFILES_DIR/bootstrap.sh"
 
 if [[ "$DRIFT_COUNT" -eq 0 ]]; then
@@ -70,8 +72,7 @@ else
 fi
 
 # ── 3. Required tools ─────────────────────────────────────────────────────────
-echo ""
-printf "${BOLD}${BLUE}  ▸ [3/4]  🧰  Required tools${RESET}\n"
+step "🧰  Required tools"
 check_required_tools "${REQUIRED_TOOLS[@]}"
 
 if [[ "$TOOLS_MISSING_COUNT" -eq 0 ]]; then
@@ -85,8 +86,7 @@ else
 fi
 
 # ── 4. Stale backups ──────────────────────────────────────────────────────────
-echo ""
-printf "${BOLD}${BLUE}  ▸ [4/4]  🗂️   Stale backups${RESET}\n"
+step "🗂️   Stale backups"
 check_stale_backups "$HOME/.dotfiles_backup"
 
 if [[ "$STALE_BACKUP_COUNT" -eq 0 ]]; then
