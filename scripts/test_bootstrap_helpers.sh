@@ -103,7 +103,7 @@ if command -v script &>/dev/null; then
     source '$SCRIPT_DIR/bootstrap_helpers.sh'
     setup_colors
     printf '%s' \"\$RESET\"
-  " 2>/dev/null | tr -d '\r')
+  " 2>/dev/null | tr -d '\r') || true
 
   if [[ -n "$tty_output" ]]; then
     pass "setup_colors (tty): RESET is non-empty"
