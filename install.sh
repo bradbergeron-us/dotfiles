@@ -10,10 +10,10 @@ BACKUP_DIR="$HOME/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
 # Counters
 typeset -i _linked=0 _current=0 _backed=0
 
-info()    { print -P "%F{cyan}  [info]%f    $*"; }
-success() { print -P "%F{green}  [ok]%f      $*"; }
-backup()  { print -P "%F{yellow}  [bkp]%f     $*"; }
-error()   { print -P "%F{red}  [error]%f  $*"; }
+info()    { print -P "%F{cyan}  → %f$*"; }
+success() { print -P "%F{green}  ✓ %f$*"; }
+backup()  { print -P "%F{yellow}  ⚠ %f$*"; }
+error()   { print -P "%F{red}  ✗ %f$*" >&2; }
 
 symlink() {
   local src="$1"
@@ -23,7 +23,7 @@ symlink() {
 
   if [[ -e "$dest" || -L "$dest" ]]; then
     if [[ "$(readlink "$dest")" == "$src" ]]; then
-      print -P "%F{green}  [ok]%f      current   $short"
+      success "current   $short"
       (( _current++ )) || true
       return
     fi
@@ -34,7 +34,7 @@ symlink() {
   fi
 
   ln -sf "$src" "$dest"
-  print -P "%F{green}  [ok]%f      linked    $short"
+  success "linked    $short"
   (( _linked++ )) || true
 }
 
@@ -123,7 +123,7 @@ fi
 
 echo ""
 echo "  ─────────────────────────────────────────────────"
-print -P "%F{green}  [ok]%f      ${_linked} linked  ·  ${_current} current  ·  ${_backed} backed up"
+success "${_linked} linked  ·  ${_current} current  ·  ${_backed} backed up"
 if (( _backed > 0 )); then
   backup "backups saved to ${BACKUP_DIR/$HOME/\~}"
 fi

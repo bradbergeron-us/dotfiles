@@ -45,6 +45,26 @@ A terminal UI for git that makes complex operations (interactive rebase, cherry-
 ### [gh](https://cli.github.com)
 The official GitHub CLI. Lets you create PRs, review code, manage issues, and interact with GitHub Actions directly from the terminal without switching to a browser. Pairs well with the git aliases in `gitconfig`.
 
+### [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+A cross-platform, cross-host credential helper maintained by the Git ecosystem team (Microsoft/GitHub). Solves the specific problem of working with multiple Git hosts — GitHub.com, GitHub Enterprise, Bitbucket, Azure DevOps — from the same machine without managing credentials manually for each.
+
+**Why it matters for enterprise setups:** when you have a personal GitHub account AND a work GitHub Enterprise instance AND Bitbucket, credential conflicts are a constant friction point. GCM maintains separate, scoped credential stores per host and supports OAuth2, personal access tokens, and SSO/MFA flows natively. Once installed, it handles authentication transparently.
+
+```sh
+# GCM is auto-configured when installed via Homebrew.
+# To check the active credential helper:
+git config --global credential.helper
+
+# To sign in to a specific host manually:
+git credential-manager github login
+git credential-manager github login --enterprise-url https://github.your-company.com
+
+# To list stored credentials:
+git credential-manager list
+```
+
+On macOS, credentials are stored in the macOS Keychain. On new machines, the first `git clone` or `git push` to a host triggers an OAuth browser flow automatically.
+
 ---
 
 ## Utilities

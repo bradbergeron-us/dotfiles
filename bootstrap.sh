@@ -13,15 +13,14 @@ TOTAL_STEPS=13
 if [[ -t 1 ]]; then
   RESET='\033[0m';  BOLD='\033[1m';   DIM='\033[2m'
   GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'
-  RED='\033[0;31m';   BLUE='\033[1;34m'
+  BLUE='\033[1;34m'
 else
-  RESET=''; BOLD=''; DIM=''; GREEN=''; YELLOW=''; CYAN=''; RED=''; BLUE=''
+  RESET=''; BOLD=''; DIM=''; GREEN=''; YELLOW=''; CYAN=''; BLUE=''
 fi
 
 info()    { printf "${CYAN}  → %s${RESET}\n" "$*"; }
 success() { printf "${GREEN}  ✓ %s${RESET}\n" "$*"; }
 warn()    { printf "${YELLOW}  ⚠ %s${RESET}\n" "$*"; }
-error()   { printf "${RED}  ✗ %s${RESET}\n" "$*" >&2; }
 
 step() {
   STEP=$((STEP + 1))
@@ -112,7 +111,7 @@ else
   echo ""
   cat "$HOME/.ssh/id_ed25519.pub"
   echo ""
-  read -rp "Press Enter once you've added the key to GitHub to continue..."
+  read -rp "  Press Enter once you've added the key to GitHub to continue... "
 fi
 
 step "🐙  GitHub CLI authentication"

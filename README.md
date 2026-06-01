@@ -93,14 +93,14 @@ Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are 
 
   🔗  dotfiles  ─  symlinking from ~/dotfiles
   ─────────────────────────────────────────────────
-  ✓  current   ~/.zshrc
-  ✓  current   ~/.gitconfig
-  ✓  linked    ~/.irbrc
-  ✓  linked    ~/.pryrc
+  ✓ current   ~/.zshrc
+  ✓ current   ~/.gitconfig
+  ✓ linked    ~/.irbrc
+  ✓ linked    ~/.pryrc
   ...
   ─────────────────────────────────────────────────
-  ✓  3 linked  ·  14 current  ·  0 backed up
-  🎉  Done — open a new shell or: source ~/.zshrc
+  ✓ 3 linked  ·  14 current  ·  0 backed up
+  ✓ 🎉  Done — open a new shell or: source ~/.zshrc
 
   ▸ [13/13]  ⚙️  macOS developer defaults
   Apply recommended macOS defaults? [y/N]: y
@@ -174,6 +174,7 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 | [git-delta](https://github.com/dandavison/delta) | Syntax-highlighted diffs for `git diff`, `log`, `show` |
 | [lazygit](https://github.com/jesseduffield/lazygit) | Terminal UI for git — rebase, cherry-pick, staged hunks |
 | [gh](https://cli.github.com) | GitHub CLI — PRs, issues, Actions from the terminal |
+| [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager) | Cross-platform credential helper — GitHub, GitHub Enterprise, Bitbucket from one machine |
 
 ### Utilities
 
