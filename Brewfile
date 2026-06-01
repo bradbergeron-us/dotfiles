@@ -26,16 +26,10 @@ brew "lazygit"        # terminal UI for git
 brew "gh"             # GitHub CLI
 
 # ------------------
-# Ruby
+# Runtime management
 # ------------------
-brew "chruby"         # Ruby version switcher
-brew "ruby-install"   # Ruby version installer
-brew "openssl@3"      # required for building Ruby
-
-# ------------------
-# Node
-# ------------------
-brew "nvm"            # Node version manager
+brew "mise"           # polyglot version manager (Ruby, Node, Python, etc.)
+brew "openssl@3"      # required for building Ruby via mise
 
 # ------------------
 # Terminal multiplexer
