@@ -40,13 +40,7 @@ bash ~/dotfiles/update.sh
 
 Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Safe to run any time.
 
-### Re-symlinking only
-
-```sh
-zsh ~/dotfiles/install.sh
-```
-
-Re-symlinks everything without updating packages. Safe to run repeatedly — already-correct symlinks are skipped; existing files are backed up to `~/.dotfiles_backup/<timestamp>/`.
+To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
 ### Terminal preview
 
@@ -56,7 +50,7 @@ Re-symlinks everything without updating packages. Safe to run repeatedly — alr
 ```
   🚀  dotfiles bootstrap  —  macOS developer setup
   ─────────────────────────────────────────────────
-  Machine  Brad's MacBook Pro
+  Machine  your-machine-name
   Date     Mon Jun 01 2026  08:00
   ─────────────────────────────────────────────────
 
@@ -226,12 +220,12 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 ## Package management
 
 ```sh
-brew bundle                          # install everything from Brewfile
-brew bundle check                    # check what's missing
-brew bundle --upgrade                # upgrade all packages
+brew bundle --file=~/dotfiles/Brewfile          # install everything
+brew bundle check --file=~/dotfiles/Brewfile    # check what's missing
 ```
 
-To add a package: edit `Brewfile`, run `brew bundle`.
+To add a package: edit `Brewfile`, run `brew bundle`. To upgrade all packages, use `update.sh` — it runs `brew upgrade` as part of the full update cycle.
+
 Work machine? Also run `brew bundle --file=~/dotfiles/Brewfile.work`.
 
 ---
