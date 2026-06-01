@@ -19,10 +19,10 @@ bash ~/dotfiles/bootstrap.sh
 What it does, in order:
 1. Installs Xcode Command Line Tools (pauses and prompts you to re-run if needed)
 2. Installs Homebrew — detects Apple Silicon (`/opt/homebrew`) or Intel (`/usr/local`) automatically
-3. Runs `brew bundle` from `Brewfile` — installs all packages and casks including Raycast
+3. Runs `brew bundle` from `Brewfile` — installs all packages, casks, and mise
 4. Sets up `fzf` shell integration (key bindings + tab completion)
-5. Installs Ruby 3.3.6 via `ruby-install`
-6. Installs the `colorls` gem
+5. Installs Ruby 3.3.6 and Node 22 via `mise install` and sets them as global defaults
+6. Installs the `colorls` gem into the mise-managed Ruby
 7. Calls `install.sh` to symlink the dotfiles
 8. Creates `~/.zshrc.local` from `zshrc.local.example` if it doesn't already exist
 
@@ -46,7 +46,7 @@ already-correct symlinks are left untouched.
 
 | File | Symlinked to | Description |
 |------|--------------|-------------|
-| `zshrc` | `~/.zshrc` | Zsh config — lazy NVM, chruby, aliases, hooks |
+| `zshrc` | `~/.zshrc` | Zsh config — mise activation, aliases, hooks |
 | `zprofile` | `~/.zprofile` | Zsh login profile — Homebrew path setup |
 | `gitconfig` | `~/.gitconfig` | Git — user, delta pager, sane defaults |
 | `gitignore_global` | `~/.gitignore_global` | Global gitignore — macOS, editors, logs |
@@ -113,6 +113,20 @@ and why it's worth having.
 
 **[shellcheck](https://www.shellcheck.net)** — a static analysis tool for shell scripts that catches bugs, bad practices, and portability issues before they become problems. Run `shellcheck script.sh` on any shell script you write.
 
+### Runtime management
+
+**[mise](https://mise.jdx.dev)** — a polyglot version manager written in Rust that replaces `chruby`, `nvm`, and `pyenv` with a single tool. It manages Ruby, Node, Python, Java, Go, and dozens of other runtimes from one interface. Versions are set globally in `~/.config/mise/config.toml` and can be overridden per project using `.mise.toml`, `.ruby-version`, or `.nvmrc` — so existing projects need no changes. Activation is a single line in `zshrc` and adds ~5ms to startup. Common commands:
+
+```sh
+mise install ruby@3.3.6   # install a specific version
+mise use node@22          # set globally
+mise use --local ruby@3.4 # set for current project only (writes .mise.toml)
+mise current              # show active versions
+mise ls                   # list all installed versions
+```
+
+This replaced `chruby` + `ruby-install` + `nvm` — three separate tools, three shell init blocks, ~500ms of startup overhead between them.
+
 ### Apps
 
 **[Raycast](https://raycast.com)** — replaces macOS Spotlight as your primary launcher and desktop control layer. Everything is keyboard-driven: press the hotkey, type what you want, press `Enter`. No mouse required.
@@ -149,8 +163,6 @@ For Clipboard History: assign `Cmd+Shift+V` as a direct hotkey in Settings → E
 
 Things worth evaluating as the setup evolves.
 
-**[mise](https://mise.jdx.dev)** (formerly `rtx`) — a single polyglot version manager that can replace `chruby`, `nvm`, and `pyenv` with one unified tool. It manages Ruby, Node, Python, Java, Go, and many other runtimes using a single `.mise.toml` config file per project, and is significantly faster than the tools it replaces. The main reason to hold off for now is migration cost — existing projects rely on `.ruby-version` and `.nvmrc` files that chruby and nvm already handle well. When starting fresh on a new machine or project it would be the first choice.
-
 **Commit signing with GPG or SSH** — signing commits proves they actually came from you, which matters on shared repositories and is increasingly expected on open-source projects. GitHub supports both GPG keys and SSH signing keys. Worth setting up once and adding the relevant `gitconfig` entries (`gpg.format`, `commit.gpgSign`, `user.signingkey`) to this repo.
 
 **`1Password CLI` (`op`)** — if using 1Password, the CLI can serve as a secrets manager for the shell. It can inject secrets as environment variables at runtime (`op run -- your-command`) so sensitive values never need to live in `.zshrc.local` or any dotfile at all.
@@ -159,16 +171,40 @@ Things worth evaluating as the setup evolves.
 
 ## Machine-specific config (`~/.zshrc.local`)
 
-Anything specific to a machine — project paths, aliases, licenses, extra PATH
-entries, Java paths, etc. — belongs in `~/.zshrc.local`. This file is sourced
-at the end of `.zshrc` but is **never committed** (it's in `.gitignore`).
+The last line of `zshrc` sources a local override file if it exists:
 
-`bootstrap.sh` creates it automatically from the template. To set it up
-manually:
+```zsh
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+```
+
+`~/.zshrc.local` is in `.gitignore` and **never committed**. Each machine gets
+its own private file that layered on top of the shared config without touching
+the repo.
+
+**Why this matters across machines:** the dotfiles repo contains only config
+that works everywhere. When you clone onto a new machine — a work laptop, a
+remote server, a new personal Mac — `bootstrap.sh` creates `~/.zshrc.local`
+from the template. You fill it in with whatever is specific to that machine:
+
+```zsh
+# example ~/.zshrc.local on a work machine
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
+alias proj='cd ~/code/your-project'
+export PATH="$PATH:/opt/internal-tools/bin"
+export SOME_LICENSE_KEY=your-key-here
+```
+
+The home machine has a different `~/.zshrc.local` with different values. Neither
+file is ever in git, so they stay private and don't interfere with each other.
+
+**Rule of thumb:** if a setting would break on a different machine or contains
+a secret, it belongs in `~/.zshrc.local`. Everything else belongs in `zshrc`.
+
+`bootstrap.sh` creates `~/.zshrc.local` automatically. To set it up manually:
 
 ```sh
 cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
-# edit ~/.zshrc.local with your machine-specific values
+# edit with this machine's specific values
 ```
 
 ## Making changes
@@ -184,24 +220,19 @@ git push
 
 ## Shell performance
 
-The zshrc is optimised for fast startup. Key decisions:
+Startup time was reduced from ~2.37s to ~0.11s through a series of targeted changes.
 
-**Lazy NVM loading** — `nvm.sh` is not sourced at shell start. Stub functions
-for `nvm`, `node`, `npm`, and `npx` load it on first use. The `load-nvmrc`
-hook finds `.nvmrc` files via pure shell traversal without touching NVM unless
-one is present.
+**Replaced chruby + nvm with mise** — the biggest win. The previous setup sourced two chruby scripts, ran `brew --prefix` at startup, and used lazy-loader stub functions for `nvm`/`node`/`npm`/`npx` to avoid nvm's ~500ms cold start. All of that is now one line: `eval "$(mise activate zsh)"`, which adds ~5ms and handles both Ruby and Node with automatic per-project version switching.
 
-**No dynamic PATH calls** — the previous `$(ruby -e 'puts Gem.bindir')` call
-(which spawned a Ruby process on every shell start) has been removed; `chruby`
-already manages the Ruby bin path.
+**Removed dynamic PATH calls** — a `$(ruby -e 'puts Gem.bindir')` subshell that spawned a full Ruby process on every new shell has been removed.
 
-**Starship Ruby module disabled** — prevents Ruby execution on every prompt
-render. A `command_timeout` of 2000ms is set as a global safety net.
+**Starship Ruby module disabled** — starship's ruby module executed Ruby on every prompt render, causing intermittent timeout warnings. Disabled in `config/starship.toml` with `command_timeout = 2000` as a safety net for other modules.
 
 ### Benchmark (MacBook Pro, Apple Silicon)
 
 | Measurement | Time |
 |-------------|------|
-| Before | ~2.37s |
-| After | ~0.30s |
-| **Improvement** | **~87% faster** |
+| Original (chruby + nvm + Starship Ruby warnings) | ~2.37s |
+| After lazy NVM + removing Ruby PATH call | ~0.58s |
+| After replacing chruby + nvm with mise | **~0.11s** |
+| **Total improvement** | **~95% faster** |
