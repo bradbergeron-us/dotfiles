@@ -51,7 +51,8 @@ brew "tldr"           # simplified man pages (community-maintained examples)
 brew "httpie"         # human-friendly HTTP client (replaces curl for interactive use)
 brew "watch"          # re-run a command on an interval (e.g. watch kubectl get pods)
 brew "direnv"         # per-directory environment variables via .envrc files
-brew "newman"             # CLI runner for Insomnia/Postman collections (useful in CI)
+brew "newman"         # CLI runner for Insomnia/Postman collections (useful in CI)
+brew "redis"          # in-memory data store — background jobs (Sidekiq), caching, sessions
 
 # ------------------
 # Fonts
