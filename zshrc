@@ -3,7 +3,6 @@
 # ------------------
 
 export EDITOR=code
-export NVM_DIR="$HOME/.nvm"
 
 # ------------------
 # PATH Manipulations
@@ -13,27 +12,11 @@ if [ -f ~/.bash_profile ]; then
   source ~/.bash_profile
 fi
 
-# chruby (guarded — install via: brew install chruby ruby-install)
-if command -v brew &>/dev/null; then
-  _chruby_sh="$(brew --prefix chruby 2>/dev/null)/share/chruby/chruby.sh"
-  if [[ -f "$_chruby_sh" ]]; then
-    export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@3 2>/dev/null)"
-    source "$_chruby_sh"
-    source "${_chruby_sh:h}/auto.sh"
-    chruby ruby-3.3.6 2>/dev/null || true
-  fi
-  unset _chruby_sh
+# mise — polyglot version manager (replaces chruby + nvm)
+# Reads .ruby-version and .nvmrc automatically per project
+if command -v mise &>/dev/null; then
+  eval "$(mise activate zsh)"
 fi
-
-# Lazy-load NVM — defers sourcing until first use of nvm/node/npm/npx
-_nvm_load() {
-  unset -f nvm node npm npx
-  [ -s "$(brew --prefix nvm)/nvm.sh" ] && source "$(brew --prefix nvm)/nvm.sh"
-}
-nvm()  { _nvm_load; nvm  "$@"; }
-node() { _nvm_load; node "$@"; }
-npm()  { _nvm_load; npm  "$@"; }
-npx()  { _nvm_load; npx  "$@"; }
 
 export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
@@ -45,32 +28,6 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 # ------------------
 
 autoload -U add-zsh-hook
-
-load-nvmrc() {
-  # Walk up dirs to find .nvmrc without eagerly loading NVM
-  local dir="$PWD" nvmrc_path=""
-  while [[ "$dir" != "/" ]]; do
-    [[ -f "$dir/.nvmrc" ]] && { nvmrc_path="$dir/.nvmrc"; break; }
-    dir="${dir:h}"
-  done
-
-  if [[ -n "$nvmrc_path" ]]; then
-    _nvm_load
-    local nvmrc_node_version node_version
-    nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")") 
-    node_version=$(nvm version)
-    if [[ "$nvmrc_node_version" == "N/A" ]]; then
-      echo "Installing Node version from .nvmrc..."
-      nvm install
-    elif [[ "$nvmrc_node_version" != "$node_version" ]]; then
-      echo "Switching to Node version $nvmrc_node_version..."
-      nvm use
-    fi
-  fi
-}
-
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
 
 function tabTitle() {
   echo -ne "\033]0;${PWD##*/}\007"
