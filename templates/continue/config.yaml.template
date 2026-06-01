@@ -1,0 +1,63 @@
+---
+# Continue IDE Configuration Template for AWS Bedrock
+# Copy to ~/.continue/config.yaml and customize for your environment
+# See README.md for detailed setup instructions
+
+name: AWS Bedrock Configuration
+version: 0.0.1
+schema: v1
+
+models:
+  - name: AWS Bedrock - Claude 4.5 Sonnet
+    provider: bedrock
+    # Replace with your model ARN or ID
+    model: us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0
+    env:
+      # Replace with your AWS region
+      region: us-gov-west-1
+      # Replace with your AWS profile name (from ~/.aws/config)
+      profile: bedrock
+    roles:
+      - chat
+      - edit
+      - apply
+      - summarize
+    defaultCompletionOptions:
+      temperature: 0.5
+      maxTokens: 8192
+
+  - name: AWS Bedrock - Claude 3.7 Sonnet
+    provider: bedrock
+    # Replace with your model ARN or ID
+    model: arn:aws-us-gov:bedrock:us-gov-west-1::foundation-model/anthropic.claude-3-7-sonnet-20250219-v1:0
+    env:
+      # Replace with your AWS region
+      region: us-gov-west-1
+      # Replace with your AWS profile name
+      profile: bedrock
+    roles:
+      - chat
+      - edit
+      - apply
+      - summarize
+    defaultCompletionOptions:
+      temperature: 0.5
+      maxTokens: 8192
+
+context:
+  - provider: codebase
+  - provider: code
+  - provider: open
+  - provider: problems
+  - provider: currentFile
+  - provider: docs
+  - provider: diff
+  - provider: folder
+  - provider: terminal
+
+rules:
+  - Act as an expert software developer that can write code that is clean,
+    efficient, and well-documented as well as write unit tests for the code
+    proposed
+  - Give concise responses
+  - Always annotate functions with their parameter and return types

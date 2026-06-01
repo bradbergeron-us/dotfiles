@@ -1,0 +1,50 @@
+# AWS CLI Configuration Template
+# Copy to ~/.aws/config and customize for your environment
+# NEVER put credentials in this file - use ~/.aws/credentials or SSO
+#
+# Installation:
+#   mkdir -p ~/.aws
+#   cp ~/dotfiles/templates/aws/config.template ~/.aws/config
+#   chmod 600 ~/.aws/config
+
+# Default profile (optional)
+[default]
+region = us-east-1
+output = json
+
+# AWS Bedrock profile for AI workloads
+# Use SSO for most secure setup: aws configure sso --profile bedrock
+[profile bedrock]
+region = us-gov-west-1
+output = json
+# For SSO (recommended):
+# sso_start_url = https://your-org.awsapps.com/start
+# sso_region = us-gov-west-1
+# sso_account_id = 123456789012
+# sso_role_name = BedrockUserRole
+#
+# For access keys (less secure):
+# No config needed here, put in ~/.aws/credentials instead
+
+# Work AWS account
+[profile work]
+region = us-east-1
+output = json
+
+# GovCloud profile
+[profile govcloud]
+region = us-gov-west-1
+output = json
+
+# Example: Role assumption
+[profile admin]
+role_arn = arn:aws:iam::123456789012:role/AdminRole
+source_profile = work
+region = us-east-1
+output = json
+
+# Example: Multi-factor authentication
+[profile mfa]
+region = us-east-1
+output = json
+mfa_serial = arn:aws:iam::123456789012:mfa/your-username

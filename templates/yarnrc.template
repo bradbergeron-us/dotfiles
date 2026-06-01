@@ -1,0 +1,22 @@
+# Yarn Configuration Template for Work Machines
+# Copy to ~/.yarnrc and customize for your environment
+# DO NOT commit this file with actual auth tokens
+#
+# Installation:
+#   cp ~/dotfiles/templates/yarnrc.template ~/.yarnrc
+#
+# Note: Authentication is typically handled by a separate .npmrc file
+# or yarn config commands. Never commit auth tokens to this file.
+
+# Replace with your organization's npm registry URL
+registry "https://registry.example.com/artifactory/api/npm/npm-proxy/"
+
+# Require authentication for all packages
+always-auth true
+
+# SSL configuration
+# Set to false only if your organization requires it (security risk)
+# strict-ssl true
+
+# Update check
+# lastUpdateCheck is managed by yarn, safe to commit

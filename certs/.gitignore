@@ -1,0 +1,12 @@
+# Certificate files
+# Public certificates can be committed if needed, but be cautious
+*.crt
+*.cer
+*.pem
+*.p12
+*.pfx
+*.key
+*.jks
+
+# Allow README
+!README.md

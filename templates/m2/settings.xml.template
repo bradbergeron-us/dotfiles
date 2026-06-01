@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Maven Settings Template for Work Machines
+     Copy to ~/.m2/settings.xml and customize for your environment
+     DO NOT commit this file with actual credentials -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <mirrors>
+        <mirror>
+            <id>nexus</id>
+            <mirrorOf>*</mirrorOf>
+            <!-- Replace with your organization's Nexus/Artifactory URL -->
+            <url>https://nexus.example.com/repository/maven-public/</url>
+        </mirror>
+    </mirrors>
+
+    <profiles>
+        <profile>
+            <id>corporate</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <!-- Replace with your organization's Maven repository URL -->
+                    <url>https://nexus.example.com/repository/maven-public</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                        <checksumPolicy>warn</checksumPolicy>
+                    </releases>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>corporate</activeProfile>
+    </activeProfiles>
+
+    <servers>
+        <server>
+            <id>nexus</id>
+            <!-- Credentials should be encrypted using Maven password encryption
+                 See: https://maven.apache.org/guides/mini/guide-encryption.html
+
+                 To encrypt your password:
+                 1. Create master password: mvn --encrypt-master-password <password>
+                 2. Store in ~/.m2/settings-security.xml
+                 3. Encrypt server password: mvn --encrypt-password <password>
+                 4. Add encrypted password below
+
+                 Alternative: Use credential helpers or environment variables
+            -->
+            <!-- <username>your-username</username> -->
+            <!-- <password>{encrypted-password-here}</password> -->
+        </server>
+    </servers>
+</settings>
