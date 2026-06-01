@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal macOS dotfiles for zsh, tmux, starship, git, and Hyper.
+Personal macOS dotfiles for zsh, tmux, starship, git, Hyper, and a full suite of developer tooling.
 
 ## Scripts
 
@@ -62,6 +62,9 @@ already-correct symlinks are left untouched.
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code editor, terminal, and git settings |
 | `vscode/extensions.txt` | _(installed by install.sh)_ | Core VS Code extensions for every machine |
 | `vscode/extensions-java.txt` | _(manual install)_ | Java-specific VS Code extensions |
+| `gemrc` | `~/.gemrc` | Skip ri/rdoc on every `gem install` — faster installs, less disk |
+| `psqlrc` | `~/.psqlrc` | psql client defaults — `\x auto`, `\timing on`, per-DB history |
+| `editorconfig` | `~/.editorconfig` | Global EditorConfig fallback — indent style, charset, line endings by file type |
 | `macos.sh` | _(run once manually)_ | macOS developer defaults (key repeat, Dock, Finder, etc.) |
 | `zshrc.local.example` | _(template only)_ | Template for machine-specific overrides |
 
@@ -121,6 +124,21 @@ and why it's worth having.
 **[jq](https://stedolan.github.io/jq/)** — a command-line JSON processor. Indispensable when working with APIs, parsing config files, or inspecting payloads. `curl ... | jq .` is a pattern you'll use constantly once it's available.
 
 **[shellcheck](https://www.shellcheck.net)** — a static analysis tool for shell scripts that catches bugs, bad practices, and portability issues before they become problems. Run `shellcheck script.sh` on any shell script you write.
+
+**[tldr](https://tldr.sh)** — community-maintained cheat sheets for CLI commands. Where `man curl` gives you the full specification, `tldr curl` shows the five examples you actually need. Faster than a web search for "how do I do X with this tool".
+
+**[httpie](https://httpie.io)** (`http` / `https`) — a human-friendly HTTP client that formats responses with syntax highlighting, handles JSON naturally, and has intuitive syntax for headers and auth. Use it interactively instead of `curl` when debugging APIs. `https httpbin.org/get` vs `curl -s https://httpbin.org/get | jq .` — same result, less typing.
+
+**[watch](https://linux.die.net/man/1/watch)** — re-runs a command on a fixed interval and updates the terminal in place. Useful for monitoring anything that changes over time: `watch kubectl get pods`, `watch git status`, `watch 'ls -lh output/'`. Default interval is 2 seconds; `-n 0.5` for faster polling.
+
+**[direnv](https://direnv.net)** — loads and unloads environment variables automatically as you `cd` into and out of directories. Create a `.envrc` file in a project root and direnv will export those variables the moment you enter the directory, then remove them when you leave. No more forgetting to `export DATABASE_URL` before running a service. The `zshrc` hook (`eval "$(direnv hook zsh)"`) wires this in automatically.
+
+Quick setup for a project:
+```sh
+# In your project root:
+echo 'export DATABASE_URL=postgres://localhost/myapp_dev' >> .envrc
+direnv allow   # approve the .envrc once; it runs automatically after that
+```
 
 **[pre-commit](https://pre-commit.com)** — a framework for managing git pre-commit hooks. Hooks are defined in a `.pre-commit-config.yaml` file at the root of each project and run automatically before every `git commit`. This repo includes a template at `templates/pre-commit-config.yaml` covering Ruby/Rails projects.
 
@@ -191,7 +209,28 @@ mise ls                   # list all installed versions
 
 This replaced `chruby` + `ruby-install` + `nvm` — three separate tools, three shell init blocks, ~500ms of startup overhead between them.
 
+**`~/.gemrc`** — a one-line config (`gem: --no-document`) that tells Rubygems to skip generating `ri` and `rdoc` documentation on every `gem install`. This makes gem installs noticeably faster and avoids accumulating hundreds of megabytes of documentation that most developers never read locally.
+
+### Database
+
+**`~/.psqlrc`** — the psql client reads this file on startup, equivalent to a `.bashrc` for your database sessions. This repo's `psqlrc` sets:
+- `\x auto` — switches to expanded (vertical) output automatically when a result is too wide to fit in the terminal
+- `\timing on` — prints query execution time after every statement
+- `\pset null 'NULL'` — makes NULL values visible instead of showing as empty strings (a common source of confusion)
+- Per-database history: `HISTFILE ~/.psql_history-:DBNAME` keeps a separate history file for each database so context doesn't bleed between projects
+- `AUTOCOMMIT off` — requires explicit `COMMIT` or `ROLLBACK`; prevents accidental data mutations from sticking silently
+
+Pairs naturally with Postgres.app. No additional setup needed — `install.sh` symlinks it to `~/.psqlrc`.
+
+### EditorConfig
+
+**`~/.editorconfig`** — [EditorConfig](https://editorconfig.org) is a cross-editor standard for defining code style rules (indentation, line endings, charset, trailing whitespace) that editors and IDEs read automatically without any plugin required in most modern editors. VS Code, JetBrains IDEs, Neovim, and many others respect it natively.
+
+The global `~/.editorconfig` acts as a fallback for any project that doesn't have its own `.editorconfig`. It sets sane defaults (UTF-8, LF line endings, 2-space indent, final newline) with overrides for Java/Kotlin/Groovy (4 spaces), Go (tabs), and Makefiles (tabs). Any project-level `.editorconfig` takes precedence — this is purely a safety net for projects that don't define their own.
+
 ### Apps
+
+**[OrbStack](https://orbstack.dev)** — a fast, lightweight replacement for Docker Desktop on macOS. It starts in under a second (vs Docker Desktop's 10–30s), uses significantly less RAM and CPU, and runs Linux VMs natively on Apple Silicon. The CLI is fully compatible with Docker (`docker`, `docker-compose`) so no workflow changes are needed. Free for personal use; worth switching to immediately if you run containers locally.
 
 **[Raycast](https://raycast.com)** — replaces macOS Spotlight as your primary launcher and desktop control layer. Everything is keyboard-driven: press the hotkey, type what you want, press `Enter`. No mouse required.
 
@@ -288,11 +327,14 @@ Startup time was reduced from ~2.37s to ~0.11s through a series of targeted chan
 
 **Starship Ruby module disabled** — starship's ruby module executed Ruby on every prompt render, causing intermittent timeout warnings. Disabled in `config/starship.toml` with `command_timeout = 2000` as a safety net for other modules.
 
+**Cached `compinit`** — zsh rebuilds its completion dump (`~/.zcompdump`) on every shell start by default. A 24-hour freshness check now skips the rebuild (`compinit -C`) unless the dump is older than a day. Saves ~30–50ms per shell start with no visible downside.
+
 ### Benchmark (MacBook Pro, Apple Silicon)
 
 | Measurement | Time |
 |-------------|------|
 | Original (chruby + nvm + Starship Ruby warnings) | ~2.37s |
 | After lazy NVM + removing Ruby PATH call | ~0.58s |
-| After replacing chruby + nvm with mise | **~0.11s** |
-| **Total improvement** | **~95% faster** |
+| After replacing chruby + nvm with mise | ~0.11s |
+| After compinit caching | **~0.08s** |
+| **Total improvement** | **~97% faster** |
