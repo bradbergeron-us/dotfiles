@@ -47,6 +47,7 @@ brew "tldr"           # simplified man pages (community-maintained examples)
 brew "httpie"         # human-friendly HTTP client (replaces curl for interactive use)
 brew "watch"          # re-run a command on an interval (e.g. watch kubectl get pods)
 brew "direnv"         # per-directory environment variables via .envrc files
+brew "newman"             # CLI runner for Insomnia/Postman collections (useful in CI)
 
 # ------------------
 # Fonts
@@ -57,6 +58,7 @@ cask "font-jetbrains-mono-nerd-font"   # JetBrains Mono with Nerd Font icons (te
 # ------------------
 # Apps (casks)
 # ------------------
+cask "insomnia"            # GUI REST/GraphQL client — API design, collections, team sharing
 cask "raycast"             # launcher, clipboard history, window management
 cask "visual-studio-code"  # editor
 cask "postgres-app"        # Postgres.app — PostgreSQL with a macOS GUI
