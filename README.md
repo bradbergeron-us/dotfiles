@@ -29,7 +29,7 @@ What it does, in order:
 10. Creates `~/.zshrc.local` from `zshrc.local.example`
 11. Optionally applies macOS developer defaults (`macos.sh`)
 
-After running, install manually: [Hyper](https://hyper.is) and [VS Code](https://code.visualstudio.com).
+After running, install manually: [Hyper](https://hyper.is) — everything else (VS Code, Postgres.app, DBeaver, Fira Code, JetBrains Mono) is installed automatically via the Brewfile.
 
 ### `install.sh` — symlink dotfiles only
 

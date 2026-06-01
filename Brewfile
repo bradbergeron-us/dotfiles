@@ -45,6 +45,15 @@ brew "tree"           # directory tree view
 brew "pre-commit"     # git hook framework (per-project, runs on commit)
 
 # ------------------
+# Fonts
+# ------------------
+cask "font-fira-code"                  # Fira Code (editor font with ligatures)
+cask "font-jetbrains-mono-nerd-font"   # JetBrains Mono with Nerd Font icons (terminal font)
+
+# ------------------
 # Apps (casks)
 # ------------------
-cask "raycast"        # launcher, clipboard history, window management
+cask "raycast"             # launcher, clipboard history, window management
+cask "visual-studio-code"  # editor
+cask "postgres-app"        # Postgres.app — PostgreSQL with a macOS GUI
+cask "dbeaver-community"   # universal database GUI (Postgres, MySQL, SQLite, etc.)
