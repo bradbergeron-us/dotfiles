@@ -8,11 +8,10 @@ export EDITOR=code
 # PATH Manipulations
 # ------------------
 
-# NVM conflict guard: only suppress NVM if it has no versions installed.
-# If NVM has versions, it's still in use — leave it alone and let the user
-# migrate to mise manually (see zshrc.local.example for migration notes).
-# Once NVM is empty: bootstrap.sh offers to remove it, or run manually:
-#   brew uninstall nvm && rm -rf ~/.nvm
+# NVM conflict guard: if NVM is still installed on this machine but empty
+# (no versions), suppress it so mise owns Node cleanly.
+# NVM has been removed from this machine; this guard is a safety net for
+# any env that still has a ghost NVM_DIR set (e.g. .zshrc.local, /etc/zshenv).
 if [[ -n "${NVM_DIR:-}" ]]; then
   _nvm_node_dir="${NVM_DIR}/versions/node"
   if [[ ! -d "$_nvm_node_dir" ]] || [[ -z "$(ls -A "$_nvm_node_dir" 2>/dev/null)" ]]; then
@@ -82,7 +81,6 @@ grbic() { git rebase -i "$1"; }
 
 alias gp='git pull'
 alias gco='git checkout'
-alias gst='git status'
 alias glog='git log --oneline --decorate --color --graph'
 
 alias src='source ~/.zshrc'
