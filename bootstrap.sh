@@ -131,10 +131,10 @@ fi
 # ------------------
 # Ruby + Node + Java via mise
 # ------------------
-info "Installing Ruby 3.3.6, Node 22, and Java 17 via mise..."
-mise install ruby@3.3.6 node@22 java@temurin-17
-mise use --global ruby@3.3.6 node@22 java@temurin-17
-success "Ruby, Node, and Java installed via mise"
+info "Installing Ruby 3.3.6, Node 22, Java 21, and Python 3.12 via mise..."
+mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12
+mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12
+success "Ruby, Node, Java, and Python installed via mise"
 
 # ------------------
 # Gems

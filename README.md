@@ -23,7 +23,7 @@ What it does, in order:
 4. Sets up `fzf` shell integration (key bindings + tab completion)
 5. Authenticates `gh` (GitHub CLI) if not already logged in
 6. Generates an SSH key for commit signing and prompts you to add it to GitHub
-7. Installs Ruby 3.3.6, Node 22, and Java 17 (Temurin) via mise
+7. Installs Ruby 3.3.6, Node 22, Java 21 (Temurin), and Python 3.12 via mise
 8. Installs the `colorls` gem
 9. Calls `install.sh` to symlink all dotfiles including VS Code settings and mise config
 10. Creates `~/.zshrc.local` from `zshrc.local.example`
@@ -57,7 +57,7 @@ already-correct symlinks are left untouched.
 | `hyper.js` | `~/.hyper.js` | Hyper terminal — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt — Ruby module disabled, 2s timeout |
 | `Brewfile` | _(used by bootstrap)_ | Declarative list of all Homebrew packages and casks |
-| `config/mise.toml` | `~/.config/mise/config.toml` | mise global runtime versions (Ruby, Node, Java) |
+| `config/mise.toml` | `~/.config/mise/config.toml` | mise global runtime versions (Ruby, Node, Java, Python) |
 | `ssh_config` | `~/.ssh/config` | SSH agent + Keychain config |
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code editor, terminal, and git settings |
 | `vscode/extensions.txt` | _(installed by install.sh)_ | Core VS Code extensions for every machine |
@@ -200,11 +200,12 @@ git commit --no-verify           # skip hooks entirely (use sparingly)
 **[mise](https://mise.jdx.dev)** — a polyglot version manager written in Rust that replaces `chruby`, `nvm`, and `pyenv` with a single tool. It manages Ruby, Node, Python, Java, Go, and dozens of other runtimes from one interface. Versions are set globally in `~/.config/mise/config.toml` and can be overridden per project using `.mise.toml`, `.ruby-version`, or `.nvmrc` — so existing projects need no changes. Activation is a single line in `zshrc` and adds ~5ms to startup. Common commands:
 
 ```sh
-mise install ruby@3.3.6   # install a specific version
-mise use node@22          # set globally
-mise use --local ruby@3.4 # set for current project only (writes .mise.toml)
-mise current              # show active versions
-mise ls                   # list all installed versions
+mise install ruby@3.3.6       # install a specific version
+mise install python@3.12      # install Python
+mise use node@22              # set globally
+mise use --local ruby@3.4     # set for current project only (writes .mise.toml)
+mise current                  # show active versions
+mise ls                       # list all installed versions
 ```
 
 This replaced `chruby` + `ruby-install` + `nvm` — three separate tools, three shell init blocks, ~500ms of startup overhead between them.
