@@ -1,2 +1,7 @@
 .DS_Store
 *.local
+
+# VS Code extension residue — created when `code --install-extension`
+# runs from the dotfiles directory instead of the project root
+*.vscode-*
+ms-*.*
