@@ -5,14 +5,40 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+BOOTSTRAP_START=$SECONDS
+STEP=0
+TOTAL_STEPS=13
 
-info()    { echo "[info]  $*"; }
-success() { echo "[ok]    $*"; }
-warn()    { echo "[warn]  $*"; }
+# ── Colors (disabled when not attached to a terminal) ────────────────────────
+if [[ -t 1 ]]; then
+  RESET='\033[0m';  BOLD='\033[1m';   DIM='\033[2m'
+  GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'
+  RED='\033[0;31m';   BLUE='\033[1;34m'
+else
+  RESET=''; BOLD=''; DIM=''; GREEN=''; YELLOW=''; CYAN=''; RED=''; BLUE=''
+fi
 
-# ------------------
-# Xcode CLI Tools
-# ------------------
+info()    { printf "${CYAN}  [info]${RESET}   %s\n" "$*"; }
+success() { printf "${GREEN}  [ok]${RESET}     %s\n" "$*"; }
+warn()    { printf "${YELLOW}  [warn]${RESET}   %s\n" "$*"; }
+error()   { printf "${RED}  [error]${RESET}  %s\n" "$*" >&2; }
+
+step() {
+  STEP=$((STEP + 1))
+  echo ""
+  printf "${BOLD}${BLUE}  ▸ [%d/%d]  %s${RESET}\n" "$STEP" "$TOTAL_STEPS" "$*"
+}
+
+# ── Startup banner ───────────────────────────────────────────────────────────
+echo ""
+printf "${BOLD}  dotfiles bootstrap${RESET}  —  macOS developer setup\n"
+echo "  ─────────────────────────────────────────────────"
+printf "  ${DIM}Machine${RESET}  %s\n" "$(scutil --get ComputerName 2>/dev/null || hostname)"
+printf "  ${DIM}Date${RESET}     %s\n" "$(date '+%a %b %d %Y  %H:%M')"
+echo "  ─────────────────────────────────────────────────"
+
+# ── Steps ─────────────────────────────────────────────────────────────────────
+step "Xcode Command Line Tools"
 if ! xcode-select -p &>/dev/null; then
   info "Installing Xcode Command Line Tools..."
   xcode-select --install
@@ -22,9 +48,7 @@ if ! xcode-select -p &>/dev/null; then
 fi
 success "Xcode CLI Tools"
 
-# ------------------
-# Homebrew
-# ------------------
+step "Homebrew"
 if ! command -v brew &>/dev/null; then
   info "Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -34,29 +58,20 @@ if ! command -v brew &>/dev/null; then
 fi
 success "Homebrew $(brew --version | head -1)"
 
-# ------------------
-# Brew packages (Brewfile)
-# ------------------
+step "Packages (brew bundle)"
 info "Installing packages from Brewfile..."
 brew bundle --file="$DOTFILES_DIR/Brewfile"
 success "Brew packages installed"
 
-# fzf shell integration (key bindings + completion)
+step "fzf shell integration"
 info "Setting up fzf shell integration..."
 "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
 success "fzf configured"
 
-# ------------------
-# SSH key for commit signing
-# ------------------
+step "SSH key for commit signing"
 echo ""
-echo "============================================"
-echo "  Git Commit Signing Setup"
-echo "============================================"
-echo ""
-echo "Every commit will be cryptographically signed with your SSH key."
-echo "GitHub shows a 'Verified' badge on signed commits, proving they"
-echo "actually came from you and weren't tampered with."
+printf "${DIM}  Every commit will be signed with your SSH key. GitHub shows a\n"
+printf "  'Verified' badge proving it actually came from you.${RESET}\n"
 echo ""
 
 if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
@@ -85,67 +100,45 @@ else
   pbcopy < "$HOME/.ssh/id_ed25519.pub"
 
   echo ""
-  echo "============================================"
-  echo "  ACTION REQUIRED: Add your key to GitHub"
-  echo "============================================"
+  printf "${BOLD}  Action required: add your key to GitHub${RESET}\n"
   echo ""
-  echo "Your public key has been copied to your clipboard."
+  printf "  Your public key is ${GREEN}already on your clipboard${RESET}. Go to:\n"
+  printf "  ${CYAN}  https://github.com/settings/ssh/new${RESET}\n"
   echo ""
-  echo "Follow these steps to register it with GitHub:"
+  printf "  Title:    e.g. 'MacBook Pro — commit signing'\n"
+  printf "  Key type: ${BOLD}Signing Key${RESET}  ← not Authentication Key\n"
+  printf "  Key:      paste from clipboard\n"
   echo ""
-  echo "  1. Open this URL in your browser:"
-  echo "     https://github.com/settings/ssh/new"
-  echo ""
-  echo "  2. Fill in the form:"
-  echo "     • Title:    give it a name like 'MacBook Pro - commit signing'"
-  echo "     • Key type: Signing Key  ← important, not Authentication Key"
-  echo "     • Key:      paste from clipboard (already copied)"
-  echo ""
-  echo "  3. Click 'Add SSH key'"
-  echo ""
-  echo "Your public key (also in clipboard):"
+  printf "  Your public key (also on clipboard):\n"
   echo ""
   cat "$HOME/.ssh/id_ed25519.pub"
   echo ""
   read -rp "Press Enter once you've added the key to GitHub to continue..."
 fi
 
-# ------------------
-# GitHub CLI auth
-# ------------------
+step "GitHub CLI authentication"
 if ! gh auth status &>/dev/null; then
   echo ""
-  echo "============================================"
-  echo "  GitHub CLI Authentication"
-  echo "============================================"
-  echo ""
-  echo "gh (GitHub CLI) is installed but not authenticated."
-  echo "You'll need this for creating PRs, managing issues,"
-  echo "and the SSH signing key step later."
+  printf "  ${DIM}gh is installed but not authenticated. You'll need this for\n"
+  printf "  creating PRs, managing issues, and interacting with GitHub.${RESET}\n"
   echo ""
   gh auth login
 else
   success "GitHub CLI already authenticated"
 fi
 
-# ------------------
-# Runtimes via mise (Ruby, Node, Java, Python, Go)
-# ------------------
+step "Runtimes via mise  (Ruby · Node · Java · Python · Go)"
 info "Installing Ruby, Node, Java, Python, and Go via mise..."
 mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
 mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
 success "Ruby, Node, Java, Python, and Go installed via mise"
 
-# ------------------
-# Gems
-# ------------------
+step "Ruby gems"
 info "Installing colorls..."
 mise exec ruby@3.3.6 -- gem install colorls
 success "colorls"
 
-# ------------------
-# Rust via rustup
-# ------------------
+step "Rust (rustup)"
 # Note: we check for `rustup`, NOT `rustc` — a system/Homebrew rustc does not
 # give you toolchain management (stable/nightly/components). rustup does.
 # If `brew install rust` (the static formula) is present alongside rustup,
@@ -201,9 +194,7 @@ if [[ -d "$_nvm_dir" ]]; then
 fi
 unset _nvm_dir _nvm_count
 
-# ------------------
-# tmux plugin manager (TPM)
-# ------------------
+step "tmux plugin manager (TPM)"
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
   info "Installing tmux plugin manager (TPM)..."
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" --depth=1
@@ -212,42 +203,38 @@ else
   success "TPM already installed"
 fi
 
-# ------------------
-# git-lfs
-# ------------------
+step "git-lfs"
 git lfs install --skip-repo
 success "git-lfs"
 
-# ------------------
-# Symlink dotfiles
-# ------------------
-info "Symlinking dotfiles..."
+step "Dotfile symlinks"
 zsh "$DOTFILES_DIR/install.sh"
 
-# ------------------
-# Local overrides
-# ------------------
 if [[ ! -f "$HOME/.zshrc.local" ]]; then
   cp "$DOTFILES_DIR/zshrc.local.example" "$HOME/.zshrc.local"
-  warn "Created ~/.zshrc.local from template — edit it to add machine-specific config."
+  warn "Created ~/.zshrc.local from template — edit it with machine-specific config"
 fi
 
-# ------------------
-# macOS defaults
-# ------------------
+step "macOS developer defaults"
 echo ""
-read -rp "Apply recommended macOS developer defaults? (key repeat, Dock, Finder, etc.) [y/N] " apply_macos
+read -rp "  Apply recommended macOS defaults? (key repeat, Dock, Finder, screenshots) [y/N] " apply_macos
 if [[ "$apply_macos" =~ ^[Yy]$ ]]; then
   bash "$DOTFILES_DIR/macos.sh"
 else
   info "Skipped macOS defaults. Run manually later: bash ~/dotfiles/macos.sh"
 fi
 
+_elapsed=$(( SECONDS - BOOTSTRAP_START ))
+_mins=$(( _elapsed / 60 ))
+_secs=$(( _elapsed % 60 ))
+
 echo ""
-success "Bootstrap complete!"
+echo "  ─────────────────────────────────────────────────"
+printf "${GREEN}${BOLD}  Bootstrap complete${RESET}  in %dm %ds\n" "$_mins" "$_secs"
+echo "  ─────────────────────────────────────────────────"
 echo ""
-echo "Next steps:"
-echo "  1. Edit ~/.zshrc.local with any machine-specific config"
-echo "  2. Open a new terminal (or run: source ~/.zshrc)"
-echo "  3. Install Hyper (not in Homebrew): https://hyper.is"
-echo "  4. VS Code, Postgres.app, DBeaver, and fonts were installed via Brewfile"
+printf "  ${BOLD}Next steps${RESET}\n"
+printf "  1. Edit ${CYAN}~/.zshrc.local${RESET} with machine-specific config\n"
+printf "  2. Open a new terminal  (or: ${CYAN}source ~/.zshrc${RESET})\n"
+printf "  3. Install Hyper (not in Homebrew): ${CYAN}https://hyper.is${RESET}\n"
+echo ""
