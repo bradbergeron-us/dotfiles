@@ -18,10 +18,10 @@ else
   RESET=''; BOLD=''; DIM=''; GREEN=''; YELLOW=''; CYAN=''; RED=''; BLUE=''
 fi
 
-info()    { printf "${CYAN}  [info]${RESET}   %s\n" "$*"; }
-success() { printf "${GREEN}  [ok]${RESET}     %s\n" "$*"; }
-warn()    { printf "${YELLOW}  [warn]${RESET}   %s\n" "$*"; }
-error()   { printf "${RED}  [error]${RESET}  %s\n" "$*" >&2; }
+info()    { printf "${CYAN}  → %s${RESET}\n" "$*"; }
+success() { printf "${GREEN}  ✓ %s${RESET}\n" "$*"; }
+warn()    { printf "${YELLOW}  ⚠ %s${RESET}\n" "$*"; }
+error()   { printf "${RED}  ✗ %s${RESET}\n" "$*" >&2; }
 
 step() {
   STEP=$((STEP + 1))
@@ -31,14 +31,14 @@ step() {
 
 # ── Startup banner ───────────────────────────────────────────────────────────
 echo ""
-printf "${BOLD}  dotfiles bootstrap${RESET}  —  macOS developer setup\n"
+printf "${BOLD}  🚀  dotfiles bootstrap${RESET}  —  macOS developer setup\n"
 echo "  ─────────────────────────────────────────────────"
 printf "  ${DIM}Machine${RESET}  %s\n" "$(scutil --get ComputerName 2>/dev/null || hostname)"
 printf "  ${DIM}Date${RESET}     %s\n" "$(date '+%a %b %d %Y  %H:%M')"
 echo "  ─────────────────────────────────────────────────"
 
 # ── Steps ─────────────────────────────────────────────────────────────────────
-step "Xcode Command Line Tools"
+step "🛠️  Xcode Command Line Tools"
 if ! xcode-select -p &>/dev/null; then
   info "Installing Xcode Command Line Tools..."
   xcode-select --install
@@ -48,7 +48,7 @@ if ! xcode-select -p &>/dev/null; then
 fi
 success "Xcode CLI Tools"
 
-step "Homebrew"
+step "🍺  Homebrew"
 if ! command -v brew &>/dev/null; then
   info "Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -58,17 +58,17 @@ if ! command -v brew &>/dev/null; then
 fi
 success "Homebrew $(brew --version | head -1)"
 
-step "Packages (brew bundle)"
+step "📦  Packages (brew bundle)"
 info "Installing packages from Brewfile..."
 brew bundle --file="$DOTFILES_DIR/Brewfile"
 success "Brew packages installed"
 
-step "fzf shell integration"
+step "🔍  fzf shell integration"
 info "Setting up fzf shell integration..."
 "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
 success "fzf configured"
 
-step "SSH key for commit signing"
+step "🔑  SSH key for commit signing"
 echo ""
 printf "${DIM}  Every commit will be signed with your SSH key. GitHub shows a\n"
 printf "  'Verified' badge proving it actually came from you.${RESET}\n"
@@ -77,15 +77,14 @@ echo ""
 if [[ -f "$HOME/.ssh/id_ed25519" ]]; then
   success "SSH key already exists at ~/.ssh/id_ed25519 — skipping generation"
 else
-  echo "No SSH key found. A new Ed25519 key will be generated now."
+  printf "  No SSH key found — a new Ed25519 key will be generated now.\n"
   echo ""
-  echo "You will be asked for a passphrase. Recommendations:"
-  echo "  • Setting a passphrase is more secure (recommended)"
-  echo "  • macOS Keychain will remember it after the first use"
-  echo "    so you won't be prompted on every commit"
-  echo "  • Press Enter twice to skip (less secure but simpler)"
+  printf "  Passphrase recommendations:\n"
+  printf "  • Setting one is more secure (recommended)\n"
+  printf "  • macOS Keychain remembers it after first use\n"
+  printf "  • Press Enter twice to skip (less secure but simpler)\n"
   echo ""
-  read -rp "Press Enter to continue and generate your SSH key..."
+  read -rp "  Press Enter to generate your SSH key... "
 
   mkdir -p "$HOME/.ssh"
   chmod 700 "$HOME/.ssh"
@@ -116,7 +115,7 @@ else
   read -rp "Press Enter once you've added the key to GitHub to continue..."
 fi
 
-step "GitHub CLI authentication"
+step "🐙  GitHub CLI authentication"
 if ! gh auth status &>/dev/null; then
   echo ""
   printf "  ${DIM}gh is installed but not authenticated. You'll need this for\n"
@@ -127,18 +126,18 @@ else
   success "GitHub CLI already authenticated"
 fi
 
-step "Runtimes via mise  (Ruby · Node · Java · Python · Go)"
+step "⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)"
 info "Installing Ruby, Node, Java, Python, and Go via mise..."
 mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
 mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
 success "Ruby, Node, Java, Python, and Go installed via mise"
 
-step "Ruby gems"
+step "💎  Ruby gems"
 info "Installing colorls..."
 mise exec ruby@3.3.6 -- gem install colorls
 success "colorls"
 
-step "Rust (rustup)"
+step "🦀  Rust (rustup)"
 # Note: we check for `rustup`, NOT `rustc` — a system/Homebrew rustc does not
 # give you toolchain management (stable/nightly/components). rustup does.
 # If `brew install rust` (the static formula) is present alongside rustup,
@@ -160,13 +159,9 @@ else
   success "rustup already installed: $(rustc --version 2>/dev/null || echo 'rustc not yet in PATH')"
 fi
 
-# ------------------
-# NVM → mise migration
-# ------------------
-# mise handles Node. If NVM is installed, detect whether it has versions:
-#   - Empty/ghost install → offer to remove it automatically
-#   - Has versions installed → warn and show migration steps (do NOT remove)
+# NVM migration check (conditional — runs only if ~/.nvm exists)
 _nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+[[ -d "$_nvm_dir" ]] && info "NVM detected — checking migration status..."
 if [[ -d "$_nvm_dir" ]]; then
   _nvm_count=$(ls "$_nvm_dir/versions/node/" 2>/dev/null | wc -l | tr -d ' ')
   if [[ "${_nvm_count:-0}" -eq 0 ]]; then
@@ -194,7 +189,7 @@ if [[ -d "$_nvm_dir" ]]; then
 fi
 unset _nvm_dir _nvm_count
 
-step "tmux plugin manager (TPM)"
+step "🖥️  tmux plugin manager (TPM)"
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
   info "Installing tmux plugin manager (TPM)..."
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" --depth=1
@@ -203,11 +198,11 @@ else
   success "TPM already installed"
 fi
 
-step "git-lfs"
+step "📁  git-lfs"
 git lfs install --skip-repo
 success "git-lfs"
 
-step "Dotfile symlinks"
+step "🔗  Dotfile symlinks"
 zsh "$DOTFILES_DIR/install.sh"
 
 if [[ ! -f "$HOME/.zshrc.local" ]]; then
@@ -215,7 +210,7 @@ if [[ ! -f "$HOME/.zshrc.local" ]]; then
   warn "Created ~/.zshrc.local from template — edit it with machine-specific config"
 fi
 
-step "macOS developer defaults"
+step "⚙️  macOS developer defaults"
 echo ""
 read -rp "  Apply recommended macOS defaults? (key repeat, Dock, Finder, screenshots) [y/N] " apply_macos
 if [[ "$apply_macos" =~ ^[Yy]$ ]]; then
@@ -230,7 +225,7 @@ _secs=$(( _elapsed % 60 ))
 
 echo ""
 echo "  ─────────────────────────────────────────────────"
-printf "${GREEN}${BOLD}  Bootstrap complete${RESET}  in %dm %ds\n" "$_mins" "$_secs"
+printf "${GREEN}${BOLD}  🎉  Bootstrap complete${RESET}  in %dm %ds\n" "$_mins" "$_secs"
 echo "  ─────────────────────────────────────────────────"
 echo ""
 printf "  ${BOLD}Next steps${RESET}\n"

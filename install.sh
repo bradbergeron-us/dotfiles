@@ -39,7 +39,7 @@ symlink() {
 }
 
 echo ""
-print -P "%F{cyan}  dotfiles%f  ─  symlinking from ${DOTFILES_DIR/$HOME/\~}"
+print -P "%F{cyan}  🔗  dotfiles%f  ─  symlinking from ${DOTFILES_DIR/$HOME/\~}"
 echo "  ─────────────────────────────────────────────────"
 
 # Home directory symlinks
@@ -128,4 +128,4 @@ if (( _backed > 0 )); then
   backup "backups saved to ${BACKUP_DIR/$HOME/\~}"
 fi
 echo ""
-success "Done — open a new shell or: source ~/.zshrc"
+success "🎉  Done — open a new shell or: source ~/.zshrc"
