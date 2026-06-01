@@ -25,7 +25,7 @@ brew "git-lfs"                 # large file storage
 brew "git-delta"               # syntax-highlighted diffs
 brew "lazygit"                 # terminal UI for git
 brew "gh"                      # GitHub CLI
-brew "git-credential-manager" # cross-platform credential helper — GitHub, GitHub Enterprise, Bitbucket
+cask "git-credential-manager" # cross-platform credential helper — GitHub, GitHub Enterprise, Bitbucket
 
 # ------------------
 # Runtime management

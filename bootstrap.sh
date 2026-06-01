@@ -45,8 +45,7 @@ fi
 success "Homebrew $(brew --version | head -1)"
 
 step "📦  Packages (brew bundle)"
-info "Installing packages from Brewfile..."
-brew bundle --file="$DOTFILES_DIR/Brewfile"
+brew bundle --verbose --file="$DOTFILES_DIR/Brewfile"
 success "Brew packages installed"
 
 step "🔍  fzf shell integration"
