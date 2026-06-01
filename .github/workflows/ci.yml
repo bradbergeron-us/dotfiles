@@ -21,7 +21,7 @@ jobs:
     name: Lint bash scripts (shellcheck)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
@@ -40,7 +40,7 @@ jobs:
     name: Zsh syntax + Brewfile validation
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Syntax-check all shell files
         run: |
@@ -63,7 +63,7 @@ jobs:
     name: install.sh smoke test
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run install.sh against temp HOME
         run: |
