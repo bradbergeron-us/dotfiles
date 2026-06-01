@@ -146,17 +146,52 @@ success "colorls"
 # ------------------
 # Rust via rustup
 # ------------------
-if ! command -v rustc &>/dev/null; then
+# Note: we check for `rustup`, NOT `rustc` — a system/Homebrew rustc does not
+# give you toolchain management (stable/nightly/components). rustup does.
+if ! command -v rustup &>/dev/null; then
   info "Initializing Rust toolchain via rustup..."
-  # --no-modify-path: we handle PATH ourselves via ~/.cargo/env in zshrc
+  # --no-modify-path: zshrc sources ~/.cargo/env directly
   rustup-init -y --no-modify-path
   # shellcheck source=/dev/null
   . "$HOME/.cargo/env"
   rustup component add rustfmt clippy
-  success "Rust installed (stable + rustfmt + clippy)"
+  success "Rust installed via rustup (stable + rustfmt + clippy)"
 else
-  success "Rust already installed: $(rustc --version)"
+  success "rustup already installed: $(rustc --version 2>/dev/null || echo 'rustc not yet in PATH')"
 fi
+
+# ------------------
+# NVM → mise migration
+# ------------------
+# mise handles Node. If NVM is installed, detect whether it has versions:
+#   - Empty/ghost install → offer to remove it automatically
+#   - Has versions installed → warn and show migration steps (do NOT remove)
+_nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+if [[ -d "$_nvm_dir" ]]; then
+  _nvm_count=$(ls "$_nvm_dir/versions/node/" 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$_nvm_count" -eq 0 ]]; then
+    echo ""
+    warn "NVM is installed at $_nvm_dir but has no Node versions (ghost install)."
+    warn "mise handles Node — NVM is no longer needed on this machine."
+    read -rp "Remove NVM automatically? [y/N] " _rm_nvm
+    if [[ "$_rm_nvm" =~ ^[Yy]$ ]]; then
+      rm -rf "$_nvm_dir"
+      brew uninstall nvm 2>/dev/null || true
+      unset NVM_DIR
+      success "NVM removed — mise manages Node from here"
+    else
+      warn "Keeping NVM. The zshrc NVM guard will silence it since no versions are installed."
+    fi
+  else
+    echo ""
+    warn "NVM has $_nvm_count Node version(s) installed. Recommended migration path:"
+    warn "  1. For each Node version you use, run: mise use --global node@<version>"
+    warn "  2. Test your projects with mise-managed Node"
+    warn "  3. Once satisfied: brew uninstall nvm && rm -rf ~/.nvm"
+    warn "Continuing without touching NVM — both mise and NVM can coexist during migration."
+  fi
+fi
+unset _nvm_dir _nvm_count
 
 # ------------------
 # tmux plugin manager (TPM)
