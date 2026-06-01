@@ -85,7 +85,6 @@ fi
 section "💎  Ruby gems"
 if command -v gem &>/dev/null; then
   gem update --system --no-document 2>/dev/null
-  gem update --no-document colorls 2>/dev/null || true
   success "Global gems updated"
 else
   warn "gem not found — skipping (mise Ruby may not be active)"

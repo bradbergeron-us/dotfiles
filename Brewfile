@@ -16,6 +16,7 @@ brew "fzf"            # fuzzy finder (Ctrl+R history, Ctrl+T file picker)
 brew "bat"            # cat with syntax highlighting
 brew "ripgrep"        # faster grep (rg)
 brew "fd"             # faster find
+brew "lsd"            # ls with icons, colors, and Git status (Rust binary; replaces colorls)
 
 # ------------------
 # Git

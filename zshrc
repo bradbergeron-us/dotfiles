@@ -91,11 +91,11 @@ alias ..='../..'
 alias ...='../../..'
 alias ....='../../../..'
 alias .....='../../../../..'
-alias la='ls -Ah'
-alias l='colorls --group-directories-first --almost-all'
-alias ll='colorls --group-directories-first --almost-all --long'
-alias lc='colorls -lA --sd'
-alias ls='colorls -h --group-directories-first -1'
+alias ls='lsd --group-dirs first'
+alias la='lsd -A'
+alias l='lsd -A --group-dirs first'
+alias ll='lsd -lA --group-dirs first'
+alias lc='lsd -lA --group-dirs first --sort date'
 alias change="code ~/.zshrc"
 alias update="source ~/.zshrc"
 alias history='history 0'
@@ -105,16 +105,6 @@ command -v bat &>/dev/null && alias cat='bat --paging=never'
 
 eval "$(starship init zsh)"
 test -f ~/afs_localprops.sh && source ~/afs_localprops.sh
-
-# colorls completion (guarded)
-if command -v colorls >/dev/null 2>&1; then
-  colorls_gem_path=$(dirname $(gem which colorls 2>/dev/null) 2>/dev/null)
-  if [[ -n "$colorls_gem_path" ]]; then
-    if [[ -d "$colorls_gem_path/zsh" ]]; then
-      fpath=("$colorls_gem_path/zsh" $fpath)
-    fi
-  fi
-fi
 
 # Optional plugins if installed
 if [ -f "$HOME/.zsh/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]; then

@@ -7,7 +7,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 BOOTSTRAP_START=$SECONDS
 STEP=0
-TOTAL_STEPS=13
+TOTAL_STEPS=12
 
 # ── Colors (disabled when not attached to a terminal) ────────────────────────
 if [[ -t 1 ]]; then
@@ -137,11 +137,6 @@ step "⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)"
 mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
 mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
 success "Ruby 3.3.6 · Node 22 · Java 21 · Python 3.12 · Go 1.24  (via mise)"
-
-step "💎  Ruby gems"
-info "Installing colorls..."
-mise exec ruby@3.3.6 -- gem install colorls
-success "colorls"
 
 step "🦀  Rust (rustup)"
 # Note: we check for `rustup`, NOT `rustc` — a system/Homebrew rustc does not

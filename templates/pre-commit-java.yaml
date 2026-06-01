@@ -19,7 +19,7 @@ repos:
   # General hygiene
   # ------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -34,13 +34,20 @@ repos:
 
   # ------------------
   # Google Java Format — consistent formatting (like Prettier for Java)
-  # Enforces Google Style Guide formatting. Run `--replace` to auto-fix.
+  # Enforces Google Style Guide formatting.
+  # NOTE: pre-commit/mirrors-google-java-format is archived and no longer works.
+  # Options:
+  #   1. Download the jar and use a local hook (see below)
+  #   2. Use the spotless-maven-plugin in pom.xml (recommended for CI)
+  # Download: https://github.com/google/google-java-format/releases
   # ------------------
-  - repo: https://github.com/pre-commit/mirrors-google-java-format
-    rev: v1.22.0
-    hooks:
-      - id: google-java-format
-        args: ['--replace']
+  # - repo: local
+  #   hooks:
+  #     - id: google-java-format
+  #       name: Google Java Format
+  #       entry: java -jar ~/.local/share/google-java-format.jar --replace
+  #       language: system
+  #       types: [java]
 
   # ------------------
   # Checkstyle — code style and standards
