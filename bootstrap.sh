@@ -35,20 +35,16 @@ fi
 success "Homebrew $(brew --version | head -1)"
 
 # ------------------
-# Brew packages
+# Brew packages (Brewfile)
 # ------------------
-info "Installing brew packages..."
-brew install \
-  chruby \
-  ruby-install \
-  nvm \
-  starship \
-  tmux \
-  zoxide \
-  git-lfs \
-  openssl@3
-
+info "Installing packages from Brewfile..."
+brew bundle --file="$DOTFILES_DIR/Brewfile"
 success "Brew packages installed"
+
+# fzf shell integration (key bindings + completion)
+info "Setting up fzf shell integration..."
+"$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
+success "fzf configured"
 
 # ------------------
 # Ruby

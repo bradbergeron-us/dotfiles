@@ -19,11 +19,12 @@ bash ~/dotfiles/bootstrap.sh
 What it does, in order:
 1. Installs Xcode Command Line Tools (pauses and prompts you to re-run if needed)
 2. Installs Homebrew — detects Apple Silicon (`/opt/homebrew`) or Intel (`/usr/local`) automatically
-3. Installs brew packages: `chruby`, `ruby-install`, `nvm`, `starship`, `tmux`, `zoxide`, `git-lfs`, `openssl@3`
-4. Installs Ruby 3.3.6 via `ruby-install`
-5. Installs the `colorls` gem
-6. Calls `install.sh` to symlink the dotfiles
-7. Creates `~/.zshrc.local` from `zshrc.local.example` if it doesn't already exist
+3. Runs `brew bundle` from `Brewfile` — installs all packages and casks including Raycast
+4. Sets up `fzf` shell integration (key bindings + tab completion)
+5. Installs Ruby 3.3.6 via `ruby-install`
+6. Installs the `colorls` gem
+7. Calls `install.sh` to symlink the dotfiles
+8. Creates `~/.zshrc.local` from `zshrc.local.example` if it doesn't already exist
 
 After running, install manually: [Hyper](https://hyper.is) and [VS Code](https://code.visualstudio.com).
 
@@ -47,11 +48,33 @@ already-correct symlinks are left untouched.
 |------|--------------|-------------|
 | `zshrc` | `~/.zshrc` | Zsh config — lazy NVM, chruby, aliases, hooks |
 | `zprofile` | `~/.zprofile` | Zsh login profile — Homebrew path setup |
-| `gitconfig` | `~/.gitconfig` | Git user config and credential helper |
+| `gitconfig` | `~/.gitconfig` | Git — user, delta pager, sane defaults |
+| `gitignore_global` | `~/.gitignore_global` | Global gitignore — macOS, editors, logs |
 | `tmux.conf` | `~/.tmux.conf` | tmux — C-a prefix, vim keys, pane navigation |
 | `hyper.js` | `~/.hyper.js` | Hyper terminal — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt — Ruby module disabled, 2s timeout |
+| `Brewfile` | _(used by bootstrap)_ | Declarative list of all Homebrew packages and casks |
 | `zshrc.local.example` | _(template only)_ | Template for machine-specific overrides |
+
+## Package management (Brewfile)
+
+All Homebrew packages are declared in `Brewfile`. This replaces manually
+tracking what's installed and makes restoring a new machine repeatable.
+
+```sh
+# Install everything (new machine or after adding packages)
+brew bundle --file=~/dotfiles/Brewfile
+
+# Check what's missing without installing
+brew bundle check --file=~/dotfiles/Brewfile
+
+# Upgrade all packages to latest
+brew bundle --file=~/dotfiles/Brewfile --upgrade
+```
+
+To add a new package, add it to `Brewfile` and run `brew bundle`. Categories
+in the file: shell & prompt, file & search, git, Ruby, Node, tmux, utilities,
+and casks (GUI apps).
 
 ## Machine-specific config (`~/.zshrc.local`)
 

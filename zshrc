@@ -37,6 +37,9 @@ npx()  { _nvm_load; npx  "$@"; }
 
 export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
+# fzf (fuzzy finder — Ctrl+R history, Ctrl+T file picker)
+[[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
+
 # ------------------
 # Zsh hooks
 # ------------------
@@ -125,6 +128,9 @@ alias ls='colorls -h --group-directories-first -1'
 alias change="code ~/.zshrc"
 alias update="source ~/.zshrc"
 alias history='history 0'
+
+# bat (syntax-highlighted cat)
+command -v bat &>/dev/null && alias cat='bat --paging=never'
 
 eval "$(starship init zsh)"
 test -f ~/afs_localprops.sh && source ~/afs_localprops.sh

@@ -41,6 +41,9 @@ symlink "$DOTFILES_DIR/gitconfig" "$HOME/.gitconfig"
 symlink "$DOTFILES_DIR/tmux.conf" "$HOME/.tmux.conf"
 symlink "$DOTFILES_DIR/hyper.js"  "$HOME/.hyper.js"
 
+# Git global ignore
+symlink "$DOTFILES_DIR/gitignore_global" "$HOME/.gitignore_global"
+
 # ~/.config symlinks
 mkdir -p "$HOME/.config"
 symlink "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
