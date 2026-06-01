@@ -87,12 +87,20 @@ else
 
   mkdir -p "$HOME/.ssh"
   chmod 700 "$HOME/.ssh"
-  ssh-keygen -t ed25519 -C "$(git config user.email)" -f "$HOME/.ssh/id_ed25519"
+  # Use configured email, or prompt if not yet set (gitconfig is symlinked later at step 12)
+  _key_email="$(git config user.email 2>/dev/null || true)"
+  if [[ -z "$_key_email" ]]; then
+    echo ""
+    read -rp "  Enter your email for the SSH key (used as key comment): " _key_email
+  fi
+
+  ssh-keygen -t ed25519 -C "$_key_email" -f "$HOME/.ssh/id_ed25519"
   ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519"
 
   # Register key for local signature verification
   mkdir -p "$HOME/.config/git"
-  echo "$(git config user.email) $(cat "$HOME/.ssh/id_ed25519.pub")" > "$HOME/.config/git/allowed_signers"
+  echo "$_key_email $(cat "$HOME/.ssh/id_ed25519.pub")" > "$HOME/.config/git/allowed_signers"
+  unset _key_email
 
   # Copy to clipboard automatically
   pbcopy < "$HOME/.ssh/id_ed25519.pub"
@@ -167,7 +175,7 @@ if [[ -d "$_nvm_dir" ]]; then
     echo ""
     warn "NVM is installed at $_nvm_dir but has no Node versions (ghost install)."
     warn "mise handles Node — NVM is no longer needed on this machine."
-    read -rp "Remove NVM automatically? [y/N] " _rm_nvm
+    read -rp "  Remove NVM automatically? [y/N] " _rm_nvm
     if [[ "$_rm_nvm" =~ ^[Yy]$ ]]; then
       rm -rf "$_nvm_dir"
       brew uninstall nvm 2>/dev/null || true
@@ -186,7 +194,7 @@ if [[ -d "$_nvm_dir" ]]; then
     warn "Continuing without touching NVM — both mise and NVM can coexist during migration."
   fi
 fi
-unset _nvm_dir _nvm_count
+unset _nvm_dir _nvm_count _rm_nvm
 
 step "🖥️  tmux plugin manager (TPM)"
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then

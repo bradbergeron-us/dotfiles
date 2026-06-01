@@ -13,7 +13,6 @@ typeset -i _linked=0 _current=0 _backed=0
 info()    { print -P "%F{cyan}  → %f$*"; }
 success() { print -P "%F{green}  ✓ %f$*"; }
 backup()  { print -P "%F{yellow}  ⚠ %f$*"; }
-error()   { print -P "%F{red}  ✗ %f$*" >&2; }
 
 symlink() {
   local src="$1"
