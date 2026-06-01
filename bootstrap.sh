@@ -47,22 +47,39 @@ info "Setting up fzf shell integration..."
 success "fzf configured"
 
 # ------------------
-# Ruby
+# SSH key for commit signing
 # ------------------
-RUBY_VERSION="3.3.6"
-if ! ls ~/.rubies/ruby-${RUBY_VERSION} &>/dev/null; then
-  info "Installing Ruby ${RUBY_VERSION} (this may take a few minutes)..."
-  ruby-install ruby ${RUBY_VERSION}
+if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
+  info "Generating SSH key for commit signing..."
+  ssh-keygen -t ed25519 -C "$(git config user.email)" -f "$HOME/.ssh/id_ed25519"
+  ssh-add --apple-use-keychain "$HOME/.ssh/id_ed25519"
+
+  # Create allowed_signers for local verification
+  mkdir -p "$HOME/.config/git"
+  echo "$(git config user.email) $(cat $HOME/.ssh/id_ed25519.pub)" > "$HOME/.config/git/allowed_signers"
+
+  echo ""
+  warn "SSH key generated. Add the following public key to GitHub (Settings → SSH keys → New → type: Signing):"
+  echo ""
+  cat "$HOME/.ssh/id_ed25519.pub"
+  echo ""
+else
+  success "SSH key already exists: ~/.ssh/id_ed25519"
 fi
-success "Ruby ${RUBY_VERSION}"
+
+# ------------------
+# Ruby + Node via mise
+# ------------------
+info "Installing Ruby 3.3.6 and Node 22 via mise..."
+mise install ruby@3.3.6 node@22
+mise use --global ruby@3.3.6 node@22
+success "Ruby $(mise exec ruby@3.3.6 -- ruby -e 'print RUBY_VERSION') and Node $(mise exec node@22 -- node -v)"
 
 # ------------------
 # Gems
 # ------------------
 info "Installing colorls..."
-source "$(brew --prefix chruby)/share/chruby/chruby.sh"
-chruby ruby-${RUBY_VERSION}
-gem install colorls
+mise exec ruby@3.3.6 -- gem install colorls
 success "colorls"
 
 # ------------------

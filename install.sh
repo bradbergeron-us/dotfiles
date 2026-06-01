@@ -44,6 +44,15 @@ symlink "$DOTFILES_DIR/hyper.js"  "$HOME/.hyper.js"
 # Git global ignore
 symlink "$DOTFILES_DIR/gitignore_global" "$HOME/.gitignore_global"
 
+# Local git config (signing key, work email overrides — not committed)
+mkdir -p "$HOME/.config/git"
+if [[ ! -f "$HOME/.config/git/local.gitconfig" ]]; then
+  cp "$DOTFILES_DIR/gitconfig.local.example" "$HOME/.config/git/local.gitconfig"
+  success "Created ~/.config/git/local.gitconfig from template"
+else
+  success "Already exists: ~/.config/git/local.gitconfig"
+fi
+
 # Global git hooks (pre-commit runs in any repo with .pre-commit-config.yaml)
 mkdir -p "$HOME/.config/git/hooks"
 if [[ ! -f "$HOME/.config/git/hooks/pre-commit" ]]; then
