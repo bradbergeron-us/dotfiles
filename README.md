@@ -317,6 +317,60 @@ cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
 # edit with this machine's specific values
 ```
 
+## Work machine setup
+
+Work machines need extra tools (API clients, database CLIs, Kubernetes, Java build tools) that don't belong on every personal Mac. This repo uses a **layered approach** to keep the base `Brewfile` lean while letting work machines opt in to additional packages.
+
+### 1. Install work-specific Homebrew packages
+
+Run the base Brewfile first, then the work overlay:
+
+```sh
+brew bundle --file=~/dotfiles/Brewfile        # shared base (all machines)
+brew bundle --file=~/dotfiles/Brewfile.work   # work additions
+```
+
+`Brewfile.work` adds: Insomnia, Newman, PostgreSQL 16 CLI tools, Redis, Maven, Gradle, kubectl, and Helm. It does **not** duplicate anything already in `Brewfile`.
+
+### 2. Create `~/.zshrc.local` from the template
+
+`zshrc.local.example` is a richly commented template covering common work-machine needs. Copy it and uncomment the sections relevant to your setup:
+
+```sh
+cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
+```
+
+Includes sections for:
+- **Machine identity** — `MACHINE_NAME` for distinguishing machines
+- **Work PATH entries** — internal tooling, vendored binaries
+- **Maven aliases** — `mci`, `mvnt`, `mvninstall` with `-DskipTests`
+- **Multi-Java switching** — `use-java 17` / `use-java 21` using mise
+- **direnv examples** — sample `.envrc` with `DATABASE_URL`, `REDIS_URL`, `RAILS_ENV`
+- **Corporate proxy** — `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY`
+- **Work git email** — override the global git email for work commits
+- **Sidekiq Pro/Enterprise** — `BUNDLE_ENTERPRISE__CONTRIBSYS__COM` license key
+- **PG_CONFIG** — point at Postgres.app for native gem compilation
+
+Because `~/.zshrc.local` is in `.gitignore`, all secrets and machine-specific config stay out of the repo entirely.
+
+### 3. Global direnv helpers (`direnvrc`)
+
+`install.sh` symlinks `config/direnvrc` to `~/.config/direnv/direnvrc`. This file is sourced by direnv before every `.envrc` evaluation and provides reusable layout helpers:
+
+- **`layout python`** — auto-creates and activates a `.venv` virtualenv in the project directory
+- **`layout node`** — adds `node_modules/.bin` to `PATH` so locally-installed binaries (eslint, tsc, etc.) work without `npx`
+
+Use them in any project's `.envrc`:
+
+```sh
+# .envrc
+layout python
+layout node
+export DATABASE_URL=postgres://localhost/myapp_dev
+```
+
+Then run `direnv allow` once to approve the file.
+
 ## Making changes
 
 Because the dotfiles are symlinked, editing `~/.zshrc` (or any other dotfile)

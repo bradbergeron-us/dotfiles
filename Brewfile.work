@@ -1,0 +1,34 @@
+# Brewfile.work — work machine additions, layered on top of Brewfile
+#
+# This file uses a layered approach: install the shared base Brewfile first,
+# then install these work-specific additions on top.
+#
+#   brew bundle --file=~/dotfiles/Brewfile        # base (all machines)
+#   brew bundle --file=~/dotfiles/Brewfile.work   # work additions (this file)
+#
+# Keep anything that belongs on every machine in Brewfile.
+# Keep work-only tools here so personal machines stay lean.
+
+# ------------------
+# API tooling
+# ------------------
+cask "insomnia"           # GUI REST/GraphQL client
+brew "newman"             # CLI runner for API collections
+
+# ------------------
+# Database tools
+# ------------------
+brew "postgresql@16"      # PostgreSQL CLI tools (psql, pg_dump) without Postgres.app
+brew "redis"              # Redis (often needed for background jobs in Rails apps)
+
+# ------------------
+# Java / enterprise
+# ------------------
+brew "maven"              # Java build tool
+brew "gradle"             # Alternative Java build tool
+
+# ------------------
+# Infrastructure / containers
+# ------------------
+brew "kubectl"            # Kubernetes CLI
+brew "helm"               # Kubernetes package manager
