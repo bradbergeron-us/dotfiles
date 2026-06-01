@@ -20,10 +20,11 @@ brew "fd"             # faster find
 # ------------------
 # Git
 # ------------------
-brew "git-lfs"        # large file storage
-brew "git-delta"      # syntax-highlighted diffs
-brew "lazygit"        # terminal UI for git
-brew "gh"             # GitHub CLI
+brew "git-lfs"                 # large file storage
+brew "git-delta"               # syntax-highlighted diffs
+brew "lazygit"                 # terminal UI for git
+brew "gh"                      # GitHub CLI
+brew "git-credential-manager" # cross-platform credential helper — GitHub, GitHub Enterprise, Bitbucket
 
 # ------------------
 # Runtime management
@@ -51,7 +52,10 @@ brew "tldr"           # simplified man pages (community-maintained examples)
 brew "httpie"         # human-friendly HTTP client (replaces curl for interactive use)
 brew "watch"          # re-run a command on an interval (e.g. watch kubectl get pods)
 brew "direnv"         # per-directory environment variables via .envrc files
-brew "newman"             # CLI runner for Insomnia/Postman collections (useful in CI)
+brew "newman"         # CLI runner for Insomnia/Postman collections (useful in CI)
+brew "redis"          # in-memory data store — background jobs (Sidekiq), caching, sessions
+brew "imagemagick"    # image conversion and manipulation (resize, crop, format conversion)
+brew "pdftk-java"     # PDF toolkit — merge, split, fill forms, extract pages
 
 # ------------------
 # Fonts

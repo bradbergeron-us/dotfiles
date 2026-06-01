@@ -13,7 +13,7 @@ brew bundle --file=~/dotfiles/Brewfile        # shared base (all machines)
 brew bundle --file=~/dotfiles/Brewfile.work   # work additions
 ```
 
-`Brewfile.work` adds: Insomnia, Newman, PostgreSQL 16 CLI tools, Redis, Maven, Gradle, kubectl, and Helm. It does **not** duplicate anything already in `Brewfile`.
+`Brewfile.work` adds: Gradle, kubectl, and Helm. Everything else you might expect here — Insomnia, newman, Redis, and Maven — is already in the base `Brewfile` since it's useful on every machine. PostgreSQL CLI tools are intentionally excluded: Postgres.app (installed by the base Brewfile) provides them and installing `postgresql@xx` via Homebrew can cause conflicts.
 
 ---
 

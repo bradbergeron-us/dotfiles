@@ -7,8 +7,8 @@
 
 set -euo pipefail
 
-echo "Applying macOS developer defaults..."
-echo "(You may be prompted for your password)"
+printf "  → Applying macOS developer defaults...\n"
+printf "  (You may be prompted for your password)\n"
 echo ""
 
 # ------------------
@@ -23,7 +23,7 @@ defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 
-echo "[ok] Keyboard settings"
+printf "  ✓ Keyboard — fast repeat, no autocorrect, no smart quotes\n"
 
 # ------------------
 # Trackpad
@@ -32,7 +32,7 @@ echo "[ok] Keyboard settings"
 defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
 defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 
-echo "[ok] Trackpad settings"
+printf "  ✓ Trackpad — tap-to-click enabled\n"
 
 # ------------------
 # Finder
@@ -59,7 +59,7 @@ defaults write com.apple.finder _FXSortFoldersFirst -bool true
 # Search current folder by default
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 
-echo "[ok] Finder settings"
+printf "  ✓ Finder — show hidden files, all extensions, path bar, list view\n"
 
 # ------------------
 # Screenshots
@@ -71,7 +71,7 @@ defaults write com.apple.screencapture location -string "$SCREENSHOT_DIR"
 defaults write com.apple.screencapture type -string "png"
 defaults write com.apple.screencapture disable-shadow -bool true
 
-echo "[ok] Screenshots → $SCREENSHOT_DIR"
+printf "  ✓ Screenshots → %s\n" "$SCREENSHOT_DIR"
 
 # ------------------
 # Dock
@@ -89,7 +89,7 @@ defaults write com.apple.dock show-recents -bool false
 # Smaller dock size
 defaults write com.apple.dock tilesize -int 48
 
-echo "[ok] Dock settings"
+printf "  ✓ Dock — auto-hide, instant show/hide, no recent apps\n"
 
 # ------------------
 # Mission Control / Spaces
@@ -100,7 +100,7 @@ defaults write com.apple.dock mru-spaces -bool false
 # Speed up Mission Control animation
 defaults write com.apple.dock expose-animation-duration -float 0.1
 
-echo "[ok] Mission Control settings"
+printf "  ✓ Mission Control — faster animation, stable Spaces order\n"
 
 # ------------------
 # Activity Monitor
@@ -108,7 +108,7 @@ echo "[ok] Mission Control settings"
 # Show all processes, not just user ones
 defaults write com.apple.ActivityMonitor ShowCategory -int 0
 
-echo "[ok] Activity Monitor settings"
+printf "  ✓ Activity Monitor — show all processes\n"
 
 # ------------------
 # TextEdit
@@ -118,16 +118,16 @@ defaults write com.apple.TextEdit RichText -int 0
 defaults write com.apple.TextEdit PlainTextEncoding -int 4
 defaults write com.apple.TextEdit PlainTextEncodingForWrite -int 4
 
-echo "[ok] TextEdit settings"
+printf "  ✓ TextEdit — plain text mode by default\n"
 
 # ------------------
 # Apply changes
 # ------------------
 echo ""
-echo "Restarting affected apps..."
+printf "  → Restarting affected apps (Finder, Dock)...\n"
 for app in "Finder" "Dock" "SystemUIServer" "cfprefsd"; do
   killall "$app" &>/dev/null || true
 done
 
 echo ""
-echo "[ok] Done. Some changes (key repeat, trackpad) require logout to take effect."
+printf "  ✓ Done. Key repeat and trackpad changes take full effect after logout.\n"

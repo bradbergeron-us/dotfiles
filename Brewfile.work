@@ -10,22 +10,10 @@
 # Keep work-only tools here so personal machines stay lean.
 
 # ------------------
-# API tooling
-# ------------------
-cask "insomnia"           # GUI REST/GraphQL client
-brew "newman"             # CLI runner for API collections
-
-# ------------------
-# Database tools
-# ------------------
-brew "postgresql@16"      # PostgreSQL CLI tools (psql, pg_dump) without Postgres.app
-brew "redis"              # Redis (often needed for background jobs in Rails apps)
-
-# ------------------
 # Java / enterprise
 # ------------------
-brew "maven"              # Java build tool
-brew "gradle"             # Alternative Java build tool
+# maven is in the base Brewfile — only gradle is work-specific
+brew "gradle"             # Alternative Java build tool (Groovy/Kotlin DSL build system)
 
 # ------------------
 # Infrastructure / containers

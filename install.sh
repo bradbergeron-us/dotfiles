@@ -7,32 +7,39 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_DIR="$HOME/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
 
-info()    { print -P "%F{cyan}[info]%f  $*"; }
-success() { print -P "%F{green}[ok]%f    $*"; }
-backup()  { print -P "%F{yellow}[backup]%f $*"; }
-error()   { print -P "%F{red}[error]%f $*"; }
+# Counters
+typeset -i _linked=0 _current=0 _backed=0
+
+info()    { print -P "%F{cyan}  → %f$*"; }
+success() { print -P "%F{green}  ✓ %f$*"; }
+backup()  { print -P "%F{yellow}  ⚠ %f$*"; }
 
 symlink() {
   local src="$1"
   local dest="$2"
+  # Display path with ~ instead of $HOME for readability
+  local short="${dest/$HOME/\~}"
 
-  # Back up existing file/symlink if it's not already our symlink
   if [[ -e "$dest" || -L "$dest" ]]; then
     if [[ "$(readlink "$dest")" == "$src" ]]; then
-      success "Already linked: $dest"
+      success "current   $short"
+      (( _current++ )) || true
       return
     fi
     mkdir -p "$BACKUP_DIR"
     mv "$dest" "$BACKUP_DIR/"
-    backup "Backed up $(basename "$dest") → $BACKUP_DIR/"
+    backup "backed up  $short"
+    (( _backed++ )) || true
   fi
 
   ln -sf "$src" "$dest"
-  success "Linked: $dest → $src"
+  success "linked    $short"
+  (( _linked++ )) || true
 }
 
-info "Installing dotfiles from $DOTFILES_DIR"
 echo ""
+print -P "%F{cyan}  🔗  dotfiles%f  ─  symlinking from ${DOTFILES_DIR/$HOME/\~}"
+echo "  ─────────────────────────────────────────────────"
 
 # Home directory symlinks
 symlink "$DOTFILES_DIR/zshrc"    "$HOME/.zshrc"
@@ -114,4 +121,10 @@ else
 fi
 
 echo ""
-success "Done! Open a new shell or run: source ~/.zshrc"
+echo "  ─────────────────────────────────────────────────"
+success "${_linked} linked  ·  ${_current} current  ·  ${_backed} backed up"
+if (( _backed > 0 )); then
+  backup "backups saved to ${BACKUP_DIR/$HOME/\~}"
+fi
+echo ""
+success "🎉  Done — open a new shell or: source ~/.zshrc"

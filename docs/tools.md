@@ -45,6 +45,26 @@ A terminal UI for git that makes complex operations (interactive rebase, cherry-
 ### [gh](https://cli.github.com)
 The official GitHub CLI. Lets you create PRs, review code, manage issues, and interact with GitHub Actions directly from the terminal without switching to a browser. Pairs well with the git aliases in `gitconfig`.
 
+### [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+A cross-platform, cross-host credential helper maintained by the Git ecosystem team (Microsoft/GitHub). Solves the specific problem of working with multiple Git hosts — GitHub.com, GitHub Enterprise, Bitbucket, Azure DevOps — from the same machine without managing credentials manually for each.
+
+**Why it matters for enterprise setups:** when you have a personal GitHub account AND a work GitHub Enterprise instance AND Bitbucket, credential conflicts are a constant friction point. GCM maintains separate, scoped credential stores per host and supports OAuth2, personal access tokens, and SSO/MFA flows natively. Once installed, it handles authentication transparently.
+
+```sh
+# GCM is auto-configured when installed via Homebrew.
+# To check the active credential helper:
+git config --global credential.helper
+
+# To sign in to a specific host manually:
+git credential-manager github login
+git credential-manager github login --enterprise-url https://github.your-company.com
+
+# To list stored credentials:
+git credential-manager list
+```
+
+On macOS, credentials are stored in the macOS Keychain. On new machines, the first `git clone` or `git push` to a host triggers an OAuth browser flow automatically.
+
 ---
 
 ## Utilities
@@ -76,6 +96,29 @@ direnv allow   # approve once; runs automatically after that
 The global `config/direnvrc` (symlinked to `~/.config/direnv/direnvrc`) defines reusable layout helpers:
 - **`layout python`** — auto-creates and activates a `.venv` virtualenv (uses `uv` if available, 10–100× faster)
 - **`layout node`** — adds `node_modules/.bin` to PATH so locally-installed binaries work without `npx`
+
+### [redis](https://redis.io)
+An in-memory data store used for background job queues (Sidekiq), caching, and session storage. Running Redis locally lets you develop and test without needing a remote instance. Start/stop it with `brew services start redis` / `brew services stop redis`, or run it in the foreground with `redis-server`.
+
+### [imagemagick](https://imagemagick.org)
+A command-line image conversion and manipulation toolkit. Handles virtually any image format. Common uses in a developer workflow:
+```sh
+convert input.png -resize 800x600 output.jpg   # resize
+convert input.pdf[0] thumbnail.png              # first page of PDF to image
+mogrify -format webp *.png                      # batch convert all PNGs to WebP
+identify image.png                              # show image dimensions and metadata
+```
+Also required as a native dependency by several Ruby gems (`rmagick`, `mini_magick`) and Python packages (`Pillow` sometimes links to it).
+
+### [pdftk-java](https://gitlab.com/pdftk-java/pdftk)
+A PDF toolkit for working with PDF files from the command line. The Java port of the original pdftk (the C version is no longer maintained). Common uses:
+```sh
+pdftk file1.pdf file2.pdf cat output combined.pdf   # merge PDFs
+pdftk input.pdf burst output page_%02d.pdf           # split into individual pages
+pdftk form.pdf fill_form data.fdf output filled.pdf  # fill a PDF form
+pdftk input.pdf dump_data                            # extract metadata
+```
+Useful when working with government or enterprise document workflows that require PDF manipulation without opening Acrobat.
 
 ### [newman](https://github.com/postmanlabs/newman)
 A CLI runner for Insomnia and Postman collections. Executes a collection of API requests from the command line and reports pass/fail results, making API test suites runnable in CI without opening a GUI. Export a collection from Insomnia, add `newman run collection.json` to your CI config.
