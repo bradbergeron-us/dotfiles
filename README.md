@@ -115,7 +115,35 @@ and why it's worth having.
 
 ### Apps
 
-**[Raycast](https://raycast.com)** — replaces macOS Spotlight with a dramatically faster, more capable launcher. Beyond app switching, it provides clipboard history (`Cmd+Shift+V`), window management with keyboard shortcuts, a snippet library, a calculator, unit converter, and a large extension ecosystem. The free tier covers everything in day-to-day use.
+**[Raycast](https://raycast.com)** — replaces macOS Spotlight as your primary launcher and desktop control layer. Everything is keyboard-driven: press the hotkey, type what you want, press `Enter`. No mouse required.
+
+**Initial setup (do this first):**
+1. Open System Settings → Keyboard → Keyboard Shortcuts → Spotlight — disable `Cmd+Space`
+2. Open Raycast → Settings → General — set the Raycast hotkey to `Cmd+Space`
+3. Open Raycast → Extensions → Store — install `GitHub`, `Brew`, and anything else relevant to your stack
+4. Enable Clipboard History under Extensions (it's off by default)
+
+**How it works:** press `Cmd+Space`, type any part of a command name, and press `Enter` to run it. You don't need exact names — fuzzy matching finds it. Press `Cmd+K` on any result to see all available actions for it.
+
+**Shortcuts worth learning immediately:**
+
+| What to type | What it does |
+|---|---|
+| `Cmd+Space`, then app name | Launch or switch to any app |
+| `Cmd+Space`, then `clip` | Open Clipboard History — search and re-paste anything you've copied |
+| `Cmd+Space`, then `left half` | Snap the current window to the left half of the screen |
+| `Cmd+Space`, then `right half` | Snap to right half |
+| `Cmd+Space`, then `maximize` | Full-screen the current window (not macOS full-screen, just resized) |
+| `Cmd+Space`, then `42 * 1.08` | Evaluate inline — press `Enter` to copy the result |
+| `Cmd+Space`, then `define <word>` | Dictionary lookup inline |
+| `Cmd+Space`, then `snip` | Create or search text snippets |
+| `Cmd+Space`, then `quit all` | Close every open app at once |
+
+For window management: after a few uses, go to Settings → Extensions → Window Management and assign direct keyboard shortcuts (e.g. `Ctrl+Opt+Left` for left half) so you no longer need to open the launcher at all for window snapping.
+
+For Clipboard History: assign `Cmd+Shift+V` as a direct hotkey in Settings → Extensions → Clipboard History. After that, every copy you make is searchable — code snippets, URLs, API responses, anything.
+
+**Official guide:** [manual.raycast.com](https://manual.raycast.com) covers every feature in depth. The [YouTube channel](https://www.youtube.com/@raycastapp) has short walkthroughs of specific features like snippets, script commands, and extensions that are worth watching once to understand what's possible.
 
 ## Future considerations
 
