@@ -2,10 +2,13 @@
 # verify.sh — dotfiles environment health check
 #
 # Reports:
-#   1. Broken symlinks      (errors   — exit 1)
-#   2. Version drift        (warnings — exit 0)
+#   1. Broken symlinks        (errors   — exit 1)
+#   2. Version drift          (warnings — exit 0)
 #   3. Missing required tools (warnings — exit 0)
-#   4. Stale backups        (warnings — exit 0)
+#   4. Stale backups          (warnings — exit 0)
+#   5. SSH key                (warnings — exit 0)
+#   6. git-lfs global init    (warnings — exit 0)
+#   7. mise tools installed   (warnings — exit 0)
 #
 # Usage:   bash ~/dotfiles/verify.sh
 # Called by update.sh automatically after each update cycle.
@@ -110,8 +113,8 @@ else
   WARNINGS=$(( WARNINGS + 1 ))
 fi
 
-# ── 6. git-lfs ─────────────────────────────────────────────────────────
-step "🐙  git-lfs"
+# ── 6. git-lfs ──────────────────────────────────────────────────────
+step "📁  git-lfs"
 check_git_lfs_global
 
 if [[ "$GIT_LFS_OK" == "true" ]]; then

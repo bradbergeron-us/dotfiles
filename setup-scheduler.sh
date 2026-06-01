@@ -26,8 +26,8 @@ echo "  ────────────────────────
 
 # ── Uninstall ─────────────────────────────────────────────────────────────────
 if [[ "${1:-}" == "--uninstall" ]]; then
-  if launchctl list "$PLIST_LABEL" &>/dev/null 2>&1; then
-    launchctl unload "$PLIST_DEST" 2>/dev/null || true
+  if launchctl print "gui/$(id -u)/$PLIST_LABEL" &>/dev/null 2>&1; then
+    launchctl bootout "gui/$(id -u)" "$PLIST_DEST" 2>/dev/null || true
     success "Unloaded $PLIST_LABEL"
   fi
   if [[ -f "$PLIST_DEST" ]]; then
@@ -46,9 +46,9 @@ mkdir -p "$LOG_DIR" "$HOME/Library/LaunchAgents"
 # Substitute __DOTFILES_DIR__ placeholder with the actual path
 sed "s|__DOTFILES_DIR__|$DOTFILES_DIR|g" "$PLIST_SRC" > "$PLIST_DEST"
 
-# Reload idempotently — unload any existing version first
-launchctl unload "$PLIST_DEST" 2>/dev/null || true
-launchctl load "$PLIST_DEST"
+# Reload idempotently — bootout any existing version first, then bootstrap
+launchctl bootout "gui/$(id -u)" "$PLIST_DEST" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$PLIST_DEST"
 
 echo ""
 success "update.sh scheduled — runs daily at 9 AM"
