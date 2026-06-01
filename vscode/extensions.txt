@@ -1,0 +1,36 @@
+# VS Code extensions
+# Install all: cat ~/dotfiles/vscode/extensions.txt | grep -v '^#' | xargs -L1 code --install-extension
+# Java extensions are in extensions-java.txt
+
+# Git
+donjayamanne.githistory
+huizhou.githd
+
+# Linting
+dbaeumer.vscode-eslint
+stylelint.vscode-stylelint
+
+# IntelliSense
+visualstudioexptteam.vscodeintellicode
+visualstudioexptteam.intellicode-api-usage-examples
+
+# AI assistants
+continue.continue
+kimanshah.chatgpt-helper
+
+# Docker / containers
+docker.docker
+ms-azuretools.vscode-docker
+ms-azuretools.vscode-containers
+ms-vscode-remote.remote-containers
+
+# Jupyter
+ms-toolsai.jupyter-keymap
+ms-toolsai.vscode-jupyter-slideshow
+
+# Languages / frameworks
+sissel.shopify-liquid
+
+# Themes
+github.github-vscode-theme
+equinusocio.vsc-community-material-theme

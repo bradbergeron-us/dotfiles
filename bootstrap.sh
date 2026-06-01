@@ -111,12 +111,30 @@ else
 fi
 
 # ------------------
-# Ruby + Node via mise
+# GitHub CLI auth
 # ------------------
-info "Installing Ruby 3.3.6 and Node 22 via mise..."
-mise install ruby@3.3.6 node@22
-mise use --global ruby@3.3.6 node@22
-success "Ruby $(mise exec ruby@3.3.6 -- ruby -e 'print RUBY_VERSION') and Node $(mise exec node@22 -- node -v)"
+if ! gh auth status &>/dev/null; then
+  echo ""
+  echo "============================================"
+  echo "  GitHub CLI Authentication"
+  echo "============================================"
+  echo ""
+  echo "gh (GitHub CLI) is installed but not authenticated."
+  echo "You'll need this for creating PRs, managing issues,"
+  echo "and the SSH signing key step later."
+  echo ""
+  gh auth login
+else
+  success "GitHub CLI already authenticated"
+fi
+
+# ------------------
+# Ruby + Node + Java via mise
+# ------------------
+info "Installing Ruby 3.3.6, Node 22, and Java 17 via mise..."
+mise install ruby@3.3.6 node@22 java@temurin-17
+mise use --global ruby@3.3.6 node@22 java@temurin-17
+success "Ruby, Node, and Java installed via mise"
 
 # ------------------
 # Gems
@@ -145,11 +163,22 @@ if [[ ! -f "$HOME/.zshrc.local" ]]; then
   warn "Created ~/.zshrc.local from template — edit it to add machine-specific config."
 fi
 
+# ------------------
+# macOS defaults
+# ------------------
+echo ""
+read -rp "Apply recommended macOS developer defaults? (key repeat, Dock, Finder, etc.) [y/N] " apply_macos
+if [[ "$apply_macos" =~ ^[Yy]$ ]]; then
+  bash "$DOTFILES_DIR/macos.sh"
+else
+  info "Skipped macOS defaults. Run manually later: bash ~/dotfiles/macos.sh"
+fi
+
 echo ""
 success "Bootstrap complete!"
 echo ""
 echo "Next steps:"
 echo "  1. Edit ~/.zshrc.local with any machine-specific config"
 echo "  2. Open a new terminal (or run: source ~/.zshrc)"
-echo "  3. Install Hyper:   https://hyper.is"
-echo "  4. Install VS Code: https://code.visualstudio.com"
+echo "  3. Install Hyper (not in Homebrew): https://hyper.is"
+echo "  4. VS Code, Postgres.app, DBeaver, and fonts were installed via Brewfile"

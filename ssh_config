@@ -1,0 +1,7 @@
+Host *
+  # Add keys to SSH agent automatically
+  AddKeysToAgent yes
+  # Store passphrase in macOS Keychain (no prompt after first use)
+  UseKeychain yes
+  # Default identity file for commit signing and GitHub auth
+  IdentityFile ~/.ssh/id_ed25519

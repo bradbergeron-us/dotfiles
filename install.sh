@@ -44,6 +44,15 @@ symlink "$DOTFILES_DIR/hyper.js"  "$HOME/.hyper.js"
 # Git global ignore
 symlink "$DOTFILES_DIR/gitignore_global" "$HOME/.gitignore_global"
 
+# Ruby — skip docs on every gem install
+symlink "$DOTFILES_DIR/gemrc" "$HOME/.gemrc"
+
+# PostgreSQL client defaults (pairs with Postgres.app)
+symlink "$DOTFILES_DIR/psqlrc" "$HOME/.psqlrc"
+
+# EditorConfig global fallback (project-level .editorconfig overrides this)
+symlink "$DOTFILES_DIR/editorconfig" "$HOME/.editorconfig"
+
 # Local git config (signing key, work email overrides — not committed)
 mkdir -p "$HOME/.config/git"
 if [[ ! -f "$HOME/.config/git/local.gitconfig" ]]; then
@@ -72,6 +81,29 @@ fi
 # ~/.config symlinks
 mkdir -p "$HOME/.config"
 symlink "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
+
+# mise global config (pinned Ruby + Node versions)
+mkdir -p "$HOME/.config/mise"
+symlink "$DOTFILES_DIR/config/mise.toml" "$HOME/.config/mise/config.toml"
+
+# SSH config
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+symlink "$DOTFILES_DIR/ssh_config" "$HOME/.ssh/config"
+
+# VS Code settings
+VSCODE_DIR="$HOME/Library/Application Support/Code/User"
+if [[ -d "$VSCODE_DIR" ]]; then
+  symlink "$DOTFILES_DIR/vscode/settings.json" "$VSCODE_DIR/settings.json"
+  success "VS Code settings linked"
+  if command -v code &>/dev/null; then
+    info "Installing VS Code extensions..."
+    grep -v '^#' "$DOTFILES_DIR/vscode/extensions.txt" | xargs -L1 code --install-extension --force 2>/dev/null
+    success "VS Code extensions installed"
+  fi
+else
+  info "VS Code not installed — skipping settings symlink"
+fi
 
 echo ""
 success "Done! Open a new shell or run: source ~/.zshrc"

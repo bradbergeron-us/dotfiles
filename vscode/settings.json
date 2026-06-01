@@ -1,0 +1,65 @@
+{
+    // ------------------
+    // Editor
+    // ------------------
+    "editor.fontSize": 16,
+    "editor.fontFamily": "Fira Code, JetBrainsMono Nerd Font, Menlo, monospace",
+    "editor.fontLigatures": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.lineNumbers": "on",
+    "editor.rulers": [120],
+    "editor.minimap.enabled": false,
+    "editor.suggestSelection": "first",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+
+    // ------------------
+    // Terminal
+    // ------------------
+    "terminal.integrated.fontSize": 14,
+    "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font, Menlo, monospace",
+    "terminal.integrated.scrollback": 10000,
+
+    // ------------------
+    // Files
+    // ------------------
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.autoSave": "onFocusChange",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true,
+        "**/target": true
+    },
+
+    // ------------------
+    // Git
+    // ------------------
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+
+    // ------------------
+    // GitHub Copilot
+    // ------------------
+    "github.copilot.nextEditSuggestions.enabled": true,
+
+    // ------------------
+    // Continue (local AI via Ollama)
+    // ------------------
+    "continue.model.provider": "ollama",
+    "continue.model.name": "mistral",
+    "continue.model.serverUrl": "http://localhost:11434",
+
+    // ------------------
+    // Privacy / telemetry
+    // ------------------
+    "telemetry.telemetryLevel": "off",
+    "redhat.telemetry.enabled": false,
+    "security.workspace.trust.untrustedFiles": "open",
+    "security.promptForLocalFileProtocolHandling": false
+}

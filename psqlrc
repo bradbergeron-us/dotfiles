@@ -1,0 +1,23 @@
+-- .psqlrc — psql client defaults
+-- Pairs with Postgres.app; applies to every interactive psql session
+
+\set QUIET 1
+
+-- Show NULLs explicitly instead of empty strings
+\pset null 'NULL'
+
+-- Automatically switch to expanded output when rows are wide
+\x auto
+
+-- Show query execution time after every statement
+\timing on
+
+-- Per-database history (avoids mixing history across projects)
+\set HISTFILE ~/.psql_history- :DBNAME
+\set HISTCONTROL ignoredups
+
+-- Don't auto-commit; require explicit COMMIT/ROLLBACK
+\set AUTOCOMMIT off
+
+\set QUIET 0
+\echo 'psql connected. AUTOCOMMIT is off — type COMMIT or ROLLBACK to finish transactions.'
