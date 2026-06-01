@@ -19,7 +19,7 @@ WARNINGS=0
 # shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
 # shellcheck disable=SC2034
-TOTAL_STEPS=4
+TOTAL_STEPS=7
 
 # shellcheck source=scripts/bootstrap_helpers.sh
 source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
@@ -97,6 +97,42 @@ else
   done
   warn "$STALE_BACKUP_COUNT backup(s) older than 30 days — consider: rm -rf ~/.dotfiles_backup"
   WARNINGS=$(( WARNINGS + STALE_BACKUP_COUNT ))
+fi
+
+# ── 5. SSH key ─────────────────────────────────────────────────────────
+step "🔑  SSH key"
+check_ssh_key
+
+if [[ "$SSH_KEY_OK" == "true" ]]; then
+  success "SSH key present and loaded in agent"
+else
+  warn "$SSH_KEY_ISSUE"
+  WARNINGS=$(( WARNINGS + 1 ))
+fi
+
+# ── 6. git-lfs ─────────────────────────────────────────────────────────
+step "🐙  git-lfs"
+check_git_lfs_global
+
+if [[ "$GIT_LFS_OK" == "true" ]]; then
+  success "git-lfs installed and initialized globally"
+else
+  warn "$GIT_LFS_ISSUE"
+  WARNINGS=$(( WARNINGS + 1 ))
+fi
+
+# ── 7. mise tools installed ──────────────────────────────────────────────
+step "⚡  mise tools installed"
+check_mise_installed "$DOTFILES_DIR/config/mise.toml"
+
+if [[ "$MISE_UNINSTALLED_COUNT" -eq 0 ]]; then
+  success "All mise-managed runtimes installed"
+else
+  for item in "${MISE_UNINSTALLED_LIST[@]}"; do
+    warn "$item"
+  done
+  warn "$MISE_UNINSTALLED_COUNT runtime(s) not installed — run: mise install"
+  WARNINGS=$(( WARNINGS + MISE_UNINSTALLED_COUNT ))
 fi
 
 # ── Summary ───────────────────────────────────────────────────────────────────

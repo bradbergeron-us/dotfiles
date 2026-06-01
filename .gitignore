@@ -5,3 +5,4 @@
 # runs from the dotfiles directory instead of the project root
 *.vscode-*
 ms-*.*
+logs/*.log
