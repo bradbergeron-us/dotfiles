@@ -1,0 +1,30 @@
+name: Test bootstrap helpers
+
+on:
+  push:
+    paths:
+      - 'bootstrap.sh'
+      - 'scripts/bootstrap_helpers.sh'
+      - 'scripts/test_bootstrap_helpers.sh'
+      - '.github/workflows/test-bootstrap.yml'
+  pull_request:
+    paths:
+      - 'bootstrap.sh'
+      - 'scripts/bootstrap_helpers.sh'
+      - 'scripts/test_bootstrap_helpers.sh'
+      - '.github/workflows/test-bootstrap.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: |
+          bash -n bootstrap.sh
+          bash -n scripts/bootstrap_helpers.sh
+          bash -n scripts/test_bootstrap_helpers.sh
+
+      - name: Run tests
+        run: bash scripts/test_bootstrap_helpers.sh

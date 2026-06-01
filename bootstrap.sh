@@ -6,27 +6,14 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 BOOTSTRAP_START=$SECONDS
+# shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
+# shellcheck disable=SC2034
 TOTAL_STEPS=12
 
-# ── Colors (disabled when not attached to a terminal) ────────────────────────
-if [[ -t 1 ]]; then
-  RESET='\033[0m';  BOLD='\033[1m';   DIM='\033[2m'
-  GREEN='\033[0;32m'; YELLOW='\033[0;33m'; CYAN='\033[0;36m'
-  BLUE='\033[1;34m'
-else
-  RESET=''; BOLD=''; DIM=''; GREEN=''; YELLOW=''; CYAN=''; BLUE=''
-fi
-
-info()    { printf "${CYAN}  → %s${RESET}\n" "$*"; }
-success() { printf "${GREEN}  ✓ %s${RESET}\n" "$*"; }
-warn()    { printf "${YELLOW}  ⚠ %s${RESET}\n" "$*"; }
-
-step() {
-  STEP=$((STEP + 1))
-  echo ""
-  printf "${BOLD}${BLUE}  ▸ [%d/%d]  %s${RESET}\n" "$STEP" "$TOTAL_STEPS" "$*"
-}
+# shellcheck source=scripts/bootstrap_helpers.sh
+source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
+setup_colors
 
 # ── Startup banner ───────────────────────────────────────────────────────────
 echo ""
