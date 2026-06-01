@@ -37,7 +37,11 @@ bash ~/dotfiles/bootstrap.sh
 bash ~/dotfiles/update.sh
 ```
 
-Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Finishes with a health check — also runnable standalone: `bash ~/dotfiles/verify.sh`. Safe to run any time.
+Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Finishes with a health check. Safe to run any time.
+
+To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/setup-scheduler.sh`
+
+To run the health check standalone: `bash ~/dotfiles/verify.sh`
 
 To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
