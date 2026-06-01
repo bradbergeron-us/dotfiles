@@ -8,10 +8,6 @@ export EDITOR=code
 # PATH Manipulations
 # ------------------
 
-if [ -f ~/.bash_profile ]; then
-  source ~/.bash_profile
-fi
-
 # mise — polyglot version manager (replaces chruby + nvm)
 # Reads .ruby-version and .nvmrc automatically per project
 if command -v mise &>/dev/null; then
