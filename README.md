@@ -140,6 +140,8 @@ echo 'export DATABASE_URL=postgres://localhost/myapp_dev' >> .envrc
 direnv allow   # approve the .envrc once; it runs automatically after that
 ```
 
+**[newman](https://github.com/postmanlabs/newman)** — a CLI runner for Insomnia and Postman collections. It executes a collection of API requests from the command line and reports pass/fail results, making API test suites runnable in CI pipelines without opening a GUI. Export a collection from Insomnia, add `newman run collection.json` to your CI config, and your API contracts are validated on every push.
+
 **[pre-commit](https://pre-commit.com)** — a framework for managing git pre-commit hooks. Hooks are defined in a `.pre-commit-config.yaml` file at the root of each project and run automatically before every `git commit`. This repo includes a template at `templates/pre-commit-config.yaml` covering Ruby/Rails projects.
 
 The `gitconfig` in this repo sets `core.hooksPath = ~/.config/git/hooks`, which points to a global hook stub installed by `install.sh`. This means pre-commit runs automatically in **any repo** that has a `.pre-commit-config.yaml` — no need to run `pre-commit install` in each project individually.
@@ -230,6 +232,10 @@ Pairs naturally with Postgres.app. No additional setup needed — `install.sh` s
 The global `~/.editorconfig` acts as a fallback for any project that doesn't have its own `.editorconfig`. It sets sane defaults (UTF-8, LF line endings, 2-space indent, final newline) with overrides for Java/Kotlin/Groovy (4 spaces), Go (tabs), and Makefiles (tabs). Any project-level `.editorconfig` takes precedence — this is purely a safety net for projects that don't define their own.
 
 ### Apps
+
+**[Insomnia](https://insomnia.rest)** — a GUI REST and GraphQL API client, and a solid replacement for Postman. Use it when you need to design, document, and share API collections with a team — it supports environments and variables, OAuth2 and other auth flows, saved request collections, and full GraphQL support. Collections can be exported as files and checked into a repo alongside your code.
+
+**When to use Insomnia vs HTTPie:** they serve different purposes and complement each other. Use Insomnia for building and maintaining organized API collections, testing complex auth flows visually, and sharing API definitions across a team. Use HTTPie (or `curl | jq`) for quick terminal one-liners, scripting, and piping responses into other tools. If you're exploring a single endpoint, HTTPie is faster. If you're managing a suite of requests across environments (dev, staging, prod), Insomnia is the right tool.
 
 **[OrbStack](https://orbstack.dev)** — a fast, lightweight replacement for Docker Desktop on macOS. It starts in under a second (vs Docker Desktop's 10–30s), uses significantly less RAM and CPU, and runs Linux VMs natively on Apple Silicon. The CLI is fully compatible with Docker (`docker`, `docker-compose`) so no workflow changes are needed. Free for personal use; worth switching to immediately if you run containers locally.
 
