@@ -1,2 +1,4 @@
+command_timeout = 2000
+
 [ruby]
 disabled = true
