@@ -29,12 +29,6 @@ TOTAL_STEPS=7
 source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
 setup_colors
 
-section() {
-  STEP=$((STEP + 1))
-  echo ""
-  printf "${BOLD}${BLUE}  ▸ [%d/%d]  %s${RESET}\n" "$STEP" "$TOTAL_STEPS" "$*"
-}
-
 # ── Banner ────────────────────────────────────────────────────────────────────
 echo ""
 printf "${BOLD}  🔄  dotfiles update${RESET}  —  keeping your environment current\n"
@@ -45,21 +39,21 @@ echo "  ────────────────────────
 
 # ── Steps ─────────────────────────────────────────────────────────────────────
 
-section "🔃  Dotfiles"
+step "🔃  Dotfiles"
 git -C "$DOTFILES_DIR" pull --rebase --autostash
 success "Dotfiles pulled"
 
-section "🔗  Symlinks"
+step "🔗  Symlinks"
 zsh "$DOTFILES_DIR/install.sh"
 
-section "🍺  Homebrew"
+step "🍺  Homebrew"
 brew update
 brew upgrade
 brew autoremove
 brew cleanup --prune=7  # remove downloads older than 7 days
 success "Homebrew packages upgraded"
 
-section "⚡  Runtimes (mise)"
+step "⚡  Runtimes (mise)"
 if command -v mise &>/dev/null; then
   mise upgrade
   success "Runtimes upgraded: $(mise current | tr '\n' ' ')"
@@ -67,7 +61,7 @@ else
   warn "mise not installed — skipping runtime upgrades"
 fi
 
-section "🦀  Rust"
+step "🦀  Rust"
 if command -v rustup &>/dev/null; then
   rustup update
   success "Rust toolchain updated: $(rustc --version 2>/dev/null)"
@@ -75,7 +69,7 @@ else
   warn "rustup not installed — skipping"
 fi
 
-section "💎  Ruby gems"
+step "💎  Ruby gems"
 if command -v gem &>/dev/null; then
   gem update --system --no-document 2>/dev/null
   success "Global gems updated"
@@ -89,7 +83,7 @@ if command -v uv &>/dev/null; then
   uv tool upgrade --all 2>/dev/null || true
 fi
 
-section "🔍  Health check"
+step "🔍  Health check"
 bash "$DOTFILES_DIR/verify.sh" || warn "Some checks need attention — see output above"
 
 # ── Summary ───────────────────────────────────────────────────────────────────
