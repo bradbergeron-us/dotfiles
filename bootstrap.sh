@@ -150,7 +150,7 @@ fi
 _nvm_dir="${NVM_DIR:-$HOME/.nvm}"
 [[ -d "$_nvm_dir" ]] && info "NVM detected — checking migration status..."
 if [[ -d "$_nvm_dir" ]]; then
-  _nvm_count=$(ls "$_nvm_dir/versions/node/" 2>/dev/null | wc -l | tr -d ' ')
+  _nvm_count=$(find "$_nvm_dir/versions/node/" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ') || _nvm_count=0
   if [[ "${_nvm_count:-0}" -eq 0 ]]; then
     echo ""
     warn "NVM is installed at $_nvm_dir but has no Node versions (ghost install)."
