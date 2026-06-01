@@ -22,7 +22,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 UPDATE_START=$SECONDS
 STEP=0
-TOTAL_STEPS=6
+TOTAL_STEPS=7
 
 # ── Colors ────────────────────────────────────────────────────────────────────
 if [[ -t 1 ]]; then
@@ -95,6 +95,9 @@ fi
 if command -v uv &>/dev/null; then
   uv tool upgrade --all 2>/dev/null || true
 fi
+
+section "🔍  Health check"
+bash "$DOTFILES_DIR/verify.sh" || warn "Some checks need attention — see output above"
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 _elapsed=$(( SECONDS - UPDATE_START ))

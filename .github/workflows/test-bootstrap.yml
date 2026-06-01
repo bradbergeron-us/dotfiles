@@ -4,18 +4,26 @@ on:
   push:
     paths:
       - 'bootstrap.sh'
+      - 'update.sh'
+      - 'verify.sh'
       - 'scripts/bootstrap_helpers.sh'
       - 'scripts/test_bootstrap_helpers.sh'
+      - 'scripts/verify_helpers.sh'
+      - 'scripts/test_verify_helpers.sh'
       - '.github/workflows/test-bootstrap.yml'
   pull_request:
     paths:
       - 'bootstrap.sh'
+      - 'update.sh'
+      - 'verify.sh'
       - 'scripts/bootstrap_helpers.sh'
       - 'scripts/test_bootstrap_helpers.sh'
+      - 'scripts/verify_helpers.sh'
+      - 'scripts/test_verify_helpers.sh'
       - '.github/workflows/test-bootstrap.yml'
 
 jobs:
-  test:
+  test-bootstrap:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,3 +36,17 @@ jobs:
 
       - name: Run tests
         run: bash scripts/test_bootstrap_helpers.sh
+
+  test-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: |
+          bash -n verify.sh
+          bash -n scripts/verify_helpers.sh
+          bash -n scripts/test_verify_helpers.sh
+
+      - name: Run tests
+        run: bash scripts/test_verify_helpers.sh
