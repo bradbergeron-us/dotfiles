@@ -20,7 +20,7 @@
 # ==================================================
 # Go
 # ==================================================
-# GOPATH is set globally in zshrc (~/.go/bin is already in PATH).
+# GOPATH is set globally in zshrc (~/go/bin is already in PATH).
 # Override here if a project requires a non-default workspace:
 # export GOPATH="$HOME/go-work"
 #

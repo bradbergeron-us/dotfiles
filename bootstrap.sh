@@ -150,10 +150,10 @@ success "colorls"
 # give you toolchain management (stable/nightly/components). rustup does.
 # If `brew install rust` (the static formula) is present alongside rustup,
 # remove it to avoid PATH conflicts: brew uninstall rust
-if brew list rust &>/dev/null 2>&1 && ! brew list rustup &>/dev/null 2>&1; then
-  warn "'brew install rust' (static formula) is installed without rustup."
-  warn "Consider switching: brew uninstall rust && brew install rustup"
-  warn "The static formula cannot switch toolchains or manage components."
+if brew list rust &>/dev/null 2>&1; then
+  warn "'brew install rust' (static formula) detected — it conflicts with rustup."
+  warn "Remove it to avoid PATH confusion: brew uninstall rust"
+  warn "rustup (installed via Brewfile) manages the Rust toolchain from here."
 fi
 if ! command -v rustup &>/dev/null; then
   info "Initializing Rust toolchain via rustup..."
@@ -188,6 +188,7 @@ if [[ -d "$_nvm_dir" ]]; then
       success "NVM removed — mise manages Node from here"
     else
       warn "Keeping NVM. The zshrc NVM guard will silence it since no versions are installed."
+      unset _rm_nvm
     fi
   else
     echo ""

@@ -25,11 +25,13 @@ What it does, in order:
 4. Sets up `fzf` shell integration (key bindings + tab completion)
 5. Authenticates `gh` (GitHub CLI) if not already logged in
 6. Generates an SSH key for commit signing and prompts you to add it to GitHub
-7. Installs Ruby 3.3.6, Node 22, Java 21 (Temurin), and Python 3.12 via mise
-8. Installs the `colorls` gem
-9. Calls `install.sh` to symlink all dotfiles including VS Code settings and mise config
-10. Creates `~/.zshrc.local` from `zshrc.local.example`
-11. Optionally applies macOS developer defaults (`macos.sh`)
+7. Installs Ruby 3.3.6, Node 22, Java 21 (Temurin), Python 3.12, and Go 1.24 via mise
+8. Installs Rust stable toolchain via rustup (+ rustfmt and clippy)
+9. Installs the `colorls` gem
+10. Clones TPM (tmux plugin manager)
+11. Calls `install.sh` to symlink all dotfiles including VS Code settings and mise config
+12. Creates `~/.zshrc.local` from `zshrc.local.example`
+13. Optionally applies macOS developer defaults (`macos.sh`)
 
 After running, install manually: [Hyper](https://hyper.is) — everything else (VS Code, Postgres.app, DBeaver, Fira Code, JetBrains Mono) is installed automatically via the Brewfile.
 
@@ -59,7 +61,7 @@ already-correct symlinks are left untouched.
 | `hyper.js` | `~/.hyper.js` | Hyper terminal — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt — Ruby module disabled, 2s timeout |
 | `Brewfile` | _(used by bootstrap)_ | Declarative list of all Homebrew packages and casks |
-| `config/mise.toml` | `~/.config/mise/config.toml` | mise global runtime versions (Ruby, Node, Java, Python) |
+| `config/mise.toml` | `~/.config/mise/config.toml` | mise global runtime versions (Ruby, Node, Java, Python, Go) |
 | `ssh_config` | `~/.ssh/config` | SSH agent + Keychain config |
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code editor, terminal, and git settings |
 | `vscode/extensions.txt` | _(installed by install.sh)_ | Core VS Code extensions for every machine |
