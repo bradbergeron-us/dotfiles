@@ -1,0 +1,15 @@
+{
+  "env": {
+    "ANTHROPIC_MODEL": "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "AWS_REGION": "us-gov-west-1",
+    "AWS_PROFILE": "bedrock",
+    "CLAUDE_CODE_USE_BEDROCK": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ANTHROPIC_SMALL_FAST_MODEL": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
+    "MAX_THINKING_TOKENS": "1024",
+    "NODE_EXTRA_CA_CERTS": "/Users/REPLACE_WITH_YOUR_USERNAME/.continue/certs/YourOrgRootCertificate.crt"
+  },
+  "alwaysThinkingEnabled": false,
+  "theme": "light"
+}

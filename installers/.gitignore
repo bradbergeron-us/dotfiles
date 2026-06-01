@@ -1,0 +1,8 @@
+# Installer binaries and archives
+# These are typically large and should be downloaded on-demand
+*
+
+# But allow README and specific scripts
+!.gitignore
+!README.md
+!*.sh
