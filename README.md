@@ -120,7 +120,7 @@ Re-symlinks everything without updating packages. Safe to run repeatedly — alr
   Next steps
   1. Edit ~/.zshrc.local with machine-specific config
   2. Open a new terminal  (or: source ~/.zshrc)
-  3. Install Hyper: https://hyper.is
+  3. Keep everything current: bash ~/dotfiles/update.sh
 ```
 
 </details>

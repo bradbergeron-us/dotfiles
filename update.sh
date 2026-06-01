@@ -2,7 +2,12 @@
 # update.sh — keep your development environment current
 #
 # Run manually:     bash ~/dotfiles/update.sh
-# Schedule daily:   see docs/update-schedule.md for launchd setup
+# Schedule daily with launchd (optional):
+#   Create ~/Library/LaunchAgents/dev.dotfiles.update.plist with:
+#     ProgramArguments: ["/bin/bash", "/Users/YOU/dotfiles/update.sh"]
+#     StartCalendarInterval: { Hour: 9, Minute: 0 }   # 9 AM daily
+#     StandardOutPath / StandardErrorPath: ~/dotfiles/logs/update.log
+#   Then: launchctl load ~/Library/LaunchAgents/dev.dotfiles.update.plist
 #
 # What it does:
 #   1. Pulls latest dotfiles from GitHub

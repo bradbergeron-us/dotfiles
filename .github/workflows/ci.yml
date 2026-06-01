@@ -32,6 +32,9 @@ jobs:
       - name: shellcheck macos.sh
         run: shellcheck -S warning macos.sh
 
+      - name: shellcheck update.sh
+        run: shellcheck -S warning update.sh
+
   # ------------------------------------------------------------------
   # 2. zsh-syntax — syntax-check every shell file + parse the Brewfile
   #    Uses macOS because zsh -n on zsh-specific syntax needs a real zsh.

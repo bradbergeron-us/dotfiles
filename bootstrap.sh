@@ -200,11 +200,13 @@ if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
   info "Installing tmux plugin manager (TPM)..."
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" --depth=1
   success "TPM cloned"
+else
+  success "TPM already installed"
 fi
-# Install plugins headlessly (no tmux session required)
+# Install/update plugins headlessly (no tmux session required; idempotent)
 info "Installing tmux plugins..."
 TMUX='' "$HOME/.tmux/plugins/tpm/bin/install_plugins" &>/dev/null
-success "tmux plugins installed (tmux-sensible, tmux-resurrect, tmux-continuum)"
+success "tmux plugins ready (tmux-sensible, tmux-resurrect, tmux-continuum)"
 
 step "📁  git-lfs"
 git lfs install --skip-repo
