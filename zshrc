@@ -8,11 +8,20 @@ export EDITOR=code
 # PATH Manipulations
 # ------------------
 
-# mise — polyglot version manager (replaces chruby + nvm)
-# Reads .ruby-version and .nvmrc automatically per project
+# Silence NVM: it's installed on this machine but mise owns Node now.
+# Without this, NVM's auto-switch hook fires and prints a warning on every shell
+# because it has no default alias set. Safe to remove once NVM is uninstalled.
+# To fully clean up: brew uninstall nvm && rm -rf ~/.nvm
+unset NVM_DIR
+
+# mise — polyglot version manager (replaces chruby + nvm + pyenv)
+# Reads .ruby-version, .nvmrc, .python-version automatically per project
 if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"
 fi
+
+# Rust (cargo) — add to PATH if rustup is installed
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 
 export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 

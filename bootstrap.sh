@@ -131,10 +131,10 @@ fi
 # ------------------
 # Ruby + Node + Java via mise
 # ------------------
-info "Installing Ruby 3.3.6, Node 22, Java 21, and Python 3.12 via mise..."
-mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12
-mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12
-success "Ruby, Node, Java, and Python installed via mise"
+info "Installing Ruby, Node, Java, Python, and Go via mise..."
+mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
+mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
+success "Ruby, Node, Java, Python, and Go installed via mise"
 
 # ------------------
 # Gems
@@ -142,6 +142,21 @@ success "Ruby, Node, Java, and Python installed via mise"
 info "Installing colorls..."
 mise exec ruby@3.3.6 -- gem install colorls
 success "colorls"
+
+# ------------------
+# Rust via rustup
+# ------------------
+if ! command -v rustc &>/dev/null; then
+  info "Initializing Rust toolchain via rustup..."
+  # --no-modify-path: we handle PATH ourselves via ~/.cargo/env in zshrc
+  rustup-init -y --no-modify-path
+  # shellcheck source=/dev/null
+  . "$HOME/.cargo/env"
+  rustup component add rustfmt clippy
+  success "Rust installed (stable + rustfmt + clippy)"
+else
+  success "Rust already installed: $(rustc --version)"
+fi
 
 # ------------------
 # tmux plugin manager (TPM)
