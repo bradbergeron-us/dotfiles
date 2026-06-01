@@ -140,15 +140,7 @@ if command -v node &>/dev/null && command -v ng &>/dev/null; then
   fi
 fi
 
-# rbenv and pyenv if installed
-if command -v rbenv >/dev/null 2>&1; then
-  eval "$(rbenv init - zsh)"
-fi
-
-if command -v pyenv >/dev/null 2>&1; then
-  eval "$(pyenv init --path)"
-fi
-
 # Machine-specific overrides (not committed to dotfiles)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
-. "$HOME/.local/bin/env"
+# uv (Python package manager) shell integration — only if installed
+[[ -f "$HOME/.local/bin/env" ]] && . "$HOME/.local/bin/env"
