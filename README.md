@@ -121,8 +121,9 @@ The `gitconfig` in this repo sets `core.hooksPath = ~/.config/git/hooks`, which 
 
 | Template | Use for |
 |----------|---------|
-| `templates/pre-commit-ruby-rails.yaml` | Ruby on Rails — RuboCop (with all plugins), Brakeman security scan, bundler-audit |
+| `templates/pre-commit-ruby-rails.yaml` | Ruby on Rails — RuboCop (with all plugins), Brakeman, bundler-audit |
 | `templates/pre-commit-javascript.yaml` | JavaScript/React — ESLint, Stylelint, Prettier |
+| `templates/pre-commit-java.yaml` | Java/Maven — Google Java Format, Checkstyle; SpotBugs and compile check optional |
 | `templates/pre-commit-config.yaml` | General purpose — hygiene hooks + RuboCop + secrets detection |
 
 **Adding pre-commit to a project:**

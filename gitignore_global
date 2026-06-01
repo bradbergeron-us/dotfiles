@@ -22,6 +22,16 @@
 *.seed
 *.pid.lock
 
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+.classpath
+.factorypath
+
 # OS
 Thumbs.db
 ehthumbs.db

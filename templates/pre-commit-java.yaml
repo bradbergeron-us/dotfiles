@@ -1,0 +1,83 @@
+# .pre-commit-config.yaml for Java / Maven projects
+#
+# Usage:
+#   cp ~/dotfiles/templates/pre-commit-java.yaml .pre-commit-config.yaml
+#   pre-commit run --all-files
+#
+# Skip for a single commit (emergencies only):
+#   git commit --no-verify
+#
+# Notes:
+#   - Local hooks (marked `language: system`) require the project to be built
+#     first: `mvn install -DskipTests`
+#   - For Gradle projects, replace `mvn` commands with `./gradlew` equivalents
+#   - SpotBugs and the compile check are commented out by default because they
+#     are slow on large codebases — enable them as your team sees fit
+
+repos:
+  # ------------------
+  # General hygiene
+  # ------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-xml           # validates pom.xml, Spring config, etc.
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # ------------------
+  # Google Java Format — consistent formatting (like Prettier for Java)
+  # Enforces Google Style Guide formatting. Run `--replace` to auto-fix.
+  # ------------------
+  - repo: https://github.com/pre-commit/mirrors-google-java-format
+    rev: v1.22.0
+    hooks:
+      - id: google-java-format
+        args: ['--replace']
+
+  # ------------------
+  # Checkstyle — code style and standards
+  # Uses the project's checkstyle.xml if present, otherwise falls back
+  # to the Maven default (Sun checks).
+  # ------------------
+  - repo: local
+    hooks:
+      - id: checkstyle
+        name: Checkstyle
+        entry: mvn checkstyle:check -q --no-transfer-progress
+        language: system
+        types: [java]
+        pass_filenames: false
+
+  # ------------------
+  # Maven compile — catch compilation errors before commit
+  # Skips tests for speed; just verifies the code compiles cleanly.
+  # ------------------
+  # - repo: local
+  #   hooks:
+  #     - id: mvn-compile
+  #       name: Maven compile (no tests)
+  #       entry: mvn compile -q --no-transfer-progress -DskipTests
+  #       language: system
+  #       pass_filenames: false
+  #       files: '\.java$'
+
+  # ------------------
+  # SpotBugs — static analysis for common bug patterns
+  # Disabled by default — slow on large codebases. Enable once the
+  # project has a spotbugs-maven-plugin configured in pom.xml.
+  # ------------------
+  # - repo: local
+  #   hooks:
+  #     - id: spotbugs
+  #       name: SpotBugs (bug pattern detection)
+  #       entry: mvn spotbugs:check -q --no-transfer-progress
+  #       language: system
+  #       pass_filenames: false
