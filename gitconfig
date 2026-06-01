@@ -12,7 +12,10 @@
 [include]
 	path = ~/.config/git/local.gitconfig
 [credential]
-	helper = osxkeychain
+	# git-credential-manager handles GitHub.com, GitHub Enterprise, Bitbucket, Azure DevOps
+	# Uses macOS Keychain under the hood — fully compatible with osxkeychain
+	# Note: git prepends 'git-credential-' to the helper name, so 'manager' → git-credential-manager
+	helper = manager
 
 [core]
 	pager = delta

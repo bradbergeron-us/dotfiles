@@ -61,6 +61,9 @@ symlink "$DOTFILES_DIR/pryrc" "$HOME/.pryrc"
 # PostgreSQL client defaults (pairs with Postgres.app)
 symlink "$DOTFILES_DIR/psqlrc" "$HOME/.psqlrc"
 
+# npm client defaults (save-exact, no fund noise)
+symlink "$DOTFILES_DIR/npmrc" "$HOME/.npmrc"
+
 # EditorConfig global fallback (project-level .editorconfig overrides this)
 symlink "$DOTFILES_DIR/editorconfig" "$HOME/.editorconfig"
 

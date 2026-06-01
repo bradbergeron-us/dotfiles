@@ -13,8 +13,6 @@ bash ~/dotfiles/bootstrap.sh
 
 `bootstrap.sh` runs once on a fresh Mac and handles everything: Homebrew, all packages, runtimes (Ruby, Node, Java, Python, Go, Rust), dotfile symlinks, and macOS defaults. Open a new terminal when it finishes.
 
-**Only manual step:** install [Hyper](https://hyper.is) — everything else installs automatically.
-
 <details>
 <summary>What bootstrap.sh does, step by step</summary>
 
@@ -34,13 +32,15 @@ bash ~/dotfiles/bootstrap.sh
 
 </details>
 
-### Re-running on an existing machine
+### Keeping everything current
 
 ```sh
-zsh ~/dotfiles/install.sh
+bash ~/dotfiles/update.sh
 ```
 
-Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are skipped; existing files are backed up to `~/.dotfiles_backup/<timestamp>/`.
+Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Safe to run any time.
+
+To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
 ### Terminal preview
 
@@ -50,7 +50,7 @@ Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are 
 ```
   🚀  dotfiles bootstrap  —  macOS developer setup
   ─────────────────────────────────────────────────
-  Machine  Brad's MacBook Pro
+  Machine  your-machine-name
   Date     Mon Jun 01 2026  08:00
   ─────────────────────────────────────────────────
 
@@ -112,7 +112,7 @@ Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are 
   Next steps
   1. Edit ~/.zshrc.local with machine-specific config
   2. Open a new terminal  (or: source ~/.zshrc)
-  3. Install Hyper: https://hyper.is
+  3. Keep everything current: bash ~/dotfiles/update.sh
 ```
 
 </details>
@@ -141,6 +141,8 @@ Re-symlinks everything. Safe to run repeatedly — already-correct symlinks are 
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code settings |
 | `vscode/extensions.txt` | _(auto-installed)_ | Core VS Code extensions |
 | `Brewfile` | _(used by bootstrap)_ | All Homebrew packages and casks |
+| `npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
+| `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems |
 | `macos.sh` | _(run once)_ | macOS developer defaults |
 | `zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 
@@ -218,12 +220,12 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 ## Package management
 
 ```sh
-brew bundle                          # install everything from Brewfile
-brew bundle check                    # check what's missing
-brew bundle --upgrade                # upgrade all packages
+brew bundle --file=~/dotfiles/Brewfile          # install everything
+brew bundle check --file=~/dotfiles/Brewfile    # check what's missing
 ```
 
-To add a package: edit `Brewfile`, run `brew bundle`.
+To add a package: edit `Brewfile`, run `brew bundle`. To upgrade all packages, use `update.sh` — it runs `brew upgrade` as part of the full update cycle.
+
 Work machine? Also run `brew bundle --file=~/dotfiles/Brewfile.work`.
 
 ---

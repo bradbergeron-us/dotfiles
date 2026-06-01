@@ -1,0 +1,18 @@
+# ~/.npmrc — npm client defaults
+# Applied to every npm install on this machine.
+# Symlinked by install.sh. To override a setting for a specific project,
+# add a .npmrc file at the project root — npm reads it closest-first.
+
+# Pin exact versions instead of ranges (^ or ~)
+# Prevents "works on my machine" drift across team members
+save-exact=true
+
+# Suppress funding messages on every install
+fund=false
+
+# Only warn on moderate or higher vulnerabilities during install
+# (critical and high are still visible; info-level noise is suppressed)
+audit-level=moderate
+
+# Suppress update-notifier prompts
+update-notifier=false
