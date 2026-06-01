@@ -1,7 +1,7 @@
-# .pre-commit-config.yaml for vets-website
+# .pre-commit-config.yaml for JavaScript / React projects
 #
 # Usage:
-#   cp ~/dotfiles/templates/pre-commit-vets-website.yaml .pre-commit-config.yaml
+#   cp ~/dotfiles/templates/pre-commit-javascript.yaml .pre-commit-config.yaml
 #   pre-commit install --install-hooks
 #
 # Run manually against all files:
@@ -10,9 +10,9 @@
 # Skip for a single commit (emergencies only):
 #   git commit --no-verify
 #
-# Note: These hooks use `local` repo type, which means they run using the
-# tools already installed in the project (npm packages). Make sure you've
-# run `yarn install` or `npm install` first.
+# Note: These hooks use `local` repo type, meaning they run the tools
+# already installed in the project (npm packages). Run `yarn install`
+# or `npm install` before using.
 
 repos:
   # ------------------
@@ -34,9 +34,8 @@ repos:
 
   # ------------------
   # ESLint — JavaScript / JSX linting
-  # Uses the project's own .eslintrc.js config.
-  # vets-website has a separate .eslintrc.changed.js for changed-file linting;
-  # pre-commit already only runs on staged files, so the regular config is used.
+  # Uses the project's own .eslintrc.js (or .eslintrc.json / eslint.config.js).
+  # pre-commit only runs on staged files, so changed-file configs are redundant.
   # ------------------
   - repo: local
     hooks:

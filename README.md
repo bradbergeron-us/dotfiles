@@ -121,27 +121,30 @@ The `gitconfig` in this repo sets `core.hooksPath = ~/.config/git/hooks`, which 
 
 | Template | Use for |
 |----------|---------|
-| `templates/pre-commit-vets-api.yaml` | Ruby on Rails — RuboCop (with all plugins), Brakeman security scan, bundler-audit |
-| `templates/pre-commit-vets-website.yaml` | JavaScript/React — ESLint, Stylelint, Prettier |
+| `templates/pre-commit-ruby-rails.yaml` | Ruby on Rails — RuboCop (with all plugins), Brakeman security scan, bundler-audit |
+| `templates/pre-commit-javascript.yaml` | JavaScript/React — ESLint, Stylelint, Prettier |
 | `templates/pre-commit-config.yaml` | General purpose — hygiene hooks + RuboCop + secrets detection |
 
 **Adding pre-commit to a project:**
 
+Copy the right template and you're done — no `pre-commit install` needed. The
+global hook in `~/.config/git/hooks/pre-commit` (wired up by `install.sh`) runs
+pre-commit automatically in any repo that has a `.pre-commit-config.yaml`.
+
 ```sh
-# Pick the right template for your project and copy it in
-cp ~/dotfiles/templates/pre-commit-vets-api.yaml ~/code/vets-api/.pre-commit-config.yaml
-cp ~/dotfiles/templates/pre-commit-vets-website.yaml ~/code/vets-website/.pre-commit-config.yaml
+# Ruby on Rails project
+cp ~/dotfiles/templates/pre-commit-ruby-rails.yaml your-project/.pre-commit-config.yaml
 
-# Pre-fetch all hook environments (makes the first commit fast)
-cd ~/code/vets-api && pre-commit install --install-hooks
+# JavaScript / React project
+cp ~/dotfiles/templates/pre-commit-javascript.yaml your-project/.pre-commit-config.yaml
 
-# Run against every file to see what would have failed before now
-pre-commit run --all-files
+# Run against every file immediately to catch existing issues
+cd your-project && pre-commit run --all-files
 ```
 
 **How `local` vs remote hooks work:**
 
-The vets-api and vets-website templates use `repo: local` for tools like Brakeman, ESLint, and Stylelint. This means pre-commit runs the tool that's already installed in the project rather than fetching a fresh copy from the internet. The benefit is that it always uses the exact version pinned in your `Gemfile.lock` or `package.json` — the same version CI uses — so there are no version drift surprises.
+The Rails and JavaScript templates use `repo: local` for tools like Brakeman, ESLint, and Stylelint. This means pre-commit runs the tool that's already installed in the project rather than fetching a fresh copy from the internet. The benefit is that it always uses the exact version pinned in your `Gemfile.lock` or `package.json` — the same version CI uses — so there are no version drift surprises.
 
 The trade-off: `local` hooks require `bundle install` / `npm install` to have been run first. If you clone a fresh repo and try to commit before installing dependencies, the hooks will fail.
 

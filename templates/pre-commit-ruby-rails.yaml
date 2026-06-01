@@ -1,7 +1,7 @@
-# .pre-commit-config.yaml for vets-api
+# .pre-commit-config.yaml for Ruby on Rails projects
 #
 # Usage:
-#   cp ~/dotfiles/templates/pre-commit-vets-api.yaml .pre-commit-config.yaml
+#   cp ~/dotfiles/templates/pre-commit-ruby-rails.yaml .pre-commit-config.yaml
 #   pre-commit install --install-hooks
 #
 # Run manually against all files:
@@ -29,8 +29,8 @@ repos:
 
   # ------------------
   # RuboCop
-  # Runs with all plugins vets-api uses. The project's .rubocop.yml
-  # is respected automatically — no extra args needed.
+  # Reads the project's .rubocop.yml automatically.
+  # Remove any additional_dependencies your project doesn't use.
   # ------------------
   - repo: https://github.com/rubocop/rubocop
     rev: v1.65.0  # keep in sync with Gemfile; update with: pre-commit autoupdate
