@@ -33,6 +33,7 @@ success "Task completed"
 Sets up all work machine configurations in one go:
 - Maven (`~/.m2/settings.xml`)
 - Yarn (`~/.yarnrc`)
+- Bundle (`~/.bundle/config`)
 - Continue IDE (`~/.continue/config.yaml`)
 - Claude Code (`~/.claude/settings.json`)
 - AWS (`~/.aws/config`)

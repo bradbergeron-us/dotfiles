@@ -287,6 +287,7 @@ The work configuration setup creates templates for:
 
 - **Maven** (`~/.m2/settings.xml`) — Nexus mirror and repository profiles
 - **Yarn** (`~/.yarnrc`) — JFrog registry and auth settings
+- **Bundle** (`~/.bundle/config`) — JFrog registry for Ruby gems
 - **Continue IDE** (`~/.continue/config.yaml`) — AWS Bedrock models (Claude 4.5 & 3.7 Sonnet)
 - **Claude Code** (`~/.claude/settings.json`) — AWS Bedrock environment and certificate path
 - **AWS** (`~/.aws/config`) — Profile and region configuration

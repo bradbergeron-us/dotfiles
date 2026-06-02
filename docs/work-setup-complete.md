@@ -166,6 +166,18 @@ Creates `~/.yarnrc` with:
 - Authentication settings
 - SSL configuration for corporate proxy
 
+#### Bundle Configuration
+```
+Setup Bundle (.bundle/config for Ruby gems)? [Y/n]
+```
+
+Creates `~/.bundle/config` with:
+- JFrog Artifactory URL for Ruby gems
+- Authentication token placeholder
+- Instructions for obtaining JFrog API token
+
+**After installation:** Edit `~/.bundle/config` with your JFrog credentials to install private gems.
+
 #### Continue IDE Configuration
 ```
 Setup Continue IDE (.continue/config.yaml)? [Y/n]
@@ -430,6 +442,7 @@ bash ~/dotfiles/verify.sh
 #### Work Configurations
 - [ ] `ls ~/.m2/settings.xml` → Exists
 - [ ] `ls ~/.yarnrc` → Exists
+- [ ] `ls ~/.bundle/config` → Exists
 - [ ] `ls ~/.continue/config.yaml` → Exists
 - [ ] `ls ~/.claude/settings.json` → Exists
 - [ ] `ls ~/.aws/config` → Exists
