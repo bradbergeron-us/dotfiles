@@ -45,6 +45,23 @@ To run the health check standalone: `bash ~/dotfiles/verify.sh`
 
 To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
+### Uninstalling
+
+```sh
+bash ~/dotfiles/uninstall.sh
+```
+
+Interactive script that removes dotfile symlinks and optionally:
+- Removes local config files (.zshrc.local, local.gitconfig)
+- Uninstalls mise-managed runtimes (Ruby, Node, Java, Python, Go)
+- Removes Rust toolchain
+- Removes tmux plugins
+- Uninstalls Homebrew packages
+- Uninstalls Homebrew itself
+- Restores default shell configuration
+
+Each step requires confirmation, so you can pick what to remove.
+
 ### Terminal preview
 
 <details>
