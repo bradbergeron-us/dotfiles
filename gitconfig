@@ -53,3 +53,5 @@
 
 [tag]
 	gpgSign = true
+[credential "https://va.ghe.com"]
+	provider = github

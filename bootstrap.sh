@@ -9,7 +9,7 @@ BOOTSTRAP_START=$SECONDS
 # shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
 # shellcheck disable=SC2034
-TOTAL_STEPS=12
+TOTAL_STEPS=13
 
 # shellcheck source=scripts/bootstrap_helpers.sh
 source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
@@ -199,6 +199,22 @@ zsh "$DOTFILES_DIR/install.sh"
 if [[ ! -f "$HOME/.zshrc.local" ]]; then
   cp "$DOTFILES_DIR/zshrc.local.example" "$HOME/.zshrc.local"
   warn "Created ~/.zshrc.local from template — edit it with machine-specific config"
+fi
+
+step "🏢  Work-specific configurations"
+if [[ -f "$DOTFILES_DIR/scripts/setup_work_configs.sh" ]]; then
+  echo ""
+  printf "  Setup work configs (.m2, .yarnrc, .continue, .claude, .aws)?\n"
+  echo ""
+  read -rp "  Run work configuration setup? [y/N] " setup_work
+  if [[ "$setup_work" =~ ^[Yy]$ ]]; then
+    bash "$DOTFILES_DIR/scripts/setup_work_configs.sh"
+    success "Work configurations installed"
+  else
+    info "Skipped. Run manually: bash ~/dotfiles/scripts/setup_work_configs.sh"
+  fi
+else
+  info "No work-specific configuration script found"
 fi
 
 step "⚙️  macOS developer defaults"

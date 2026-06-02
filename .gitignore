@@ -6,3 +6,16 @@
 *.vscode-*
 ms-*.*
 logs/*.log
+
+# VS Code extension folders (publisher.extension-name format)
+*.*/
+.claude/
+.continue/
+dbaeumer.*/
+docker.*/
+eamodio.*/
+github.*/
+mhutchie.*/
+streetsidesoftware.*/
+usernamehw.*/
+visualstudioexptteam.*/
