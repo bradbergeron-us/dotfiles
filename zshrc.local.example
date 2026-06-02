@@ -110,6 +110,24 @@
 # export BUNDLE_GEMS__CONTRIBSYS__COM=<your-license-key>
 
 # ==================================================
+# Claude Code SSL fix (corporate SSL inspection)
+# ==================================================
+# If Claude Code fails with "SSL certificate verification failed", you're likely
+# behind corporate SSL inspection (Zscaler, BlueCoat, etc.).
+#
+# Option 1: Use corporate SSL certificate (recommended)
+# Find your corporate root certificate and point NODE_EXTRA_CA_CERTS to it.
+# Common locations:
+#   - ~/Downloads/ClaudeCode-macOS-*/ZscalerRootCertificate-*.crt
+#   - /Library/Application Support/ZscalerRootCertificate.crt
+#   - Check with your IT department
+#
+# export NODE_EXTRA_CA_CERTS="$HOME/path/to/ZscalerRootCertificate.crt"
+#
+# Option 2: Disable SSL verification (less secure, use only if Option 1 unavailable)
+# export NODE_TLS_REJECT_UNAUTHORIZED=0
+
+# ==================================================
 # Project aliases
 # ==================================================
 # alias proj='cd ~/code/your-project'
