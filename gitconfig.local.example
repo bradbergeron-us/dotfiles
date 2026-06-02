@@ -1,12 +1,18 @@
 # ~/.config/git/local.gitconfig — machine-specific git config
 # Included by gitconfig but never committed to the dotfiles repo.
 #
-# On a personal machine: set signingkey to your SSH public key.
+# On a personal machine: set signingkey to your GPG key ID.
 # On a work machine: override email and set signingkey accordingly.
-# Run `bootstrap.sh` — it creates this file automatically.
+# Run `scripts/setup_gpg_signing.sh` to automate GPG key setup.
 
 [user]
 	# Override email on work machines
 	# email = you@company.com
-	# Path to the SSH public key used to sign commits
-	signingkey = ~/.ssh/id_ed25519.pub
+
+	# GPG key ID for signing commits (get it via: gpg --list-secret-keys --keyid-format=long)
+	# Example: signingkey = EFF15FEC389D0F89
+	# signingkey = YOUR_GPG_KEY_ID_HERE
+
+	# Alternative: SSH signing (if not using GPG)
+	# Requires gpg.format = ssh in main gitconfig
+	# signingkey = ~/.ssh/id_ed25519.pub
