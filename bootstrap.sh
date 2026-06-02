@@ -180,6 +180,9 @@ if command -v mise &>/dev/null; then
       declare -i total=${#to_install[@]}
       declare -i current=0
 
+      # Disable exit-on-error for runtime installations
+      set +e
+
       for runtime in "${to_install[@]}"; do
         (( current++ ))
         percentage=$(( current * 100 / total ))
@@ -187,12 +190,18 @@ if command -v mise &>/dev/null; then
         printf "${CYAN}  → [$current/$total - ${percentage}%%] Installing $runtime...${RESET}\n"
         echo ""
         # Show full output so user can see progress
-        mise install "$runtime" || warn "Failed to install $runtime (continuing anyway)"
-        printf "${GREEN}  ✓ [$current/$total - ${percentage}%%] $runtime installed${RESET}\n"
+        if mise install "$runtime" 2>&1; then
+          printf "${GREEN}  ✓ [$current/$total - ${percentage}%%] $runtime installed${RESET}\n"
+        else
+          warn "Failed to install $runtime (continuing anyway)"
+        fi
       done
 
-      mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
-      success "All runtimes configured: Ruby 3.3.6 · Node 22 · Java 21 · Python 3.12 · Go 1.24"
+      # Re-enable exit-on-error
+      set -e
+
+      mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24 2>/dev/null || true
+      success "Runtime installation complete (some may have failed - check above)"
     fi
   fi
 else
