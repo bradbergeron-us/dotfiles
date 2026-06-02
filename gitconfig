@@ -16,6 +16,8 @@
 	# Uses macOS Keychain under the hood — fully compatible with osxkeychain
 	# Note: git prepends 'git-credential-' to the helper name, so 'manager' → git-credential-manager
 	helper = manager
+	helper = 
+	helper = /usr/local/share/gcm-core/git-credential-manager
 
 [core]
 	pager = delta
@@ -43,13 +45,14 @@
 	autoStash = true
 
 [gpg]
-	format = ssh
+	format = openpgp
+	program = /opt/homebrew/bin/gpg
 
 [gpg "ssh"]
 	allowedSignersFile = ~/.config/git/allowed_signers
 
 [commit]
-	gpgSign = true
+	gpgsign = true
 
 [tag]
 	gpgSign = true
@@ -57,3 +60,5 @@
 	provider = github
 [credential "https://bitbucket.np.afsp.io"]
 	provider = bitbucket
+[credential "https://dev.azure.com"]
+	useHttpPath = true
