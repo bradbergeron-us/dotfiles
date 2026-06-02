@@ -47,10 +47,14 @@ zsh "$DOTFILES_DIR/install.sh"
 
 step "🍺  Homebrew"
 brew update
-brew upgrade
-brew autoremove
-brew cleanup --prune=7  # remove downloads older than 7 days
-success "Homebrew packages upgraded"
+if brew upgrade; then
+  success "All Homebrew packages upgraded"
+else
+  warn "Some Homebrew packages failed to upgrade — continuing anyway"
+fi
+brew autoremove 2>/dev/null || true
+brew cleanup --prune=7 2>/dev/null || true  # remove downloads older than 7 days
+success "Homebrew update complete"
 
 step "⚡  Runtimes (mise)"
 if command -v mise &>/dev/null; then
