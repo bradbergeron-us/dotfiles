@@ -20,4 +20,3 @@ brew "gradle"             # Alternative Java build tool (Groovy/Kotlin DSL build
 # ------------------
 brew "kubectl"            # Kubernetes CLI
 brew "helm"               # Kubernetes package manager
-# Note: Docker Desktop is now in the main Brewfile

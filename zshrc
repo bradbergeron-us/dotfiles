@@ -33,6 +33,9 @@ fi
 export GOPATH="${GOPATH:-$HOME/go}"
 [[ -d "$GOPATH/bin" ]] && export PATH="$PATH:$GOPATH/bin"
 
+# Local binaries (Claude Code, pipx, etc.)
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+
 export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 # fzf (fuzzy finder — Ctrl+R history, Ctrl+T file picker)

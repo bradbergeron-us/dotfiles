@@ -7,6 +7,16 @@ echo "🔧 Quick Fix - Getting your dotfiles working"
 echo "=============================================="
 echo ""
 
+# 0. Verify Claude Code won't be broken
+if [[ -f ~/.local/bin/claude ]] && ! grep -q '\.local/bin' ~/dotfiles/zshrc; then
+  echo "⚠️  WARNING: Claude Code detected but zshrc missing ~/.local/bin in PATH"
+  echo "   Adding safety PATH entry to preserve Claude Code access..."
+  # This shouldn't happen with the updated zshrc, but just in case
+  echo "" >> ~/dotfiles/zshrc
+  echo "# Claude Code safety fallback" >> ~/dotfiles/zshrc
+  echo '[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"' >> ~/dotfiles/zshrc
+fi
+
 # 1. Symlink dotfiles (the most critical part)
 echo "Step 1: Symlinking dotfiles..."
 cd ~/dotfiles
@@ -26,8 +36,21 @@ echo ""
 
 # 3. Source the new zshrc
 echo "Step 3: Reloading shell configuration..."
+source ~/.zshrc 2>/dev/null || true
 echo "✓ Done"
 echo ""
+
+# 4. Verify Claude Code still works
+if [[ -f ~/.local/bin/claude ]]; then
+  echo "Step 4: Verifying Claude Code..."
+  if command -v claude &>/dev/null; then
+    echo "✓ Claude Code accessible (version $(claude --version 2>/dev/null || echo 'unknown'))"
+  else
+    echo "⚠️  Claude Code installed but not in PATH yet"
+    echo "   Run: source ~/.zshrc (or open new terminal)"
+  fi
+  echo ""
+fi
 
 echo "=============================================="
 echo "✅ Essential setup complete!"
