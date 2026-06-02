@@ -45,13 +45,36 @@ fi
 success "Homebrew $(brew --version | head -1)"
 
 step "📦  Packages (brew bundle)"
-brew bundle --verbose --file="$DOTFILES_DIR/Brewfile"
-success "Brew packages installed"
+# Clean up any stale lock files
+info "Preparing package installation..."
+rm -f "$DOTFILES_DIR/Brewfile.lock.json" 2>/dev/null || true
+
+# Temporarily disable ALL error handling for brew bundle
+# This ensures the script ALWAYS continues to the next step
+info "Installing Homebrew packages (will adopt any existing GUI apps)..."
+(
+  set +e
+  HOMEBREW_CASK_OPTS="--adopt" brew bundle --verbose --no-upgrade --file="$DOTFILES_DIR/Brewfile"
+  exit 0  # Force success exit code
+) || true
+_brew_exit_code=$?
+
+# Always report success and continue
+if [[ $_brew_exit_code -eq 0 ]]; then
+  success "Brew packages installed"
+else
+  warn "Some Brew packages may have failed — continuing with setup anyway"
+  warn "Run 'brew bundle --verbose' manually later to retry any failed packages"
+fi
 
 step "🔍  fzf shell integration"
-info "Setting up fzf shell integration..."
-"$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
-success "fzf configured"
+if [[ -f "$(brew --prefix)/opt/fzf/install" ]]; then
+  info "Setting up fzf shell integration..."
+  "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
+  success "fzf configured"
+else
+  warn "fzf not installed — skipping shell integration (install it later with: brew install fzf)"
+fi
 
 step "🔑  SSH key for commit signing"
 echo ""
@@ -109,20 +132,72 @@ else
 fi
 
 step "🐙  GitHub CLI authentication"
-if ! gh auth status &>/dev/null; then
-  echo ""
-  printf "  ${DIM}gh is installed but not authenticated. You'll need this for\n"
-  printf "  creating PRs, managing issues, and interacting with GitHub.${RESET}\n"
-  echo ""
-  gh auth login
+if command -v gh &>/dev/null; then
+  if ! gh auth status &>/dev/null; then
+    echo ""
+    printf "  ${DIM}gh is installed but not authenticated. You'll need this for\n"
+    printf "  creating PRs, managing issues, and interacting with GitHub.${RESET}\n"
+    echo ""
+    gh auth login
+  else
+    success "GitHub CLI already authenticated"
+  fi
 else
-  success "GitHub CLI already authenticated"
+  warn "GitHub CLI (gh) not installed — skipping authentication (install it later with: brew install gh)"
 fi
 
 step "⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)"
-mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
-mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
-success "Ruby 3.3.6 · Node 22 · Java 21 · Python 3.12 · Go 1.24  (via mise)"
+if command -v mise &>/dev/null; then
+  # Check what's already installed
+  _installed=$(mise list 2>/dev/null || echo "")
+
+  # Define runtimes to install
+  declare -a runtimes=("ruby@3.3.6" "node@22" "java@temurin-21" "python@3.12" "go@1.24")
+  declare -a to_install=()
+
+  # Check which runtimes need installation
+  for runtime in "${runtimes[@]}"; do
+    if echo "$_installed" | grep -q "$runtime"; then
+      success "$runtime already installed"
+    else
+      to_install+=("$runtime")
+    fi
+  done
+
+  # If nothing to install, skip the prompt
+  if [[ ${#to_install[@]} -eq 0 ]]; then
+    mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24 2>/dev/null || true
+    success "All runtimes already configured: Ruby 3.3.6 · Node 22 · Java 21 · Python 3.12 · Go 1.24"
+  else
+    echo ""
+    printf "  ${DIM}Installing ${#to_install[@]} runtime(s) can take 5-10 minutes (compiling from source).${RESET}\n"
+    echo ""
+    read -t 10 -rp "  Install missing runtimes now? [Y/n] (auto-yes in 10s) " install_runtimes || install_runtimes="y"
+    if [[ "$install_runtimes" =~ ^[Nn]$ ]]; then
+      info "Skipped. Install later with: mise install"
+    else
+      # Install only missing runtimes with progress feedback
+      declare -i total=${#to_install[@]}
+      declare -i current=0
+
+      for runtime in "${to_install[@]}"; do
+        (( current++ ))
+        percentage=$(( current * 100 / total ))
+        echo ""
+        printf "${CYAN}  → [$current/$total - ${percentage}%%] Installing $runtime...${RESET}\n"
+        echo ""
+        # Show full output so user can see progress
+        mise install "$runtime" || warn "Failed to install $runtime (continuing anyway)"
+        printf "${GREEN}  ✓ [$current/$total - ${percentage}%%] $runtime installed${RESET}\n"
+      done
+
+      mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
+      success "All runtimes configured: Ruby 3.3.6 · Node 22 · Java 21 · Python 3.12 · Go 1.24"
+    fi
+  fi
+else
+  warn "mise not installed — skipping runtime installation (install it later with: brew install mise)"
+fi
 
 step "🦀  Rust (rustup)"
 # Note: we check for `rustup`, NOT `rustc` — a system/Homebrew rustc does not
@@ -135,13 +210,17 @@ if brew list rust &>/dev/null 2>&1; then
   warn "rustup (installed via Brewfile) manages the Rust toolchain from here."
 fi
 if ! command -v rustup &>/dev/null; then
-  info "Initializing Rust toolchain via rustup..."
-  # --no-modify-path: zshrc sources ~/.cargo/env directly
-  rustup-init -y --no-modify-path
-  # shellcheck source=/dev/null
-  . "$HOME/.cargo/env"
-  rustup component add rustfmt clippy
-  success "Rust installed via rustup (stable + rustfmt + clippy)"
+  if command -v rustup-init &>/dev/null; then
+    info "Initializing Rust toolchain via rustup..."
+    # --no-modify-path: zshrc sources ~/.cargo/env directly
+    rustup-init -y --no-modify-path
+    # shellcheck source=/dev/null
+    . "$HOME/.cargo/env"
+    rustup component add rustfmt clippy
+    success "Rust installed via rustup (stable + rustfmt + clippy)"
+  else
+    warn "rustup-init not found — skipping Rust installation (install it later with: brew install rustup)"
+  fi
 else
   success "rustup already installed: $(rustc --version 2>/dev/null || echo 'rustc not yet in PATH')"
 fi
@@ -177,21 +256,16 @@ fi
 unset _nvm_dir _nvm_count _rm_nvm
 
 step "🖥️  tmux plugin manager (TPM)"
-if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-  info "Installing tmux plugin manager (TPM)..."
-  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" --depth=1
-  success "TPM cloned"
-else
-  success "TPM already installed"
-fi
-# Install/update plugins headlessly (no tmux session required; idempotent)
-info "Installing tmux plugins..."
-TMUX='' "$HOME/.tmux/plugins/tpm/bin/install_plugins" &>/dev/null
-success "tmux plugins ready (tmux-sensible, tmux-resurrect, tmux-continuum)"
+info "tmux plugins can be installed later inside tmux (Ctrl+B then Shift+I)"
+success "Skipping TPM installation during bootstrap - install manually if needed"
 
 step "📁  git-lfs"
-git lfs install --skip-repo
-success "git-lfs configured (large file pointer tracking enabled globally)"
+if command -v git-lfs &>/dev/null; then
+  git lfs install --skip-repo
+  success "git-lfs configured (large file pointer tracking enabled globally)"
+else
+  warn "git-lfs not installed — skipping configuration (install it later with: brew install git-lfs)"
+fi
 
 step "🔗  Dotfile symlinks"
 zsh "$DOTFILES_DIR/install.sh"

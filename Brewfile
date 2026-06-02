@@ -72,5 +72,7 @@ cask "raycast"             # launcher, clipboard history, window management
 cask "visual-studio-code"  # editor
 cask "postgres-app"        # Postgres.app — PostgreSQL with a macOS GUI
 cask "dbeaver-community"   # universal database GUI (Postgres, MySQL, SQLite, etc.)
-cask "orbstack"            # fast, lightweight Docker Desktop replacement + Linux VMs
+cask "docker"              # Docker Desktop — container platform (OrbStack alternative for work laptops)
 cask "hyper"               # terminal built on web technologies (Tokyo Night theme configured in hyper.js)
+cask "github"              # GitHub Desktop — GUI for Git and GitHub
+cask "flux"                # f.lux — adjusts screen color temperature based on time of day to reduce eye strain
