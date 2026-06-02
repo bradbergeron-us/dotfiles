@@ -1,0 +1,26 @@
+---
+# Bundle Configuration for JFrog Artifactory
+# This file authenticates Ruby gem installation with JFrog
+#
+# ⚠️  DO NOT commit this file with actual credentials!
+#
+# Installation:
+#   mkdir -p ~/.bundle
+#   cp ~/dotfiles/templates/bundle/config.template ~/.bundle/config
+#   edit ~/.bundle/config with your JFrog credentials
+#
+# To get your JFrog API token:
+#   1. Log in to https://jfrog.accenturefederaldev.com
+#   2. Profile → Edit Profile → Generate API Key
+#   3. Format: your.email%40domain.com:API_TOKEN
+#      (Note: @ symbol must be URL-encoded as %40)
+#
+# Example format:
+#   BUNDLE_JFROG__ACCENTUREFEDERALDEV__COM: "john.doe%40afs.com:cmVmdGtuOjAxOjE3..."
+#
+# Security Notes:
+#   - Never commit actual tokens to version control
+#   - Regenerate tokens periodically
+#   - Use JFrog's token expiration features
+#
+BUNDLE_JFROG__ACCENTUREFEDERALDEV__COM: "YOUR_EMAIL%40afs.com:YOUR_JFROG_API_TOKEN"

@@ -55,3 +55,5 @@
 	gpgSign = true
 [credential "https://va.ghe.com"]
 	provider = github
+[credential "https://bitbucket.np.afsp.io"]
+	provider = bitbucket

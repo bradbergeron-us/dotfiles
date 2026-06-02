@@ -74,6 +74,33 @@ setup_yarn() {
   fi
 }
 
+setup_bundle() {
+  echo ""
+  info "Setting up Bundle (Ruby gems) configuration..."
+
+  mkdir -p "$HOME/.bundle"
+
+  if [[ -f "$HOME/.bundle/config" ]]; then
+    warn "~/.bundle/config already exists"
+    read -rp "  Overwrite? [y/N] " overwrite
+    if [[ ! "$overwrite" =~ ^[Yy]$ ]]; then
+      info "Skipped Bundle configuration"
+      return 0
+    fi
+    cp "$HOME/.bundle/config" "$HOME/.bundle/config.backup"
+    info "Backed up existing config to config.backup"
+  fi
+
+  if [[ -f "$DOTFILES_DIR/templates/bundle/config.template" ]]; then
+    cp "$DOTFILES_DIR/templates/bundle/config.template" "$HOME/.bundle/config"
+    success "Created ~/.bundle/config from template"
+    info "Edit with your JFrog credentials to install private gems"
+  else
+    error "Template not found: $DOTFILES_DIR/templates/bundle/config.template"
+    return 1
+  fi
+}
+
 setup_continue() {
   echo ""
   info "Setting up Continue IDE configuration..."
@@ -225,6 +252,11 @@ main() {
   read -rp "Setup Yarn (.yarnrc)? [Y/n] " do_yarn
   if [[ ! "$do_yarn" =~ ^[Nn]$ ]]; then
     setup_yarn
+  fi
+
+  read -rp "Setup Bundle (.bundle/config for Ruby gems)? [Y/n] " do_bundle
+  if [[ ! "$do_bundle" =~ ^[Nn]$ ]]; then
+    setup_bundle
   fi
 
   read -rp "Setup Continue IDE (.continue/config.yaml)? [Y/n] " do_continue
