@@ -13,6 +13,14 @@ bash ~/dotfiles/bootstrap.sh
 
 `bootstrap.sh` runs once on a fresh Mac and handles everything: Homebrew, all packages, runtimes (Ruby, Node, Java, Python, Go, Rust), dotfile symlinks, and macOS defaults. Open a new terminal when it finishes.
 
+### Preview changes before running
+
+```sh
+bash ~/dotfiles/bootstrap.sh --dry-run
+```
+
+Shows what will be installed without making any changes. See [docs/DRY_RUN_AND_PREFLIGHT.md](docs/DRY_RUN_AND_PREFLIGHT.md) for details.
+
 <details>
 <summary>What bootstrap.sh does, step by step</summary>
 
