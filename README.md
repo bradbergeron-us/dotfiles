@@ -27,7 +27,8 @@ bash ~/dotfiles/bootstrap.sh
 9. TPM (tmux plugin manager)
 10. `install.sh` — symlinks all dotfiles
 11. `~/.zshrc.local` from template
-12. macOS developer defaults (optional prompt)
+12. Work-specific configurations — `.m2`, `.yarnrc`, `.continue`, `.claude`, `.aws` (optional prompt)
+13. macOS developer defaults (optional prompt)
 
 </details>
 
@@ -57,39 +58,39 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
   Date     Mon Jun 01 2026  08:00
   ─────────────────────────────────────────────────
 
-  ▸ [1/12]  🛠️  Xcode Command Line Tools
+  ▸ [1/13]  🛠️  Xcode Command Line Tools
   ✓ Xcode CLI Tools
 
-  ▸ [2/12]  🍺  Homebrew
+  ▸ [2/13]  🍺  Homebrew
   ✓ Homebrew 4.5.2
 
-  ▸ [3/12]  📦  Packages (brew bundle)
+  ▸ [3/13]  📦  Packages (brew bundle)
   → Installing packages from Brewfile...
   ✓ Brew packages installed
 
-  ▸ [4/12]  🔍  fzf shell integration
+  ▸ [4/13]  🔍  fzf shell integration
   ✓ fzf configured
 
-  ▸ [5/12]  🔑  SSH key for commit signing
+  ▸ [5/13]  🔑  SSH key for commit signing
   ✓ SSH key already exists at ~/.ssh/id_ed25519 — skipping
 
-  ▸ [6/12]  🐙  GitHub CLI authentication
+  ▸ [6/13]  🐙  GitHub CLI authentication
   ✓ GitHub CLI already authenticated
 
-  ▸ [7/12]  ⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)
+  ▸ [7/13]  ⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)
   → Installing Ruby, Node, Java, Python, and Go via mise...
   ✓ Ruby, Node, Java, Python, and Go installed via mise
 
-  ▸ [8/12]  🦀  Rust (rustup)
+  ▸ [8/13]  🦀  Rust (rustup)
   ✓ rustup already installed: rustc 1.86.0
 
-  ▸ [9/12]  🖥️  tmux plugin manager (TPM)
+  ▸ [9/13]  🖥️  tmux plugin manager (TPM)
   ✓ TPM already installed
 
-  ▸ [10/12]  📁  git-lfs
+  ▸ [10/13]  📁  git-lfs
   ✓ git-lfs
 
-  ▸ [11/12]  🔗  Dotfile symlinks
+  ▸ [11/13]  🔗  Dotfile symlinks
 
   🔗  dotfiles  ─  symlinking from ~/dotfiles
   ─────────────────────────────────────────────────
@@ -102,7 +103,14 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
   ✓ 3 linked  ·  14 current  ·  0 backed up
   ✓ 🎉  Done — open a new shell or: source ~/.zshrc
 
-  ▸ [12/12]  ⚙️  macOS developer defaults
+  ▸ [12/13]  🏢  Work-specific configurations
+
+  Setup work configs (.m2, .yarnrc, .continue, .claude, .aws)?
+
+  Run work configuration setup? [y/N]: y
+  ✓ Work configurations installed
+
+  ▸ [13/13]  ⚙️  macOS developer defaults
   Apply recommended macOS defaults? [y/N]: y
 
   ─────────────────────────────────────────────────
@@ -240,7 +248,70 @@ Work machine? Also run `brew bundle --file=~/dotfiles/Brewfile.work`.
 cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
 ```
 
-Covers Go/Rust overrides, Maven aliases, Java switching, direnv examples, corporate proxy, work git email, Sidekiq license keys, and more. See [docs/work-machine.md](docs/work-machine.md) for the full work machine setup guide.
+Covers Go/Rust overrides, Maven aliases, Java switching, direnv examples, corporate proxy, work git email, Sidekiq license keys, and more. See [docs/work-machine.md](docs/work-machine.md) for additional work-specific topics.
+
+---
+
+## Work Machine Setup
+
+For work laptops with corporate proxy, internal registries, and AWS Bedrock access:
+
+### Quick Setup
+
+```sh
+# 1. Run standard bootstrap
+bash ~/dotfiles/bootstrap.sh
+
+# 2. Setup work configurations (.m2, .yarnrc, .continue, .claude, .aws)
+bash ~/dotfiles/scripts/setup_work_configs.sh
+
+# 3. Install Zscaler certificate
+bash ~/dotfiles/scripts/install_zscaler_cert.sh
+
+# 4. Install Claude Code CLI
+bash ~/dotfiles/scripts/install_claude_code.sh
+
+# 5. Configure AWS credentials
+aws configure sso --profile bedrock
+
+# 6. Install VS Code work extensions
+bash ~/dotfiles/scripts/install_vscode_work_extensions.sh
+
+# 7. Verify everything
+bash ~/dotfiles/verify.sh
+```
+
+### What Gets Configured
+
+The work configuration setup creates templates for:
+
+- **Maven** (`~/.m2/settings.xml`) — Nexus mirror and repository profiles
+- **Yarn** (`~/.yarnrc`) — JFrog registry and auth settings
+- **Continue IDE** (`~/.continue/config.yaml`) — AWS Bedrock models (Claude 4.5 & 3.7 Sonnet)
+- **Claude Code** (`~/.claude/settings.json`) — AWS Bedrock environment and certificate path
+- **AWS** (`~/.aws/config`) — Profile and region configuration
+- **Certificates** (`~/.continue/certs/`) — Zscaler root certificate for corporate proxy
+- **Claude CLI** (`~/.local/bin/claude`) — Claude Code command-line interface
+
+### Security
+
+All templates are safe to commit. Sensitive data (credentials, secrets, actual certificates) is stored locally and git-ignored:
+
+- `certs/*.crt` — Actual certificate files (ignored)
+- `installers/*` — Binary installers (ignored)
+- `vscode/extensions/*.vsix` — Extension files (ignored)
+- `~/.aws/credentials` — Never created by scripts (use SSO or aws-vault)
+
+### Complete Guide
+
+See **[docs/work-setup-complete.md](docs/work-setup-complete.md)** for:
+- Prerequisites and required files
+- Step-by-step installation guide
+- Troubleshooting common issues
+- Security best practices
+- Advanced configuration
+
+Or for additional work-specific topics: [docs/work-machine.md](docs/work-machine.md)
 
 ---
 
@@ -261,5 +332,6 @@ git push
 | Doc | Contents |
 |-----|---------|
 | [docs/tools.md](docs/tools.md) | Full descriptions, rationale, and commands for every tool |
-| [docs/work-machine.md](docs/work-machine.md) | Work machine setup — Brewfile.work, zshrc.local, direnv |
+| [docs/work-setup-complete.md](docs/work-setup-complete.md) | **Complete work machine setup guide** — end-to-end from fresh macOS to production-ready |
+| [docs/work-machine.md](docs/work-machine.md) | Additional work topics — Brewfile.work, zshrc.local, direnv, NVM migration |
 | [docs/performance.md](docs/performance.md) | Shell startup optimization history and benchmarks |
