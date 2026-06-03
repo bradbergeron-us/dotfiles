@@ -47,34 +47,40 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 autoload -U add-zsh-hook
 
-function tabTitle() {
-  # Show last 3 directories of path (or full path if shorter)
+# Format current directory for tab title display
+# Shows last 3 directory components (or full path if shorter)
+function _format_tab_title() {
   local short_path="${PWD/#$HOME/~}"
+
+  # Handle root directory edge case
+  [[ "$short_path" == "/" ]] && echo "/" && return
+
   local path_parts=(${(s:/:)short_path})
   if (( ${#path_parts} > 3 )); then
-    short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+    echo ".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+  else
+    echo "$short_path"
   fi
-  # Use both OSC 0 (icon + title) and OSC 2 (title only) for better compatibility
-  print -Pn "\e]0;${short_path}\a"
-  print -Pn "\e]2;${short_path}\a"
 }
-add-zsh-hook precmd tabTitle
-add-zsh-hook chpwd tabTitle
 
-# Also update title before each command to persist through subprocesses
-function tabTitlePreexec() {
-  local short_path="${PWD/#$HOME/~}"
-  local path_parts=(${(s:/:)short_path})
-  if (( ${#path_parts} > 3 )); then
-    short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
-  fi
-  print -Pn "\e]0;${short_path}\a"
-  print -Pn "\e]2;${short_path}\a"
+# Update terminal tab title with current directory
+# Uses both OSC 0 (icon + title) and OSC 2 (title only) for compatibility
+function _set_terminal_title() {
+  local title="$(_format_tab_title)"
+  print -Pn "\e]0;${title}\a"
+  print -Pn "\e]2;${title}\a"
 }
-add-zsh-hook preexec tabTitlePreexec
 
-# Set initial title
-tabTitle
+# Register hooks to update title on:
+# - precmd: before each prompt (overrides apps like Claude Code)
+# - chpwd: when directory changes
+# - preexec: before each command execution
+add-zsh-hook precmd _set_terminal_title
+add-zsh-hook chpwd _set_terminal_title
+add-zsh-hook preexec _set_terminal_title
+
+# Set initial title on shell startup
+_set_terminal_title
 
 # ------------------
 # Aliases
@@ -129,41 +135,6 @@ alias history='history 0'
 
 # bat (syntax-highlighted cat)
 command -v bat &>/dev/null && alias cat='bat --paging=never'
-
-# Continuously update tab title to override applications like Claude Code
-# This runs before every prompt display
-function update_terminal_title() {
-  local short_path="${PWD/#$HOME/~}"
-  local path_parts=(${(s:/:)short_path})
-  if (( ${#path_parts} > 3 )); then
-    short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
-  fi
-  print -Pn "\e]0;${short_path}\a"
-  print -Pn "\e]2;${short_path}\a"
-}
-add-zsh-hook precmd update_terminal_title
-
-# Aggressive title updater to override Claude Code and similar apps
-# This background job updates the title every second
-function aggressive_title_updater() {
-  while true; do
-    local short_path="${PWD/#$HOME/~}"
-    local path_parts=(${(s:/:)short_path})
-    if (( ${#path_parts} > 3 )); then
-      short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
-    fi
-    print -Pn "\e]0;${short_path}\a"
-    print -Pn "\e]2;${short_path}\a"
-    sleep 1
-  done
-}
-
-# Start background title updater (only if not already running)
-if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
-  aggressive_title_updater &
-  export TITLE_UPDATER_PID=$!
-  disown
-fi
 
 eval "$(starship init zsh)"
 test -f ~/afs_localprops.sh && source ~/afs_localprops.sh
