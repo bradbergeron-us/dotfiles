@@ -47,10 +47,107 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 autoload -U add-zsh-hook
 
-function tabTitle() {
-  echo -ne "\033]0;${PWD##*/}\007"
+# Check if running in a Claude Code session
+function _is_claude_session() {
+  # Check environment variables first
+  [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] && return 0
+  [[ -n "$ANTHROPIC_MODEL" ]] && return 0
+  [[ "$TERM_PROGRAM" == *"claude"* ]] && return 0
+
+  # Also check if 'claude' command is running as a child process of this shell
+  pgrep -P $$ claude &>/dev/null && return 0
+
+  return 1
 }
-add-zsh-hook precmd tabTitle
+
+# Format current directory for tab title display
+# Shows last 3 directory components (or full path if shorter)
+# Appends indicator if Claude Code is running
+function _format_tab_title() {
+  local short_path="${1:-$PWD}"
+  local show_claude="${2:-no}"
+
+  # Replace home directory with tilde
+  short_path="${short_path/#$HOME/~}"
+
+  # Handle root directory edge case
+  if [[ "$short_path" == "/" ]]; then
+    short_path="/"
+  else
+    local path_parts=(${(s:/:)short_path})
+    if (( ${#path_parts} > 3 )); then
+      short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+    fi
+  fi
+
+  # Append Claude Code indicator if requested
+  if [[ "$show_claude" == "yes" ]]; then
+    echo "${short_path} ⚡"
+  else
+    echo "$short_path"
+  fi
+}
+
+# Update terminal tab title with current directory
+# Uses both OSC 0 (icon + title) and OSC 2 (title only) for compatibility
+function _set_terminal_title() {
+  local show_claude="no"
+  _is_claude_session && show_claude="yes"
+
+  local title="$(_format_tab_title "$PWD" "$show_claude")"
+  print -Pn "\e]0;${title}\a"
+  print -Pn "\e]2;${title}\a"
+
+  # Write current PWD and Claude status to temp file for background updater
+  echo "$PWD" > "/tmp/.zsh_pwd_$$" 2>/dev/null
+  echo "$show_claude" > "/tmp/.zsh_claude_$$" 2>/dev/null
+}
+
+# Background job to continuously override applications like Claude Code
+# Reads current directory and Claude status from temp files updated by hooks
+function _background_title_updater() {
+  local pwd_file="/tmp/.zsh_pwd_$$"
+  local claude_file="/tmp/.zsh_claude_$$"
+  while true; do
+    if [[ -f "$pwd_file" ]]; then
+      local current_pwd=$(cat "$pwd_file" 2>/dev/null)
+      local show_claude=$(cat "$claude_file" 2>/dev/null)
+      [[ -z "$show_claude" ]] && show_claude="no"
+
+      local title="$(_format_tab_title "$current_pwd" "$show_claude")"
+      print -Pn "\e]0;${title}\a"
+      print -Pn "\e]2;${title}\a"
+    fi
+    sleep 1
+  done
+}
+
+# Cleanup function to kill background updater and remove temp files
+function _cleanup_title_updater() {
+  [[ -n "$TITLE_UPDATER_PID" ]] && kill "$TITLE_UPDATER_PID" 2>/dev/null
+  rm -f "/tmp/.zsh_pwd_$$" "/tmp/.zsh_claude_$$" 2>/dev/null
+}
+
+# Register hooks to update title on:
+# - precmd: before each prompt (overrides apps like Claude Code)
+# - chpwd: when directory changes
+# - preexec: before each command execution
+add-zsh-hook precmd _set_terminal_title
+add-zsh-hook chpwd _set_terminal_title
+add-zsh-hook preexec _set_terminal_title
+
+# Cleanup on shell exit
+trap _cleanup_title_updater EXIT
+
+# Start background updater (only if not already running)
+if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
+  _background_title_updater &
+  export TITLE_UPDATER_PID=$!
+  disown
+fi
+
+# Set initial title on shell startup
+_set_terminal_title
 
 # ------------------
 # Aliases

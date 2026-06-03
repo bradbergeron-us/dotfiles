@@ -37,7 +37,7 @@ module.exports = {
     "hyper-search", // Enable font ligatures
     "hypercwd", // Slight visual cue for current tab
     "hyper-font-ligatures", // Status bar showing CPU/mem (optional)
-    "hyper-active-tab", "hyperline", "hyper-tokyo-night", "hyper-tab-icons"],
+    "hyper-active-tab", "hyperline", "hyper-tokyo-night"],
     // in development, you can create a directory under
     // `~/.hyper_plugins/local/` and include it here
     // to load it and avoid it being `npm install`ed
