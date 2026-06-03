@@ -127,26 +127,41 @@ function _set_terminal_title() {
   print -Pn "\e]2;${title}\a"
 }
 
-# Periodic title updater to override Claude Code (runs every 3 seconds)
-function _schedule_title_update() {
-  _set_terminal_title
-  # Reschedule for 3 seconds from now
-  sched +3 _schedule_title_update 2>/dev/null || true
-}
-
-# Load zsh scheduling module if available
-zmodload -i zsh/sched 2>/dev/null && sched +3 _schedule_title_update 2>/dev/null
-
-# Register hooks to update title on:
-# - precmd: before each prompt (most important)
-# - chpwd: when directory changes
-# - preexec: before command execution
-add-zsh-hook precmd _set_terminal_title
-add-zsh-hook chpwd _set_terminal_title
-add-zsh-hook preexec _set_terminal_title
+# Register hooks to update title aggressively
+add-zsh-hook precmd _set_terminal_title   # Before each prompt
+add-zsh-hook chpwd _set_terminal_title    # When directory changes
+add-zsh-hook preexec _set_terminal_title  # Before command execution
 
 # Set initial title on shell startup
 _set_terminal_title
+
+# Aggressive override for Claude Code: update on every line editor action
+# This makes the title update extremely responsive
+function _zle_title_update() {
+  _set_terminal_title
+}
+
+# Create a self-insert widget wrapper to update title on every keystroke
+# Only do this if Claude Code is potentially running (has performance cost)
+if [[ -n "$PPID" ]]; then
+  local parent_cmd=$(ps -o comm= -p "$PPID" 2>/dev/null)
+  if [[ "$parent_cmd" == *"claude"* ]]; then
+    # We're in Claude Code - set up aggressive title updates
+    zle -N _zle_title_update
+
+    # Update title when line editor initializes
+    function zle-line-init() {
+      _set_terminal_title
+    }
+    zle -N zle-line-init
+
+    # Update title on every keypress (aggressive but necessary for Claude)
+    function zle-line-pre-redraw() {
+      _set_terminal_title
+    }
+    zle -N zle-line-pre-redraw
+  fi
+fi
 
 # ------------------
 # Aliases
