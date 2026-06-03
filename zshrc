@@ -54,9 +54,12 @@ function tabTitle() {
   if (( ${#path_parts} > 3 )); then
     short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
   fi
-  echo -ne "\033]0;${short_path}\007"
+  # Use both OSC 0 (icon + title) and OSC 2 (title only) for better compatibility
+  print -Pn "\e]0;${short_path}\a"
+  print -Pn "\e]2;${short_path}\a"
 }
 add-zsh-hook precmd tabTitle
+add-zsh-hook chpwd tabTitle
 
 # Also update title before each command to persist through subprocesses
 function tabTitlePreexec() {
@@ -65,9 +68,13 @@ function tabTitlePreexec() {
   if (( ${#path_parts} > 3 )); then
     short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
   fi
-  echo -ne "\033]0;${short_path}\007"
+  print -Pn "\e]0;${short_path}\a"
+  print -Pn "\e]2;${short_path}\a"
 }
 add-zsh-hook preexec tabTitlePreexec
+
+# Set initial title
+tabTitle
 
 # ------------------
 # Aliases
@@ -122,6 +129,41 @@ alias history='history 0'
 
 # bat (syntax-highlighted cat)
 command -v bat &>/dev/null && alias cat='bat --paging=never'
+
+# Continuously update tab title to override applications like Claude Code
+# This runs before every prompt display
+function update_terminal_title() {
+  local short_path="${PWD/#$HOME/~}"
+  local path_parts=(${(s:/:)short_path})
+  if (( ${#path_parts} > 3 )); then
+    short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+  fi
+  print -Pn "\e]0;${short_path}\a"
+  print -Pn "\e]2;${short_path}\a"
+}
+add-zsh-hook precmd update_terminal_title
+
+# Aggressive title updater to override Claude Code and similar apps
+# This background job updates the title every second
+function aggressive_title_updater() {
+  while true; do
+    local short_path="${PWD/#$HOME/~}"
+    local path_parts=(${(s:/:)short_path})
+    if (( ${#path_parts} > 3 )); then
+      short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+    fi
+    print -Pn "\e]0;${short_path}\a"
+    print -Pn "\e]2;${short_path}\a"
+    sleep 1
+  done
+}
+
+# Start background title updater (only if not already running)
+if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
+  aggressive_title_updater &
+  export TITLE_UPDATER_PID=$!
+  disown
+fi
 
 eval "$(starship init zsh)"
 test -f ~/afs_localprops.sh && source ~/afs_localprops.sh
