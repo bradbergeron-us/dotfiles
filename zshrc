@@ -49,7 +49,15 @@ autoload -U add-zsh-hook
 
 # Check if running in a Claude Code session
 function _is_claude_session() {
-  [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] || [[ -n "$ANTHROPIC_MODEL" ]] || [[ "$TERM_PROGRAM" == *"claude"* ]]
+  # Check environment variables first
+  [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] && return 0
+  [[ -n "$ANTHROPIC_MODEL" ]] && return 0
+  [[ "$TERM_PROGRAM" == *"claude"* ]] && return 0
+
+  # Also check if 'claude' command is running as a child process of this shell
+  pgrep -P $$ claude &>/dev/null && return 0
+
+  return 1
 }
 
 # Format current directory for tab title display
