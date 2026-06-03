@@ -49,15 +49,24 @@ autoload -U add-zsh-hook
 
 # Format current directory for tab title display
 # Shows last 3 directory components (or full path if shorter)
+# Appends indicator if Claude Code is running
 function _format_tab_title() {
   local short_path="${PWD/#$HOME/~}"
 
   # Handle root directory edge case
-  [[ "$short_path" == "/" ]] && echo "/" && return
+  if [[ "$short_path" == "/" ]]; then
+    short_path="/"
+  else
+    local path_parts=(${(s:/:)short_path})
+    if (( ${#path_parts} > 3 )); then
+      short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+    fi
+  fi
 
-  local path_parts=(${(s:/:)short_path})
-  if (( ${#path_parts} > 3 )); then
-    echo ".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+  # Append Claude Code indicator if running in a Claude session
+  # Check for Claude-specific environment variables
+  if [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] || [[ -n "$ANTHROPIC_MODEL" ]] || [[ "$TERM_PROGRAM" == *"claude"* ]]; then
+    echo "${short_path} ⚡"
   else
     echo "$short_path"
   fi
@@ -69,6 +78,32 @@ function _set_terminal_title() {
   local title="$(_format_tab_title)"
   print -Pn "\e]0;${title}\a"
   print -Pn "\e]2;${title}\a"
+
+  # Write current PWD to temp file for background updater
+  echo "$PWD" > "/tmp/.zsh_pwd_$$" 2>/dev/null
+}
+
+# Background job to continuously override applications like Claude Code
+# Reads current directory from temp file updated by hooks
+function _background_title_updater() {
+  local pwd_file="/tmp/.zsh_pwd_$$"
+  while true; do
+    if [[ -f "$pwd_file" ]]; then
+      local saved_pwd=$PWD
+      PWD=$(cat "$pwd_file" 2>/dev/null)
+      local title="$(_format_tab_title)"
+      print -Pn "\e]0;${title}\a"
+      print -Pn "\e]2;${title}\a"
+      PWD=$saved_pwd
+    fi
+    sleep 1
+  done
+}
+
+# Cleanup function to kill background updater and remove temp file
+function _cleanup_title_updater() {
+  [[ -n "$TITLE_UPDATER_PID" ]] && kill "$TITLE_UPDATER_PID" 2>/dev/null
+  rm -f "/tmp/.zsh_pwd_$$" 2>/dev/null
 }
 
 # Register hooks to update title on:
@@ -78,6 +113,16 @@ function _set_terminal_title() {
 add-zsh-hook precmd _set_terminal_title
 add-zsh-hook chpwd _set_terminal_title
 add-zsh-hook preexec _set_terminal_title
+
+# Cleanup on shell exit
+trap _cleanup_title_updater EXIT
+
+# Start background updater (only if not already running)
+if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
+  _background_title_updater &
+  export TITLE_UPDATER_PID=$!
+  disown
+fi
 
 # Set initial title on shell startup
 _set_terminal_title
