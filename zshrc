@@ -47,44 +47,44 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 autoload -U add-zsh-hook
 
-# Check if running in a Claude Code session
-# This function walks up the process tree to verify THIS shell is actually
-# running under Claude Code, not just checking inherited environment variables
+# Fast Claude Code detection with caching
+# Checks if this specific shell is running under Claude Code
+_CLAUDE_SESSION_CACHE=""
+_CLAUDE_SESSION_CACHE_TIME=0
+
 function _is_claude_session() {
-  # First check if 'claude' is a direct child process (fastest check)
-  pgrep -P $$ claude &>/dev/null && return 0
+  local now=$(date +%s)
+  local cache_ttl=5  # Cache result for 5 seconds
 
-  # Walk up the process tree to see if any ancestor is Claude Code
-  # This prevents false positives when terminals are split
-  local current_pid=$$
-  local max_depth=10  # Prevent infinite loops
-  local depth=0
+  # Return cached result if still valid
+  if (( now - _CLAUDE_SESSION_CACHE_TIME < cache_ttl )); then
+    [[ "$_CLAUDE_SESSION_CACHE" == "yes" ]] && return 0 || return 1
+  fi
 
-  while [[ $current_pid -gt 1 ]] && [[ $depth -lt $max_depth ]]; do
-    # Get the parent process command
-    local parent_cmd=$(ps -o comm= -p "$current_pid" 2>/dev/null)
-
-    # Check if the current process is Claude Code
-    if [[ "$parent_cmd" == *"claude"* ]]; then
-      return 0
-    fi
-
-    # Move to the parent process
-    current_pid=$(ps -o ppid= -p "$current_pid" 2>/dev/null | tr -d ' ')
-
-    # Break if we couldn't get parent PID
-    [[ -z "$current_pid" ]] && break
-
-    ((depth++))
-  done
-
-  # Only check environment variables as a fallback if we find them AND
-  # they seem to be set specifically for this session (not inherited)
-  # This is a weaker check and should be last resort
-  if [[ -n "$CLAUDE_CODE_SESSION_ID" ]]; then
+  # Fast check: is 'claude' a direct child process?
+  if pgrep -P $$ -q claude 2>/dev/null; then
+    _CLAUDE_SESSION_CACHE="yes"
+    _CLAUDE_SESSION_CACHE_TIME=$now
     return 0
   fi
 
+  # Quick process tree check (max 5 levels, more efficient)
+  local pid=$PPID
+  local depth=0
+  while [[ $pid -gt 1 ]] && (( depth < 5 )); do
+    local cmd=$(ps -o comm= -p "$pid" 2>/dev/null)
+    if [[ "$cmd" == *"claude"* ]]; then
+      _CLAUDE_SESSION_CACHE="yes"
+      _CLAUDE_SESSION_CACHE_TIME=$now
+      return 0
+    fi
+    pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+    [[ -z "$pid" ]] && break
+    ((depth++))
+  done
+
+  _CLAUDE_SESSION_CACHE="no"
+  _CLAUDE_SESSION_CACHE_TIME=$now
   return 1
 }
 
@@ -125,54 +125,25 @@ function _set_terminal_title() {
   local title="$(_format_tab_title "$PWD" "$show_claude")"
   print -Pn "\e]0;${title}\a"
   print -Pn "\e]2;${title}\a"
-
-  # Write current PWD and Claude status to temp file for background updater
-  echo "$PWD" > "/tmp/.zsh_pwd_$$" 2>/dev/null
-  echo "$show_claude" > "/tmp/.zsh_claude_$$" 2>/dev/null
 }
 
-# Background job to continuously override applications like Claude Code
-# Reads current directory and Claude status from temp files updated by hooks
-function _background_title_updater() {
-  local pwd_file="/tmp/.zsh_pwd_$$"
-  local claude_file="/tmp/.zsh_claude_$$"
-  while true; do
-    if [[ -f "$pwd_file" ]]; then
-      local current_pwd=$(cat "$pwd_file" 2>/dev/null)
-      local show_claude=$(cat "$claude_file" 2>/dev/null)
-      [[ -z "$show_claude" ]] && show_claude="no"
-
-      local title="$(_format_tab_title "$current_pwd" "$show_claude")"
-      print -Pn "\e]0;${title}\a"
-      print -Pn "\e]2;${title}\a"
-    fi
-    sleep 1
-  done
+# Periodic title updater to override Claude Code (runs every 3 seconds)
+function _schedule_title_update() {
+  _set_terminal_title
+  # Reschedule for 3 seconds from now
+  sched +3 _schedule_title_update 2>/dev/null || true
 }
 
-# Cleanup function to kill background updater and remove temp files
-function _cleanup_title_updater() {
-  [[ -n "$TITLE_UPDATER_PID" ]] && kill "$TITLE_UPDATER_PID" 2>/dev/null
-  rm -f "/tmp/.zsh_pwd_$$" "/tmp/.zsh_claude_$$" 2>/dev/null
-}
+# Load zsh scheduling module if available
+zmodload -i zsh/sched 2>/dev/null && sched +3 _schedule_title_update 2>/dev/null
 
 # Register hooks to update title on:
-# - precmd: before each prompt (overrides apps like Claude Code)
+# - precmd: before each prompt (most important)
 # - chpwd: when directory changes
-# - preexec: before each command execution
+# - preexec: before command execution
 add-zsh-hook precmd _set_terminal_title
 add-zsh-hook chpwd _set_terminal_title
 add-zsh-hook preexec _set_terminal_title
-
-# Cleanup on shell exit
-trap _cleanup_title_updater EXIT
-
-# Start background updater (only if not already running)
-if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
-  _background_title_updater &
-  export TITLE_UPDATER_PID=$!
-  disown
-fi
 
 # Set initial title on shell startup
 _set_terminal_title
