@@ -48,14 +48,42 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 autoload -U add-zsh-hook
 
 # Check if running in a Claude Code session
+# This function walks up the process tree to verify THIS shell is actually
+# running under Claude Code, not just checking inherited environment variables
 function _is_claude_session() {
-  # Check environment variables first
-  [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] && return 0
-  [[ -n "$ANTHROPIC_MODEL" ]] && return 0
-  [[ "$TERM_PROGRAM" == *"claude"* ]] && return 0
-
-  # Also check if 'claude' command is running as a child process of this shell
+  # First check if 'claude' is a direct child process (fastest check)
   pgrep -P $$ claude &>/dev/null && return 0
+
+  # Walk up the process tree to see if any ancestor is Claude Code
+  # This prevents false positives when terminals are split
+  local current_pid=$$
+  local max_depth=10  # Prevent infinite loops
+  local depth=0
+
+  while [[ $current_pid -gt 1 ]] && [[ $depth -lt $max_depth ]]; do
+    # Get the parent process command
+    local parent_cmd=$(ps -o comm= -p "$current_pid" 2>/dev/null)
+
+    # Check if the current process is Claude Code
+    if [[ "$parent_cmd" == *"claude"* ]]; then
+      return 0
+    fi
+
+    # Move to the parent process
+    current_pid=$(ps -o ppid= -p "$current_pid" 2>/dev/null | tr -d ' ')
+
+    # Break if we couldn't get parent PID
+    [[ -z "$current_pid" ]] && break
+
+    ((depth++))
+  done
+
+  # Only check environment variables as a fallback if we find them AND
+  # they seem to be set specifically for this session (not inherited)
+  # This is a weaker check and should be last resort
+  if [[ -n "$CLAUDE_CODE_SESSION_ID" ]]; then
+    return 0
+  fi
 
   return 1
 }
