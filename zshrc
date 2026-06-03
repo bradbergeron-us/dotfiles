@@ -48,9 +48,26 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 autoload -U add-zsh-hook
 
 function tabTitle() {
-  echo -ne "\033]0;${PWD##*/}\007"
+  # Show last 3 directories of path (or full path if shorter)
+  local short_path="${PWD/#$HOME/~}"
+  local path_parts=(${(s:/:)short_path})
+  if (( ${#path_parts} > 3 )); then
+    short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+  fi
+  echo -ne "\033]0;${short_path}\007"
 }
 add-zsh-hook precmd tabTitle
+
+# Also update title before each command to persist through subprocesses
+function tabTitlePreexec() {
+  local short_path="${PWD/#$HOME/~}"
+  local path_parts=(${(s:/:)short_path})
+  if (( ${#path_parts} > 3 )); then
+    short_path=".../${path_parts[-3]}/${path_parts[-2]}/${path_parts[-1]}"
+  fi
+  echo -ne "\033]0;${short_path}\007"
+}
+add-zsh-hook preexec tabTitlePreexec
 
 # ------------------
 # Aliases
