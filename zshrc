@@ -47,53 +47,47 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 autoload -U add-zsh-hook
 
-# Fast Claude Code detection with caching
-# Checks if this specific shell is running under Claude Code
-_CLAUDE_SESSION_CACHE=""
-_CLAUDE_SESSION_CACHE_TIME=0
-
+# Check if Claude Code is active (either running this shell or running on the system)
 function _is_claude_session() {
-  local now=$(date +%s)
-  local cache_ttl=5  # Cache result for 5 seconds
+  # Method 1: Check if this shell is running under Claude Code (fastest)
+  pgrep -P $$ claude &>/dev/null && return 0
 
-  # Return cached result if still valid
-  if (( now - _CLAUDE_SESSION_CACHE_TIME < cache_ttl )); then
-    [[ "$_CLAUDE_SESSION_CACHE" == "yes" ]] && return 0 || return 1
-  fi
-
-  # Fast check: is 'claude' a direct child process?
-  if pgrep -P $$ -q claude 2>/dev/null; then
-    _CLAUDE_SESSION_CACHE="yes"
-    _CLAUDE_SESSION_CACHE_TIME=$now
+  # Method 2: Check environment variables
+  if [[ -n "$CLAUDE_CODE_ENTRYPOINT" ]] || [[ -n "$CLAUDE_CODE_SESSION_ID" ]]; then
     return 0
   fi
 
-  # Quick process tree check (max 5 levels, more efficient)
-  local pid=$PPID
+  # Method 3: Walk up the process tree
+  local current_pid=$$
+  local max_depth=10
   local depth=0
-  while [[ $pid -gt 1 ]] && (( depth < 5 )); do
-    local cmd=$(ps -o comm= -p "$pid" 2>/dev/null)
-    if [[ "$cmd" == *"claude"* ]]; then
-      _CLAUDE_SESSION_CACHE="yes"
-      _CLAUDE_SESSION_CACHE_TIME=$now
+
+  while [[ $current_pid -gt 1 ]] && [[ $depth -lt $max_depth ]]; do
+    local parent_cmd=$(ps -o comm= -p "$current_pid" 2>/dev/null)
+    if [[ "$parent_cmd" == *"claude"* ]]; then
       return 0
     fi
-    pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
-    [[ -z "$pid" ]] && break
+    current_pid=$(ps -o ppid= -p "$current_pid" 2>/dev/null | tr -d ' ')
+    [[ -z "$current_pid" ]] && break
     ((depth++))
   done
 
-  _CLAUDE_SESSION_CACHE="no"
-  _CLAUDE_SESSION_CACHE_TIME=$now
+  # Method 4: Check if ANY Claude Code process is running on the system
+  # This handles the case where Claude Code is using this terminal remotely
+  # Use ps instead of pgrep for better compatibility
+  ps aux 2>/dev/null | grep -q '[c]laude' && return 0
+
   return 1
 }
 
 # Format current directory for tab title display
 # Shows last 3 directory components (or full path if shorter)
 # Appends indicator if Claude Code is running
+# Preserves any existing icon prefix (from hyper-active-tab, etc)
 function _format_tab_title() {
   local short_path="${1:-$PWD}"
   local show_claude="${2:-no}"
+  local icon_prefix="${3:-}"
 
   # Replace home directory with tilde
   short_path="${short_path/#$HOME/~}"
@@ -108,12 +102,13 @@ function _format_tab_title() {
     fi
   fi
 
-  # Append Claude Code indicator if requested
-  if [[ "$show_claude" == "yes" ]]; then
-    echo "${short_path} ⚡"
-  else
-    echo "$short_path"
-  fi
+  # Build title with optional icon prefix and Claude indicator
+  local title=""
+  [[ -n "$icon_prefix" ]] && title="${icon_prefix} "
+  title="${title}${short_path}"
+  [[ "$show_claude" == "yes" ]] && title="${title} ⚡"
+
+  echo "$title"
 }
 
 # Update terminal tab title with current directory
@@ -125,43 +120,61 @@ function _set_terminal_title() {
   local title="$(_format_tab_title "$PWD" "$show_claude")"
   print -Pn "\e]0;${title}\a"
   print -Pn "\e]2;${title}\a"
+
+  # Write current PWD and Claude status to temp file for background updater
+  echo "$PWD" > "/tmp/.zsh_pwd_$$" 2>/dev/null
+  echo "$show_claude" > "/tmp/.zsh_claude_$$" 2>/dev/null
 }
 
-# Register hooks to update title aggressively
-add-zsh-hook precmd _set_terminal_title   # Before each prompt
-add-zsh-hook chpwd _set_terminal_title    # When directory changes
-add-zsh-hook preexec _set_terminal_title  # Before command execution
+# Background job to continuously override applications like Claude Code
+# Reads current directory and Claude status from temp files updated by hooks
+function _background_title_updater() {
+  # Use the parent shell's PID passed via environment variable
+  local shell_pid="${PARENT_SHELL_PID:-$$}"
+  local pwd_file="/tmp/.zsh_pwd_${shell_pid}"
+  local claude_file="/tmp/.zsh_claude_${shell_pid}"
+
+  while true; do
+    if [[ -f "$pwd_file" ]]; then
+      local current_pwd=$(cat "$pwd_file" 2>/dev/null)
+      local show_claude=$(cat "$claude_file" 2>/dev/null)
+      [[ -z "$show_claude" ]] && show_claude="no"
+
+      local title="$(_format_tab_title "$current_pwd" "$show_claude")"
+      print -Pn "\e]0;${title}\a"
+      print -Pn "\e]2;${title}\a"
+    fi
+    sleep 0.05
+  done
+}
+
+# Cleanup function to kill background updater and remove temp files
+function _cleanup_title_updater() {
+  [[ -n "$TITLE_UPDATER_PID" ]] && kill "$TITLE_UPDATER_PID" 2>/dev/null
+  rm -f "/tmp/.zsh_pwd_$$" "/tmp/.zsh_claude_$$" 2>/dev/null
+}
+
+# Register hooks to update title on:
+# - precmd: before each prompt (overrides apps like Claude Code)
+# - chpwd: when directory changes
+# - preexec: before each command execution
+add-zsh-hook precmd _set_terminal_title
+add-zsh-hook chpwd _set_terminal_title
+add-zsh-hook preexec _set_terminal_title
+
+# Cleanup on shell exit
+trap _cleanup_title_updater EXIT
+
+# Start background updater (only if not already running)
+if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
+  # Pass the parent shell's PID to the background updater
+  PARENT_SHELL_PID=$$ _background_title_updater &
+  export TITLE_UPDATER_PID=$!
+  disown
+fi
 
 # Set initial title on shell startup
 _set_terminal_title
-
-# Aggressive override for Claude Code: update on every line editor action
-# This makes the title update extremely responsive
-function _zle_title_update() {
-  _set_terminal_title
-}
-
-# Create a self-insert widget wrapper to update title on every keystroke
-# Only do this if Claude Code is potentially running (has performance cost)
-if [[ -n "$PPID" ]]; then
-  local parent_cmd=$(ps -o comm= -p "$PPID" 2>/dev/null)
-  if [[ "$parent_cmd" == *"claude"* ]]; then
-    # We're in Claude Code - set up aggressive title updates
-    zle -N _zle_title_update
-
-    # Update title when line editor initializes
-    function zle-line-init() {
-      _set_terminal_title
-    }
-    zle -N zle-line-init
-
-    # Update title on every keypress (aggressive but necessary for Claude)
-    function zle-line-pre-redraw() {
-      _set_terminal_title
-    }
-    zle -N zle-line-pre-redraw
-  fi
-fi
 
 # ------------------
 # Aliases
