@@ -31,13 +31,15 @@ module.exports = {
     // a list of plugins to fetch and install from npm
     // format: [@org/]project[#version]
     // examples:
-    plugins: [// For splitting panes with keyboard shortcuts
-    // Ctrl+F in terminal scrollback
-    "hyper-pane", // Start in same folder for new tabs
-    "hyper-search", // Enable font ligatures
-    "hypercwd", // Slight visual cue for current tab
-    "hyper-font-ligatures", // Status bar showing CPU/mem (optional)
-    "hyper-active-tab", "hyperline", "hyper-tokyo-night"],
+    plugins: [
+        "hyper-pane",              // For splitting panes with keyboard shortcuts
+        "hyper-search",            // Ctrl+F in terminal scrollback
+        "hypercwd",                // Start in same folder for new tabs
+        "hyper-font-ligatures",    // Enable font ligatures
+        // "hyper-active-tab",     // Disabled - conflicts with zsh title management
+        "hyperline",               // Status bar showing CPU/mem
+        "hyper-tokyo-night"        // Tokyo Night theme
+    ],
     // in development, you can create a directory under
     // `~/.hyper_plugins/local/` and include it here
     // to load it and avoid it being `npm install`ed

@@ -47,15 +47,40 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 autoload -U add-zsh-hook
 
-# Check if running in a Claude Code session
+# Check if Claude Code is active (either running this shell or running on the system)
 function _is_claude_session() {
-  # Check environment variables first
-  [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] && return 0
-  [[ -n "$ANTHROPIC_MODEL" ]] && return 0
+  # Method 1: Check if this shell is running under Claude Code (fastest)
+  pgrep -P $$ claude &>/dev/null && return 0
+
+  # Method 2: Check environment variables
+  if [[ -n "$CLAUDE_CODE_ENTRYPOINT" ]] || [[ -n "$CLAUDE_CODE_SESSION_ID" ]]; then
+    return 0
+  fi
+  # Also check for Bedrock-specific vars
+  if [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] || [[ -n "$ANTHROPIC_MODEL" ]]; then
+    return 0
+  fi
   [[ "$TERM_PROGRAM" == *"claude"* ]] && return 0
 
-  # Also check if 'claude' command is running as a child process of this shell
-  pgrep -P $$ claude &>/dev/null && return 0
+  # Method 3: Walk up the process tree
+  local current_pid=$$
+  local max_depth=10
+  local depth=0
+
+  while [[ $current_pid -gt 1 ]] && [[ $depth -lt $max_depth ]]; do
+    local parent_cmd=$(ps -o comm= -p "$current_pid" 2>/dev/null)
+    if [[ "$parent_cmd" == *"claude"* ]]; then
+      return 0
+    fi
+    current_pid=$(ps -o ppid= -p "$current_pid" 2>/dev/null | tr -d ' ')
+    [[ -z "$current_pid" ]] && break
+    ((depth++))
+  done
+
+  # Method 4: Check if ANY Claude Code process is running on the system
+  # This handles the case where Claude Code is using this terminal remotely
+  # Use ps instead of pgrep for better compatibility
+  ps aux 2>/dev/null | grep -q '[c]laude' && return 0
 
   return 1
 }
@@ -106,8 +131,11 @@ function _set_terminal_title() {
 # Background job to continuously override applications like Claude Code
 # Reads current directory and Claude status from temp files updated by hooks
 function _background_title_updater() {
-  local pwd_file="/tmp/.zsh_pwd_$$"
-  local claude_file="/tmp/.zsh_claude_$$"
+  # Use the parent shell's PID passed via environment variable
+  local shell_pid="${PARENT_SHELL_PID:-$$}"
+  local pwd_file="/tmp/.zsh_pwd_${shell_pid}"
+  local claude_file="/tmp/.zsh_claude_${shell_pid}"
+
   while true; do
     if [[ -f "$pwd_file" ]]; then
       local current_pwd=$(cat "$pwd_file" 2>/dev/null)
@@ -118,7 +146,7 @@ function _background_title_updater() {
       print -Pn "\e]0;${title}\a"
       print -Pn "\e]2;${title}\a"
     fi
-    sleep 1
+    sleep 0.05
   done
 }
 
@@ -141,7 +169,8 @@ trap _cleanup_title_updater EXIT
 
 # Start background updater (only if not already running)
 if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
-  _background_title_updater &
+  # Pass the parent shell's PID to the background updater
+  PARENT_SHELL_PID=$$ _background_title_updater &
   export TITLE_UPDATER_PID=$!
   disown
 fi
