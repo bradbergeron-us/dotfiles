@@ -32,14 +32,13 @@ module.exports = {
     // format: [@org/]project[#version]
     // examples:
     plugins: [
-        "hyper-pane",
-        "hyper-search",
-        "hypercwd",
-        // "hyper-font-ligatures",  // Disabled - causing font parse errors
-        // "hyper-active-tab",  // Disabled - conflicts with zsh title management
-        // "hyperline",  // Disabled - causing crashes with map() and system info
-        "hyper-tokyo-night",
-        "hyper-tab-icons"
+        "hyper-pane",              // For splitting panes with keyboard shortcuts
+        "hyper-search",            // Ctrl+F in terminal scrollback
+        "hypercwd",                // Start in same folder for new tabs
+        "hyper-font-ligatures",    // Enable font ligatures
+        // "hyper-active-tab",     // Disabled - conflicts with zsh title management
+        "hyperline",               // Status bar showing CPU/mem
+        "hyper-tokyo-night"        // Tokyo Night theme
     ],
     // in development, you can create a directory under
     // `~/.hyper_plugins/local/` and include it here

@@ -56,6 +56,11 @@ function _is_claude_session() {
   if [[ -n "$CLAUDE_CODE_ENTRYPOINT" ]] || [[ -n "$CLAUDE_CODE_SESSION_ID" ]]; then
     return 0
   fi
+  # Also check for Bedrock-specific vars
+  if [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] || [[ -n "$ANTHROPIC_MODEL" ]]; then
+    return 0
+  fi
+  [[ "$TERM_PROGRAM" == *"claude"* ]] && return 0
 
   # Method 3: Walk up the process tree
   local current_pid=$$
@@ -83,11 +88,9 @@ function _is_claude_session() {
 # Format current directory for tab title display
 # Shows last 3 directory components (or full path if shorter)
 # Appends indicator if Claude Code is running
-# Preserves any existing icon prefix (from hyper-active-tab, etc)
 function _format_tab_title() {
   local short_path="${1:-$PWD}"
   local show_claude="${2:-no}"
-  local icon_prefix="${3:-}"
 
   # Replace home directory with tilde
   short_path="${short_path/#$HOME/~}"
@@ -102,13 +105,12 @@ function _format_tab_title() {
     fi
   fi
 
-  # Build title with optional icon prefix and Claude indicator
-  local title=""
-  [[ -n "$icon_prefix" ]] && title="${icon_prefix} "
-  title="${title}${short_path}"
-  [[ "$show_claude" == "yes" ]] && title="${title} ⚡"
-
-  echo "$title"
+  # Append Claude Code indicator if requested
+  if [[ "$show_claude" == "yes" ]]; then
+    echo "${short_path} ⚡"
+  else
+    echo "$short_path"
+  fi
 }
 
 # Update terminal tab title with current directory
