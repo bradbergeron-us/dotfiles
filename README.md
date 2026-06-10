@@ -260,6 +260,150 @@ Covers Go/Rust overrides, Maven aliases, Java switching, direnv examples, corpor
 
 ---
 
+## Git Commit Signing
+
+This dotfiles repo uses **conditional GPG signing** based on repository location. Commits are automatically signed with the appropriate key depending on which organization the repository belongs to.
+
+### Directory Structure
+
+Organize your repositories by organization for automatic signing:
+
+```
+~/Code/
+├── va.gov/           # VA.gov projects (auto-signs with Bradley.Bergeron@va.gov)
+│   ├── vets-api
+│   ├── vets-website
+│   └── ...
+├── AFS/              # Accenture Federal projects (auto-signs with accenturefederal.com)
+│   ├── dgi-*
+│   └── ch33-lts-app
+└── [other]/          # Personal projects (unsigned or use personal key)
+    ├── DGI-AGENTS
+    ├── Stay-Awake
+    └── dotfiles (local signing key configured)
+```
+
+### Setting Up GPG Keys
+
+#### 1. Generate work-specific GPG keys
+
+```bash
+# VA.gov key
+gpg --full-generate-key
+# Choose: RSA and RSA, 4096 bits, no expiration
+# Email: Bradley.Bergeron@va.gov
+
+# Accenture Federal key
+gpg --full-generate-key
+# Email: bradley.bergeron@accenturefederal.com
+
+# Personal key (optional)
+gpg --full-generate-key
+# Email: bergeron.bradley@gmail.com
+```
+
+#### 2. Get your GPG key IDs
+
+```bash
+gpg --list-secret-keys --keyid-format=long
+
+# Example output:
+# sec   rsa4096/7FF14C4EDCDD84B3 2026-06-09 [SCEAR]
+#       ^^^^^^^^^^^^^^^^^^^^
+#       This is your key ID
+```
+
+#### 3. Add public keys to respective services
+
+```bash
+# Export public keys
+gpg --armor --export 7FF14C4EDCDD84B3  # VA.gov key
+gpg --armor --export EFF15FEC389D0F89  # AFS key
+gpg --armor --export B0386A4EFD0E21BA  # Personal key
+```
+
+Add to:
+- **VA.gov**: https://github.com/settings/gpg/new
+- **AFS Bitbucket**: https://bitbucket.org/account/settings/gpg-keys/
+- **Personal GitHub**: https://github.com/settings/gpg/new
+
+#### 4. Configure conditional git configs
+
+Create config files from templates:
+
+```bash
+# VA.gov configuration
+cp ~/dotfiles/templates/config/git/va.gitconfig.template ~/.config/git/va.gitconfig
+# Edit and set your VA GPG key ID and email
+
+# AFS configuration
+cp ~/dotfiles/templates/config/git/afs.gitconfig.template ~/.config/git/afs.gitconfig
+# Edit and set your AFS GPG key ID and email
+```
+
+#### 5. Verify configuration
+
+```bash
+bash ~/dotfiles/scripts/verify_git_signing.sh
+```
+
+Expected output:
+```
+🔍 Verifying git signing configuration...
+
+✅ PASS VA.gov
+  Email:      Bradley.Bergeron@va.gov
+  Signing key: 7FF14C4EDCDD84B3
+  Auto-sign:  true
+
+✅ PASS Accenture Federal Services (AFS)
+  Email:      bradley.bergeron@accenturefederal.com
+  Signing key: EFF15FEC389D0F89
+  Auto-sign:  true
+
+✅ All git signing configurations are correct!
+```
+
+### How It Works
+
+The main `gitconfig` uses `includeIf` directives to automatically load organization-specific configs:
+
+```gitconfig
+# Auto-loads when working in ~/Code/va.gov/
+[includeIf "gitdir:~/Code/va.gov/"]
+    path = ~/.config/git/va.gitconfig
+
+# Auto-loads when working in ~/Code/AFS/
+[includeIf "gitdir:~/Code/AFS/"]
+    path = ~/.config/git/afs.gitconfig
+```
+
+Each organization config overrides:
+- `user.email` → Organization-specific email
+- `user.signingkey` → Organization-specific GPG key
+- `commit.gpgsign` → Enable signing
+
+### Troubleshooting
+
+**Commits not being signed:**
+```bash
+# Check which config is active
+cd ~/Code/va.gov/vets-api
+git config --list --show-origin | grep -E 'user|commit|signing'
+```
+
+**Verify GPG key works:**
+```bash
+echo "test" | gpg --clearsign --default-key 7FF14C4EDCDD84B3
+```
+
+**Disable signing globally (emergency rollback):**
+```bash
+git config --global commit.gpgsign false
+```
+
+---
+
 ## Work Machine Setup
 
 For work laptops with corporate proxy, internal registries, and AWS Bedrock access:

@@ -1,0 +1,19 @@
+# ~/.config/git/va.gitconfig — VA.gov work-specific git config
+# Automatically included when working in ~/Code/va.gov/ repositories
+#
+# This file is created by bootstrap.sh or install.sh and is NOT committed to dotfiles.
+# Copy this template to ~/.config/git/va.gitconfig and update with your GPG key ID.
+
+[user]
+	# VA.gov email address
+	email = YOUR_NAME@va.gov
+
+	# GPG key ID for signing VA.gov commits
+	# Get your key ID: gpg --list-secret-keys --keyid-format=long
+	# Look for the line like: sec   rsa4096/7FF14C4EDCDD84B3
+	# Use the part after the slash: 7FF14C4EDCDD84B3
+	signingkey = YOUR_VA_GPG_KEY_ID
+
+[commit]
+	# Sign all VA.gov commits by default
+	gpgsign = true

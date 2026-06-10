@@ -1,0 +1,19 @@
+# ~/.config/git/afs.gitconfig — Accenture Federal Services (AFS) work-specific git config
+# Automatically included when working in ~/Code/AFS/ repositories
+#
+# This file is created by bootstrap.sh or install.sh and is NOT committed to dotfiles.
+# Copy this template to ~/.config/git/afs.gitconfig and update with your GPG key ID.
+
+[user]
+	# Accenture Federal email address
+	email = YOUR_NAME@accenturefederal.com
+
+	# GPG key ID for signing AFS commits
+	# Get your key ID: gpg --list-secret-keys --keyid-format=long
+	# Look for the line like: sec   rsa4096/EFF15FEC389D0F89
+	# Use the part after the slash: EFF15FEC389D0F89
+	signingkey = YOUR_AFS_GPG_KEY_ID
+
+[commit]
+	# Sign all AFS commits by default
+	gpgsign = true

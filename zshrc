@@ -49,27 +49,27 @@ autoload -U add-zsh-hook
 
 # Check if Claude Code is active (cached for performance)
 # Only checks once per shell session to avoid slowdown
-_CLAUDE_SESSION_CACHED=""
+__DOTFILES_CLAUDE_SESSION_CACHED=""
 function _is_claude_session() {
   # Return cached result if already checked
-  [[ -n "$_CLAUDE_SESSION_CACHED" ]] && return $_CLAUDE_SESSION_CACHED
+  [[ -n "$__DOTFILES_CLAUDE_SESSION_CACHED" ]] && return $__DOTFILES_CLAUDE_SESSION_CACHED
 
   # Fast checks first (environment variables - nearly free)
   if [[ -n "$CLAUDE_CODE_ENTRYPOINT" ]] || [[ -n "$CLAUDE_CODE_SESSION_ID" ]] || \
      [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] || [[ -n "$ANTHROPIC_MODEL" ]] || \
      [[ "$TERM_PROGRAM" == *"claude"* ]]; then
-    _CLAUDE_SESSION_CACHED=0
+    __DOTFILES_CLAUDE_SESSION_CACHED=0
     return 0
   fi
 
   # Quick parent process check (avoid expensive tree walk)
   if pgrep -P $$ claude &>/dev/null; then
-    _CLAUDE_SESSION_CACHED=0
+    __DOTFILES_CLAUDE_SESSION_CACHED=0
     return 0
   fi
 
   # Not in Claude Code session
-  _CLAUDE_SESSION_CACHED=1
+  __DOTFILES_CLAUDE_SESSION_CACHED=1
   return 1
 }
 

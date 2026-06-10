@@ -66,9 +66,9 @@
 
 # VA.gov work repositories — auto-loads VA-specific email and signing key
 # Must be AFTER [commit] section to override gpgsign setting
-[includeIf "gitdir:/Users/bradley.bergeron/Code/va.gov/"]
+[includeIf "gitdir:~/Code/va.gov/"]
 	path = ~/.config/git/va.gitconfig
 
 # Accenture Federal Services (AFS) work repositories — auto-loads AFS-specific email and signing key
-[includeIf "gitdir:/Users/bradley.bergeron/Code/AFS/"]
+[includeIf "gitdir:~/Code/AFS/"]
 	path = ~/.config/git/afs.gitconfig
