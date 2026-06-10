@@ -52,23 +52,22 @@
 
 [tag]
 	gpgSign = false
-[credential "https://va.ghe.com"]
-	provider = github
-[credential "https://bitbucket.np.afsp.io"]
-	provider = bitbucket
-[credential "https://dev.azure.com"]
-	useHttpPath = true
 
 # Machine-specific overrides (signing key, work email, etc.)
 # See ~/.config/git/local.gitconfig — not committed
+# Add work-specific credential URLs here (GitHub Enterprise, Bitbucket, etc.)
 [include]
 	path = ~/.config/git/local.gitconfig
 
-# VA.gov work repositories — auto-loads VA-specific email and signing key
+# Work organization 1 repositories — auto-loads org-specific email and signing key
 # Must be AFTER [commit] section to override gpgsign setting
-[includeIf "gitdir:~/Code/va.gov/"]
-	path = ~/.config/git/va.gitconfig
+# Create ~/.config/git/work1.gitconfig from templates/config/git/work.gitconfig.template
+# Example: ~/Code/work1/ could be your primary employer or client
+[includeIf "gitdir:~/Code/work1/"]
+	path = ~/.config/git/work1.gitconfig
 
-# Accenture Federal Services (AFS) work repositories — auto-loads AFS-specific email and signing key
-[includeIf "gitdir:~/Code/AFS/"]
-	path = ~/.config/git/afs.gitconfig
+# Work organization 2 repositories — auto-loads org-specific email and signing key
+# Create ~/.config/git/work2.gitconfig from templates/config/git/work.gitconfig.template
+# Example: ~/Code/work2/ could be a secondary employer or client
+[includeIf "gitdir:~/Code/work2/"]
+	path = ~/.config/git/work2.gitconfig

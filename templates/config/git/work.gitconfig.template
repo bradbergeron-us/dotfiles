@@ -1,0 +1,25 @@
+# ~/.config/git/workN.gitconfig — Work organization-specific git config
+# Automatically included when working in ~/Code/workN/ repositories
+#
+# This file is created from templates/config/git/work.gitconfig.template and is NOT committed.
+# Copy this template for each work organization (work1, work2, etc.) and configure accordingly.
+#
+# Example setup:
+#   cp ~/dotfiles/templates/config/git/work.gitconfig.template ~/.config/git/work1.gitconfig
+#   cp ~/dotfiles/templates/config/git/work.gitconfig.template ~/.config/git/work2.gitconfig
+#   # Edit each file with organization-specific email and GPG key
+
+[user]
+	# Work email address for this organization
+	# Example: your.name@company.com
+	email = YOUR_WORK_EMAIL
+
+	# GPG key ID for signing commits at this organization
+	# Get your key ID: gpg --list-secret-keys --keyid-format=long
+	# Look for the line like: sec   rsa4096/7FF14C4EDCDD84B3
+	# Use the part after the slash: 7FF14C4EDCDD84B3
+	signingkey = YOUR_WORK_GPG_KEY_ID
+
+[commit]
+	# Sign all commits for this organization by default
+	gpgsign = true

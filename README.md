@@ -4,6 +4,8 @@ Personal macOS dotfiles — zsh, tmux, git, and a full developer toolchain.
 
 ![CI](https://github.com/bradbergeron-us/dotfiles/actions/workflows/test-bootstrap.yml/badge.svg)
 
+> **Security Note:** This repository contains safe-to-share configuration templates. Machine-specific configs with actual GPG keys, work emails, and infrastructure URLs are stored in `~/.config/git/*.gitconfig` and are never committed. See [Git Commit Signing](#git-commit-signing) for details.
+
 ## Quick start
 
 ```sh
@@ -270,17 +272,18 @@ Organize your repositories by organization for automatic signing:
 
 ```
 ~/Code/
-├── va.gov/           # VA.gov projects (auto-signs with Bradley.Bergeron@va.gov)
-│   ├── vets-api
-│   ├── vets-website
+├── work1/            # Work organization 1 (auto-signs with work email)
+│   ├── project-a
+│   ├── project-b
 │   └── ...
-├── AFS/              # Accenture Federal projects (auto-signs with accenturefederal.com)
-│   ├── dgi-*
-│   └── ch33-lts-app
-└── [other]/          # Personal projects (unsigned or use personal key)
-    ├── DGI-AGENTS
-    ├── Stay-Awake
-    └── dotfiles (local signing key configured)
+├── work2/            # Work organization 2 (auto-signs with work email)
+│   ├── client-x
+│   ├── client-y
+│   └── ...
+└── personal/         # Personal projects (unsigned or use personal key)
+    ├── my-app
+    ├── dotfiles
+    └── side-projects
 ```
 
 ### Setting Up GPG Keys
@@ -288,18 +291,18 @@ Organize your repositories by organization for automatic signing:
 #### 1. Generate work-specific GPG keys
 
 ```bash
-# VA.gov key
+# Work organization 1 key
 gpg --full-generate-key
 # Choose: RSA and RSA, 4096 bits, no expiration
-# Email: Bradley.Bergeron@va.gov
+# Email: your.name@work1.com
 
-# Accenture Federal key
+# Work organization 2 key (if applicable)
 gpg --full-generate-key
-# Email: bradley.bergeron@accenturefederal.com
+# Email: your.name@work2.com
 
-# Personal key (optional)
+# Personal key (optional, for personal repos)
 gpg --full-generate-key
-# Email: bergeron.bradley@gmail.com
+# Email: your.name@personal.com
 ```
 
 #### 2. Get your GPG key IDs
@@ -316,29 +319,29 @@ gpg --list-secret-keys --keyid-format=long
 #### 3. Add public keys to respective services
 
 ```bash
-# Export public keys
-gpg --armor --export 7FF14C4EDCDD84B3  # VA.gov key
-gpg --armor --export EFF15FEC389D0F89  # AFS key
-gpg --armor --export B0386A4EFD0E21BA  # Personal key
+# Export public keys (replace KEY_ID with your actual key IDs)
+gpg --armor --export YOUR_WORK1_KEY_ID
+gpg --armor --export YOUR_WORK2_KEY_ID
+gpg --armor --export YOUR_PERSONAL_KEY_ID
 ```
 
-Add to:
-- **VA.gov**: https://github.com/settings/gpg/new
-- **AFS Bitbucket**: https://bitbucket.org/account/settings/gpg-keys/
+Add to respective services:
+- **Work GitHub/GitLab**: Your organization's git service settings
 - **Personal GitHub**: https://github.com/settings/gpg/new
+- **Other services**: Bitbucket, Azure DevOps, etc.
 
 #### 4. Configure conditional git configs
 
 Create config files from templates:
 
 ```bash
-# VA.gov configuration
-cp ~/dotfiles/templates/config/git/va.gitconfig.template ~/.config/git/va.gitconfig
-# Edit and set your VA GPG key ID and email
+# Work organization 1 configuration
+cp ~/dotfiles/templates/config/git/work.gitconfig.template ~/.config/git/work1.gitconfig
+# Edit ~/.config/git/work1.gitconfig and set your work email and GPG key ID
 
-# AFS configuration
-cp ~/dotfiles/templates/config/git/afs.gitconfig.template ~/.config/git/afs.gitconfig
-# Edit and set your AFS GPG key ID and email
+# Work organization 2 configuration (if applicable)
+cp ~/dotfiles/templates/config/git/work.gitconfig.template ~/.config/git/work2.gitconfig
+# Edit ~/.config/git/work2.gitconfig and set your work email and GPG key ID
 ```
 
 #### 5. Verify configuration
@@ -351,14 +354,14 @@ Expected output:
 ```
 🔍 Verifying git signing configuration...
 
-✅ PASS VA.gov
-  Email:      Bradley.Bergeron@va.gov
-  Signing key: 7FF14C4EDCDD84B3
+✅ PASS Work Organization 1
+  Email:      your.name@work1.com
+  Signing key: YOUR_WORK1_KEY_ID
   Auto-sign:  true
 
-✅ PASS Accenture Federal Services (AFS)
-  Email:      bradley.bergeron@accenturefederal.com
-  Signing key: EFF15FEC389D0F89
+✅ PASS Work Organization 2
+  Email:      your.name@work2.com
+  Signing key: YOUR_WORK2_KEY_ID
   Auto-sign:  true
 
 ✅ All git signing configurations are correct!
@@ -369,13 +372,13 @@ Expected output:
 The main `gitconfig` uses `includeIf` directives to automatically load organization-specific configs:
 
 ```gitconfig
-# Auto-loads when working in ~/Code/va.gov/
-[includeIf "gitdir:~/Code/va.gov/"]
-    path = ~/.config/git/va.gitconfig
+# Auto-loads when working in ~/Code/work1/
+[includeIf "gitdir:~/Code/work1/"]
+    path = ~/.config/git/work1.gitconfig
 
-# Auto-loads when working in ~/Code/AFS/
-[includeIf "gitdir:~/Code/AFS/"]
-    path = ~/.config/git/afs.gitconfig
+# Auto-loads when working in ~/Code/work2/
+[includeIf "gitdir:~/Code/work2/"]
+    path = ~/.config/git/work2.gitconfig
 ```
 
 Each organization config overrides:
@@ -388,13 +391,13 @@ Each organization config overrides:
 **Commits not being signed:**
 ```bash
 # Check which config is active
-cd ~/Code/va.gov/vets-api
+cd ~/Code/work1/your-project
 git config --list --show-origin | grep -E 'user|commit|signing'
 ```
 
 **Verify GPG key works:**
 ```bash
-echo "test" | gpg --clearsign --default-key 7FF14C4EDCDD84B3
+echo "test" | gpg --clearsign --default-key YOUR_GPG_KEY_ID
 ```
 
 **Disable signing globally (emergency rollback):**
