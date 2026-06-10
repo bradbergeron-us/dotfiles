@@ -7,10 +7,6 @@
 	name = Brad Bergeron
 	email = bergeron.bradley@gmail.com
 
-# Machine-specific overrides (signing key, work email, etc.)
-# See ~/.config/git/local.gitconfig — not committed
-[include]
-	path = ~/.config/git/local.gitconfig
 [credential]
 	# git-credential-manager handles GitHub.com, GitHub Enterprise, Bitbucket, Azure DevOps
 	# Uses macOS Keychain under the hood — fully compatible with osxkeychain
@@ -52,13 +48,27 @@
 	allowedSignersFile = ~/.config/git/allowed_signers
 
 [commit]
-	gpgsign = true
+	gpgsign = false
 
 [tag]
-	gpgSign = true
+	gpgSign = false
 [credential "https://va.ghe.com"]
 	provider = github
 [credential "https://bitbucket.np.afsp.io"]
 	provider = bitbucket
 [credential "https://dev.azure.com"]
 	useHttpPath = true
+
+# Machine-specific overrides (signing key, work email, etc.)
+# See ~/.config/git/local.gitconfig — not committed
+[include]
+	path = ~/.config/git/local.gitconfig
+
+# VA.gov work repositories — auto-loads VA-specific email and signing key
+# Must be AFTER [commit] section to override gpgsign setting
+[includeIf "gitdir:/Users/bradley.bergeron/Code/va.gov/"]
+	path = ~/.config/git/va.gitconfig
+
+# Accenture Federal Services (AFS) work repositories — auto-loads AFS-specific email and signing key
+[includeIf "gitdir:/Users/bradley.bergeron/Code/AFS/"]
+	path = ~/.config/git/afs.gitconfig

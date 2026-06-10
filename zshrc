@@ -47,41 +47,29 @@ export PATH="$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 autoload -U add-zsh-hook
 
-# Check if Claude Code is active (either running this shell or running on the system)
+# Check if Claude Code is active (cached for performance)
+# Only checks once per shell session to avoid slowdown
+_CLAUDE_SESSION_CACHED=""
 function _is_claude_session() {
-  # Method 1: Check if this shell is running under Claude Code (fastest)
-  pgrep -P $$ claude &>/dev/null && return 0
+  # Return cached result if already checked
+  [[ -n "$_CLAUDE_SESSION_CACHED" ]] && return $_CLAUDE_SESSION_CACHED
 
-  # Method 2: Check environment variables
-  if [[ -n "$CLAUDE_CODE_ENTRYPOINT" ]] || [[ -n "$CLAUDE_CODE_SESSION_ID" ]]; then
+  # Fast checks first (environment variables - nearly free)
+  if [[ -n "$CLAUDE_CODE_ENTRYPOINT" ]] || [[ -n "$CLAUDE_CODE_SESSION_ID" ]] || \
+     [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] || [[ -n "$ANTHROPIC_MODEL" ]] || \
+     [[ "$TERM_PROGRAM" == *"claude"* ]]; then
+    _CLAUDE_SESSION_CACHED=0
     return 0
   fi
-  # Also check for Bedrock-specific vars
-  if [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]] || [[ -n "$ANTHROPIC_MODEL" ]]; then
+
+  # Quick parent process check (avoid expensive tree walk)
+  if pgrep -P $$ claude &>/dev/null; then
+    _CLAUDE_SESSION_CACHED=0
     return 0
   fi
-  [[ "$TERM_PROGRAM" == *"claude"* ]] && return 0
 
-  # Method 3: Walk up the process tree
-  local current_pid=$$
-  local max_depth=10
-  local depth=0
-
-  while [[ $current_pid -gt 1 ]] && [[ $depth -lt $max_depth ]]; do
-    local parent_cmd=$(ps -o comm= -p "$current_pid" 2>/dev/null)
-    if [[ "$parent_cmd" == *"claude"* ]]; then
-      return 0
-    fi
-    current_pid=$(ps -o ppid= -p "$current_pid" 2>/dev/null | tr -d ' ')
-    [[ -z "$current_pid" ]] && break
-    ((depth++))
-  done
-
-  # Method 4: Check if ANY Claude Code process is running on the system
-  # This handles the case where Claude Code is using this terminal remotely
-  # Use ps instead of pgrep for better compatibility
-  ps aux 2>/dev/null | grep -q '[c]laude' && return 0
-
+  # Not in Claude Code session
+  _CLAUDE_SESSION_CACHED=1
   return 1
 }
 
@@ -114,66 +102,20 @@ function _format_tab_title() {
 }
 
 # Update terminal tab title with current directory
-# Uses both OSC 0 (icon + title) and OSC 2 (title only) for compatibility
+# Simplified version without background updater for performance
 function _set_terminal_title() {
   local show_claude="no"
   _is_claude_session && show_claude="yes"
 
   local title="$(_format_tab_title "$PWD" "$show_claude")"
   print -Pn "\e]0;${title}\a"
-  print -Pn "\e]2;${title}\a"
-
-  # Write current PWD and Claude status to temp file for background updater
-  echo "$PWD" > "/tmp/.zsh_pwd_$$" 2>/dev/null
-  echo "$show_claude" > "/tmp/.zsh_claude_$$" 2>/dev/null
-}
-
-# Background job to continuously override applications like Claude Code
-# Reads current directory and Claude status from temp files updated by hooks
-function _background_title_updater() {
-  # Use the parent shell's PID passed via environment variable
-  local shell_pid="${PARENT_SHELL_PID:-$$}"
-  local pwd_file="/tmp/.zsh_pwd_${shell_pid}"
-  local claude_file="/tmp/.zsh_claude_${shell_pid}"
-
-  while true; do
-    if [[ -f "$pwd_file" ]]; then
-      local current_pwd=$(cat "$pwd_file" 2>/dev/null)
-      local show_claude=$(cat "$claude_file" 2>/dev/null)
-      [[ -z "$show_claude" ]] && show_claude="no"
-
-      local title="$(_format_tab_title "$current_pwd" "$show_claude")"
-      print -Pn "\e]0;${title}\a"
-      print -Pn "\e]2;${title}\a"
-    fi
-    sleep 0.05
-  done
-}
-
-# Cleanup function to kill background updater and remove temp files
-function _cleanup_title_updater() {
-  [[ -n "$TITLE_UPDATER_PID" ]] && kill "$TITLE_UPDATER_PID" 2>/dev/null
-  rm -f "/tmp/.zsh_pwd_$$" "/tmp/.zsh_claude_$$" 2>/dev/null
 }
 
 # Register hooks to update title on:
-# - precmd: before each prompt (overrides apps like Claude Code)
+# - precmd: before each prompt
 # - chpwd: when directory changes
-# - preexec: before each command execution
 add-zsh-hook precmd _set_terminal_title
 add-zsh-hook chpwd _set_terminal_title
-add-zsh-hook preexec _set_terminal_title
-
-# Cleanup on shell exit
-trap _cleanup_title_updater EXIT
-
-# Start background updater (only if not already running)
-if [[ -z "$TITLE_UPDATER_PID" ]] || ! kill -0 "$TITLE_UPDATER_PID" 2>/dev/null; then
-  # Pass the parent shell's PID to the background updater
-  PARENT_SHELL_PID=$$ _background_title_updater &
-  export TITLE_UPDATER_PID=$!
-  disown
-fi
 
 # Set initial title on shell startup
 _set_terminal_title
@@ -265,13 +207,10 @@ if command -v direnv >/dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
 
-# Angular CLI autocompletion
-if command -v node &>/dev/null && command -v ng &>/dev/null; then
-  CURRENT_NODE_VERSION=$(node -v 2>/dev/null)
-  if [[ -n "$CURRENT_NODE_VERSION" && "$CURRENT_NODE_VERSION" != "v0."* ]]; then
-    source <(ng completion script)
-  fi
-fi
+# Angular CLI autocompletion (disabled for performance - enable if needed)
+# if command -v node &>/dev/null && command -v ng &>/dev/null; then
+#   source <(ng completion script)
+# fi
 
 # Machine-specific overrides (not committed to dotfiles)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

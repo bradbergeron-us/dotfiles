@@ -1,4 +1,9 @@
 command_timeout = 2000
 
+[nodejs]
+disabled = false
+symbol = "🟢 "
+format = "via [$symbol$version]($style) "
+
 [ruby]
 disabled = true
