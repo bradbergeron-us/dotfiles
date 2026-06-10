@@ -16,3 +16,20 @@
 	# Alternative: SSH signing (if not using GPG)
 	# Requires gpg.format = ssh in main gitconfig
 	# signingkey = ~/.ssh/id_ed25519.pub
+
+# ==================================================
+# Work-specific credential providers
+# ==================================================
+# Uncomment and configure for your work environment
+#
+# GitHub Enterprise
+# [credential "https://github.yourcompany.com"]
+# 	provider = github
+#
+# Bitbucket Server/Data Center
+# [credential "https://bitbucket.yourcompany.com"]
+# 	provider = bitbucket
+#
+# Azure DevOps
+# [credential "https://dev.azure.com"]
+# 	useHttpPath = true

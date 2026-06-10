@@ -4,6 +4,8 @@ Personal macOS dotfiles — zsh, tmux, git, and a full developer toolchain.
 
 ![CI](https://github.com/bradbergeron-us/dotfiles/actions/workflows/test-bootstrap.yml/badge.svg)
 
+> **Security Note:** This repository contains safe-to-share configuration templates. Machine-specific configs with actual GPG keys, work emails, and infrastructure URLs are stored in `~/.config/git/*.gitconfig` and are never committed. See [Git Commit Signing](#git-commit-signing) for details.
+
 ## Quick start
 
 ```sh
@@ -257,6 +259,151 @@ cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
 ```
 
 Covers Go/Rust overrides, Maven aliases, Java switching, direnv examples, corporate proxy, work git email, Sidekiq license keys, and more. See [docs/work-machine.md](docs/work-machine.md) for additional work-specific topics.
+
+---
+
+## Git Commit Signing
+
+This dotfiles repo uses **conditional GPG signing** based on repository location. Commits are automatically signed with the appropriate key depending on which organization the repository belongs to.
+
+### Directory Structure
+
+Organize your repositories by organization for automatic signing:
+
+```
+~/Code/
+├── work1/            # Work organization 1 (auto-signs with work email)
+│   ├── project-a
+│   ├── project-b
+│   └── ...
+├── work2/            # Work organization 2 (auto-signs with work email)
+│   ├── client-x
+│   ├── client-y
+│   └── ...
+└── personal/         # Personal projects (unsigned or use personal key)
+    ├── my-app
+    ├── dotfiles
+    └── side-projects
+```
+
+### Setting Up GPG Keys
+
+#### 1. Generate work-specific GPG keys
+
+```bash
+# Work organization 1 key
+gpg --full-generate-key
+# Choose: RSA and RSA, 4096 bits, no expiration
+# Email: your.name@work1.com
+
+# Work organization 2 key (if applicable)
+gpg --full-generate-key
+# Email: your.name@work2.com
+
+# Personal key (optional, for personal repos)
+gpg --full-generate-key
+# Email: your.name@personal.com
+```
+
+#### 2. Get your GPG key IDs
+
+```bash
+gpg --list-secret-keys --keyid-format=long
+
+# Example output:
+# sec   rsa4096/7FF14C4EDCDD84B3 2026-06-09 [SCEAR]
+#       ^^^^^^^^^^^^^^^^^^^^
+#       This is your key ID
+```
+
+#### 3. Add public keys to respective services
+
+```bash
+# Export public keys (replace KEY_ID with your actual key IDs)
+gpg --armor --export YOUR_WORK1_KEY_ID
+gpg --armor --export YOUR_WORK2_KEY_ID
+gpg --armor --export YOUR_PERSONAL_KEY_ID
+```
+
+Add to respective services:
+- **Work GitHub/GitLab**: Your organization's git service settings
+- **Personal GitHub**: https://github.com/settings/gpg/new
+- **Other services**: Bitbucket, Azure DevOps, etc.
+
+#### 4. Configure conditional git configs
+
+Create config files from templates:
+
+```bash
+# Work organization 1 configuration
+cp ~/dotfiles/templates/config/git/work.gitconfig.template ~/.config/git/work1.gitconfig
+# Edit ~/.config/git/work1.gitconfig and set your work email and GPG key ID
+
+# Work organization 2 configuration (if applicable)
+cp ~/dotfiles/templates/config/git/work.gitconfig.template ~/.config/git/work2.gitconfig
+# Edit ~/.config/git/work2.gitconfig and set your work email and GPG key ID
+```
+
+#### 5. Verify configuration
+
+```bash
+bash ~/dotfiles/scripts/verify_git_signing.sh
+```
+
+Expected output:
+```
+🔍 Verifying git signing configuration...
+
+✅ PASS Work Organization 1
+  Email:      your.name@work1.com
+  Signing key: YOUR_WORK1_KEY_ID
+  Auto-sign:  true
+
+✅ PASS Work Organization 2
+  Email:      your.name@work2.com
+  Signing key: YOUR_WORK2_KEY_ID
+  Auto-sign:  true
+
+✅ All git signing configurations are correct!
+```
+
+### How It Works
+
+The main `gitconfig` uses `includeIf` directives to automatically load organization-specific configs:
+
+```gitconfig
+# Auto-loads when working in ~/Code/work1/
+[includeIf "gitdir:~/Code/work1/"]
+    path = ~/.config/git/work1.gitconfig
+
+# Auto-loads when working in ~/Code/work2/
+[includeIf "gitdir:~/Code/work2/"]
+    path = ~/.config/git/work2.gitconfig
+```
+
+Each organization config overrides:
+- `user.email` → Organization-specific email
+- `user.signingkey` → Organization-specific GPG key
+- `commit.gpgsign` → Enable signing
+
+### Troubleshooting
+
+**Commits not being signed:**
+```bash
+# Check which config is active
+cd ~/Code/work1/your-project
+git config --list --show-origin | grep -E 'user|commit|signing'
+```
+
+**Verify GPG key works:**
+```bash
+echo "test" | gpg --clearsign --default-key YOUR_GPG_KEY_ID
+```
+
+**Disable signing globally (emergency rollback):**
+```bash
+git config --global commit.gpgsign false
+```
 
 ---
 

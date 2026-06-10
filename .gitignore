@@ -19,3 +19,7 @@ mhutchie.*/
 streetsidesoftware.*/
 usernamehw.*/
 visualstudioexptteam.*/
+
+# Git configs with actual keys/emails (only templates are tracked)
+config/git/*.gitconfig
+!config/git/*.template
