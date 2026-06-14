@@ -42,35 +42,35 @@ print -P "%F{cyan}  🔗  dotfiles%f  ─  symlinking from ${DOTFILES_DIR/$HOME/
 echo "  ─────────────────────────────────────────────────"
 
 # Home directory symlinks
-symlink "$DOTFILES_DIR/zshrc"    "$HOME/.zshrc"
-symlink "$DOTFILES_DIR/zprofile" "$HOME/.zprofile"
-symlink "$DOTFILES_DIR/gitconfig" "$HOME/.gitconfig"
-symlink "$DOTFILES_DIR/tmux.conf" "$HOME/.tmux.conf"
-symlink "$DOTFILES_DIR/hyper.js"  "$HOME/.hyper.js"
+symlink "$DOTFILES_DIR/home/zshrc"    "$HOME/.zshrc"
+symlink "$DOTFILES_DIR/home/zprofile" "$HOME/.zprofile"
+symlink "$DOTFILES_DIR/home/gitconfig" "$HOME/.gitconfig"
+symlink "$DOTFILES_DIR/home/tmux.conf" "$HOME/.tmux.conf"
+symlink "$DOTFILES_DIR/home/hyper.js"  "$HOME/.hyper.js"
 
 # Git global ignore
-symlink "$DOTFILES_DIR/gitignore_global" "$HOME/.gitignore_global"
+symlink "$DOTFILES_DIR/home/gitignore_global" "$HOME/.gitignore_global"
 
 # Ruby — skip docs on every gem install
-symlink "$DOTFILES_DIR/gemrc" "$HOME/.gemrc"
+symlink "$DOTFILES_DIR/home/gemrc" "$HOME/.gemrc"
 
 # Ruby REPL defaults (IRB + Pry)
-symlink "$DOTFILES_DIR/irbrc" "$HOME/.irbrc"
-symlink "$DOTFILES_DIR/pryrc" "$HOME/.pryrc"
+symlink "$DOTFILES_DIR/home/irbrc" "$HOME/.irbrc"
+symlink "$DOTFILES_DIR/home/pryrc" "$HOME/.pryrc"
 
 # PostgreSQL client defaults (pairs with Postgres.app)
-symlink "$DOTFILES_DIR/psqlrc" "$HOME/.psqlrc"
+symlink "$DOTFILES_DIR/home/psqlrc" "$HOME/.psqlrc"
 
 # npm client defaults (save-exact, no fund noise)
-symlink "$DOTFILES_DIR/npmrc" "$HOME/.npmrc"
+symlink "$DOTFILES_DIR/home/npmrc" "$HOME/.npmrc"
 
 # EditorConfig global fallback (project-level .editorconfig overrides this)
-symlink "$DOTFILES_DIR/editorconfig" "$HOME/.editorconfig"
+symlink "$DOTFILES_DIR/home/editorconfig" "$HOME/.editorconfig"
 
 # Local git config (signing key, work email overrides — not committed)
 mkdir -p "$HOME/.config/git"
 if [[ ! -f "$HOME/.config/git/local.gitconfig" ]]; then
-  cp "$DOTFILES_DIR/gitconfig.local.example" "$HOME/.config/git/local.gitconfig"
+  cp "$DOTFILES_DIR/home/examples/gitconfig.local.example" "$HOME/.config/git/local.gitconfig"
   success "Created ~/.config/git/local.gitconfig from template"
 else
   success "Already exists: ~/.config/git/local.gitconfig"
@@ -107,7 +107,7 @@ symlink "$DOTFILES_DIR/config/mise.toml" "$HOME/.config/mise/config.toml"
 # SSH config
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
-symlink "$DOTFILES_DIR/ssh_config" "$HOME/.ssh/config"
+symlink "$DOTFILES_DIR/home/ssh_config" "$HOME/.ssh/config"
 
 # VS Code settings
 VSCODE_DIR="$HOME/Library/Application Support/Code/User"

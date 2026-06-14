@@ -71,14 +71,14 @@ bash ~/dotfiles/scripts/install_claude_code.sh
 **What it does:**
 1. Checks if Claude Code is already installed
 2. Searches for installer in:
-   - `~/dotfiles/installers/claude-code-installer`
+   - `~/dotfiles/system/installers/claude-code-installer`
    - `~/Downloads/ClaudeCode-macOS-*/claude-code-installer`
    - `~/Downloads/claude-code-installer`
 3. Installs to `~/.local/bin/claude`
 4. Verifies installation with `claude --version`
 
 **Installer locations:**
-- Place installer in `~/dotfiles/installers/` for automatic detection
+- Place installer in `~/dotfiles/system/installers/` for automatic detection
 - Or provide path when prompted
 
 **Troubleshooting:**
@@ -109,18 +109,18 @@ bash ~/dotfiles/scripts/install_zscaler_cert.sh
 
 **What it does:**
 1. Searches for certificate (`ZscalerRootCertificate-2048-SHA256.crt`) in:
-   - `~/dotfiles/certs/`
+   - `~/dotfiles/system/certs/`
    - `~/.continue/certs/`
    - `~/Downloads/`
    - `~/Downloads/ClaudeCode-macOS-*/`
 2. Installs to `~/.continue/certs/`
 3. Optionally installs to macOS System Keychain (requires sudo)
 4. Adds `NODE_EXTRA_CA_CERTS` to `~/.zshrc.local`
-5. Copies certificate to `~/dotfiles/certs/` for backup
+5. Copies certificate to `~/dotfiles/system/certs/` for backup
 
 **Certificate locations after installation:**
 - `~/.continue/certs/ZscalerRootCertificate-2048-SHA256.crt` — For Continue IDE
-- `~/dotfiles/certs/ZscalerRootCertificate-2048-SHA256.crt` — Backup (git-ignored)
+- `~/dotfiles/system/certs/ZscalerRootCertificate-2048-SHA256.crt` — Backup (git-ignored)
 - `/Library/Keychains/System.keychain` — System-wide trust (optional)
 
 **Obtaining the certificate:**

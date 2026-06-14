@@ -49,7 +49,7 @@ install_claude_code() {
 
   # Try to find installer in common locations
   INSTALLER_PATHS=(
-    "$DOTFILES_DIR/installers/claude-code-installer"
+    "$DOTFILES_DIR/system/installers/claude-code-installer"
     "$HOME/Downloads/ClaudeCode-macOS-v"*"/claude-code-installer"
     "$HOME/Downloads/claude-code-installer"
   )
@@ -97,7 +97,7 @@ install_claude_code() {
   echo ""
   printf "  1. Download from: ${CYAN}https://claude.com/download${RESET}\n"
   echo "  2. Save the installer to one of these locations:"
-  echo "     • $DOTFILES_DIR/installers/claude-code-installer"
+  echo "     • $DOTFILES_DIR/system/installers/claude-code-installer"
   echo "     • ~/Downloads/claude-code-installer"
   echo "  3. Re-run this script"
   echo ""

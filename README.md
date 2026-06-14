@@ -50,7 +50,7 @@ bash ~/dotfiles/update.sh
 
 Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Finishes with a health check. Safe to run any time.
 
-To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/setup-scheduler.sh`
+To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/scripts/setup-scheduler.sh`
 
 To run the health check standalone: `bash ~/dotfiles/verify.sh`
 
@@ -141,30 +141,30 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
 | File | Symlinked to | What it does |
 |------|-------------|--------------|
-| `zshrc` | `~/.zshrc` | Shell config — mise, PATH, aliases, plugins |
-| `zprofile` | `~/.zprofile` | Login profile — Homebrew PATH setup |
-| `gitconfig` | `~/.gitconfig` | Git defaults, delta pager, SSH signing |
-| `gitignore_global` | `~/.gitignore_global` | Global ignores — macOS, editors, Java, Go |
-| `tmux.conf` | `~/.tmux.conf` | tmux — `C-a` prefix, vim keys, TPM plugins |
-| `hyper.js` | `~/.hyper.js` | Hyper — Tokyo Night theme, JetBrains Mono |
+| `home/zshrc` | `~/.zshrc` | Shell config — mise, PATH, aliases, plugins |
+| `home/zprofile` | `~/.zprofile` | Login profile — Homebrew PATH setup |
+| `home/gitconfig` | `~/.gitconfig` | Git defaults, delta pager, SSH signing |
+| `home/gitignore_global` | `~/.gitignore_global` | Global ignores — macOS, editors, Java, Go |
+| `home/tmux.conf` | `~/.tmux.conf` | tmux — `C-a` prefix, vim keys, TPM plugins |
+| `home/hyper.js` | `~/.hyper.js` | Hyper — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt config |
 | `config/mise.toml` | `~/.config/mise/config.toml` | Global runtime versions (Ruby, Node, Java, Python, Go) |
 | `config/direnvrc` | `~/.config/direnv/direnvrc` | Shared `layout python` / `layout node` helpers |
-| `ssh_config` | `~/.ssh/config` | SSH agent + macOS Keychain |
-| `gemrc` | `~/.gemrc` | `--no-document` — faster gem installs |
-| `irbrc` | `~/.irbrc` | IRB/rails console defaults |
-| `pryrc` | `~/.pryrc` | Pry REPL defaults |
-| `psqlrc` | `~/.psqlrc` | psql defaults — `\x auto`, `\timing`, per-DB history |
-| `editorconfig` | `~/.editorconfig` | Global EditorConfig fallback |
+| `home/ssh_config` | `~/.ssh/config` | SSH agent + macOS Keychain |
+| `home/gemrc` | `~/.gemrc` | `--no-document` — faster gem installs |
+| `home/irbrc` | `~/.irbrc` | IRB/rails console defaults |
+| `home/pryrc` | `~/.pryrc` | Pry REPL defaults |
+| `home/psqlrc` | `~/.psqlrc` | psql defaults — `\x auto`, `\timing`, per-DB history |
+| `home/editorconfig` | `~/.editorconfig` | Global EditorConfig fallback |
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code settings |
 | `vscode/extensions.txt` | _(auto-installed)_ | Core VS Code extensions |
 | `Brewfile` | _(used by bootstrap)_ | All Homebrew packages and casks |
-| `npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
+| `home/npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
 | `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, version drift, missing tools, stale backups |
-| `setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
-| `macos.sh` | _(run once)_ | macOS developer defaults |
-| `zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
+| `scripts/setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
+| `scripts/macos.sh` | _(run once)_ | macOS developer defaults |
+| `home/examples/zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 
 ---
 
@@ -255,7 +255,7 @@ Work machine? Also run `brew bundle --file=~/dotfiles/Brewfile.work`.
 `~/.zshrc.local` is sourced last and never committed. Each machine has its own:
 
 ```sh
-cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
+cp ~/dotfiles/home/examples/zshrc.local.example ~/.zshrc.local
 ```
 
 Covers Go/Rust overrides, Maven aliases, Java switching, direnv examples, corporate proxy, work git email, Sidekiq license keys, and more. See [docs/work-machine.md](docs/work-machine.md) for additional work-specific topics.
@@ -324,8 +324,8 @@ The work configuration setup creates templates for:
 
 All templates are safe to commit. Sensitive data (credentials, secrets, actual certificates) is stored locally and git-ignored:
 
-- `certs/*.crt` — Actual certificate files (ignored)
-- `installers/*` — Binary installers (ignored)
+- `system/certs/*.crt` — Actual certificate files (ignored)
+- `system/installers/*` — Binary installers (ignored)
 - `vscode/extensions/*.vsix` — Extension files (ignored)
 - `~/.aws/credentials` — Never created by scripts (use SSO or aws-vault)
 
@@ -344,7 +344,7 @@ Or for additional work-specific topics: [docs/work-machine.md](docs/work-machine
 
 ## Making changes
 
-Because dotfiles are symlinked, editing `~/.zshrc` edits `~/dotfiles/zshrc` directly:
+Because dotfiles are symlinked, editing `~/.zshrc` edits `~/dotfiles/home/zshrc` directly:
 
 ```sh
 cd ~/dotfiles

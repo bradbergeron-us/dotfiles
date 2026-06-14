@@ -401,7 +401,7 @@ fi
 
 if [[ "$DRY_RUN" == false ]]; then
   if [[ ! -f "$HOME/.zshrc.local" ]]; then
-    cp "$DOTFILES_DIR/zshrc.local.example" "$HOME/.zshrc.local"
+    cp "$DOTFILES_DIR/home/examples/zshrc.local.example" "$HOME/.zshrc.local"
     warn "Created ~/.zshrc.local from template — edit it with machine-specific config"
   fi
 fi
@@ -444,11 +444,11 @@ else
   echo ""
   read -rp "  Apply these settings? [y/N] " apply_macos
   if [[ "$apply_macos" =~ ^[Yy]$ ]]; then
-    bash "$DOTFILES_DIR/macos.sh"
+    bash "$DOTFILES_DIR/scripts/macos.sh"
     success "macOS defaults applied — Finder and Dock restarted automatically"
     warn "Key repeat and trackpad changes take full effect after logout"
   else
-    info "Skipped. Run manually any time: bash ~/dotfiles/macos.sh"
+    info "Skipped. Run manually any time: bash ~/dotfiles/scripts/macos.sh"
   fi
 fi
 

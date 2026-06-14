@@ -36,7 +36,7 @@ install_zscaler_cert() {
 
   # Look for cert in common locations
   CERT_PATHS=(
-    "$DOTFILES_DIR/certs/$CERT_FILE"
+    "$DOTFILES_DIR/system/certs/$CERT_FILE"
     "$HOME/.continue/certs/$CERT_FILE"
     "$HOME/Downloads/$CERT_FILE"
     "$HOME/Downloads/ClaudeCode-macOS-"*"/$CERT_FILE"
@@ -69,7 +69,7 @@ install_zscaler_cert() {
       echo ""
       info "To install later:"
       echo "  1. Obtain ${CERT_FILE} from your IT department"
-      echo "  2. Place it in: $DOTFILES_DIR/certs/$CERT_FILE"
+      echo "  2. Place it in: $DOTFILES_DIR/system/certs/$CERT_FILE"
       echo "  3. Re-run: bash $DOTFILES_DIR/scripts/install_zscaler_cert.sh"
       return 1
     fi
@@ -87,11 +87,11 @@ install_zscaler_cert() {
   fi
 
   # Copy to dotfiles certs directory if not already there
-  if [[ "$cert_path" != "$DOTFILES_DIR/certs/$CERT_FILE" ]]; then
-    mkdir -p "$DOTFILES_DIR/certs"
-    if [[ ! -f "$DOTFILES_DIR/certs/$CERT_FILE" ]]; then
-      cp "$cert_path" "$DOTFILES_DIR/certs/$CERT_FILE"
-      info "Copied certificate to dotfiles: $DOTFILES_DIR/certs/"
+  if [[ "$cert_path" != "$DOTFILES_DIR/system/certs/$CERT_FILE" ]]; then
+    mkdir -p "$DOTFILES_DIR/system/certs"
+    if [[ ! -f "$DOTFILES_DIR/system/certs/$CERT_FILE" ]]; then
+      cp "$cert_path" "$DOTFILES_DIR/system/certs/$CERT_FILE"
+      info "Copied certificate to dotfiles: $DOTFILES_DIR/system/certs/"
       info "(This directory is git-ignored for security)"
     fi
   fi
@@ -138,8 +138,8 @@ install_zscaler_cert() {
   if [[ "$install_system" =~ ^[Yy]$ ]]; then
     echo "  • System: /Library/Keychains/System.keychain"
   fi
-  if [[ -f "$DOTFILES_DIR/certs/$CERT_FILE" ]]; then
-    echo "  • Dotfiles: $DOTFILES_DIR/certs/$CERT_FILE"
+  if [[ -f "$DOTFILES_DIR/system/certs/$CERT_FILE" ]]; then
+    echo "  • Dotfiles: $DOTFILES_DIR/system/certs/$CERT_FILE"
   fi
   echo ""
 
