@@ -26,20 +26,34 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
 
-      - name: shellcheck bootstrap.sh
-        run: shellcheck -S warning bootstrap.sh
-
-      - name: shellcheck macos.sh
-        run: shellcheck -S warning macos.sh
-
-      - name: shellcheck update.sh
-        run: shellcheck -S warning update.sh
-
-      - name: shellcheck setup-scheduler.sh
-        run: shellcheck -S warning setup-scheduler.sh
-
-      - name: shellcheck verify.sh
-        run: shellcheck -S warning verify.sh
+      # Lint every top-level *.sh and scripts/*.sh in one pass so new scripts are
+      # covered automatically. zsh files (install.sh, scripts/setup_gpg_signing.sh)
+      # are detected by shebang and routed to the zsh-syntax job instead, since
+      # shellcheck only understands sh/bash/dash/ksh.
+      - name: shellcheck all bash scripts
+        run: |
+          fail=0
+          shopt -s nullglob
+          for script in *.sh scripts/*.sh; do
+            # scripts/preflight.sh is excluded until feature/core-hygiene makes it
+            # shellcheck-clean.
+            # TODO(core-hygiene): drop this exclusion once scripts/preflight.sh is clean.
+            if [[ "$script" == "scripts/preflight.sh" ]]; then
+              echo "SKIP (excluded, see TODO): $script"
+              continue
+            fi
+            if head -1 "$script" | grep -q 'zsh'; then
+              echo "SKIP (zsh, see zsh-syntax job): $script"
+              continue
+            fi
+            echo "==> shellcheck -S warning $script"
+            shellcheck -S warning "$script" || fail=1
+          done
+          if [[ "$fail" -ne 0 ]]; then
+            echo "shellcheck reported problems"
+            exit 1
+          fi
+          echo "All bash scripts passed shellcheck."
 
   # ------------------------------------------------------------------
   # 2. zsh-syntax — syntax-check every shell file + parse the Brewfile
@@ -52,8 +66,10 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Syntax-check all shell files
+        # install.sh and scripts/setup_gpg_signing.sh are zsh (skipped by the
+        # shellcheck job), so they are syntax-checked here with a real zsh.
         run: |
-          for f in zshrc zprofile install.sh bootstrap.sh macos.sh; do
+          for f in zshrc zprofile install.sh bootstrap.sh macos.sh scripts/setup_gpg_signing.sh; do
             echo "zsh -n $f"
             zsh -n "$f"
           done
@@ -116,3 +132,28 @@ jobs:
 
           echo ""
           echo "All symlinks verified."
+
+          echo ""
+          echo "--- Idempotency: a second run must back up nothing ---"
+          # Re-run against the SAME temp HOME. Every dotfile is already linked, so
+          # the summary must report "0 backed up".
+          second_output=$(zsh install.sh)
+          echo "$second_output"
+          if echo "$second_output" | grep -q "0 backed up"; then
+            echo "OK  second run reports 0 backed up"
+          else
+            echo "FAIL  second run did not report '0 backed up'" && exit 1
+          fi
+
+          echo ""
+          echo "--- Residue: no publisher.extension files created in the repo dir ---"
+          # The original bug left empty VS Code extension-id files (e.g.
+          # ms-python.python) at the repo root. install.sh must not create or modify
+          # anything tracked here, so the working tree must stay clean after running.
+          residue=$(git status --porcelain --untracked-files=all)
+          if [[ -n "$residue" ]]; then
+            echo "FAIL  install.sh created/modified files in the repo dir:"
+            echo "$residue"
+            exit 1
+          fi
+          echo "OK  no residue files created in the repo dir"

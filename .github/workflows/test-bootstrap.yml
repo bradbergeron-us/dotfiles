@@ -1,52 +1,67 @@
 name: Test shell scripts
 
+# Auto-discovers and runs every hand-rolled unit test (scripts/test_*.sh).
+# New test files are picked up without editing this workflow, so the trigger
+# watches the whole scripts/ directory plus the scripts under test.
 on:
   push:
     paths:
       - 'bootstrap.sh'
       - 'update.sh'
       - 'verify.sh'
-      - 'scripts/bootstrap_helpers.sh'
-      - 'scripts/test_bootstrap_helpers.sh'
-      - 'scripts/verify_helpers.sh'
-      - 'scripts/test_verify_helpers.sh'
+      - 'scripts/**'
       - '.github/workflows/test-bootstrap.yml'
   pull_request:
     paths:
       - 'bootstrap.sh'
       - 'update.sh'
       - 'verify.sh'
-      - 'scripts/bootstrap_helpers.sh'
-      - 'scripts/test_bootstrap_helpers.sh'
-      - 'scripts/verify_helpers.sh'
-      - 'scripts/test_verify_helpers.sh'
+      - 'scripts/**'
       - '.github/workflows/test-bootstrap.yml'
 
 jobs:
-  test-bootstrap:
+  unit-tests:
+    name: Run hand-rolled unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
       - name: Syntax check
+        # Syntax-check the scripts under test, their helpers, and every test file.
+        # Test files are globbed so new scripts/test_*.sh are covered automatically.
         run: |
-          bash -n bootstrap.sh
-          bash -n scripts/bootstrap_helpers.sh
-          bash -n scripts/test_bootstrap_helpers.sh
+          for f in bootstrap.sh verify.sh \
+                   scripts/bootstrap_helpers.sh \
+                   scripts/verify_helpers.sh \
+                   scripts/dryrun_helpers.sh; do
+            echo "bash -n $f"
+            bash -n "$f"
+          done
+          shopt -s nullglob
+          for t in scripts/test_*.sh; do
+            echo "bash -n $t"
+            bash -n "$t"
+          done
+          echo "All scripts pass syntax check."
 
       - name: Run tests
-        run: bash scripts/test_bootstrap_helpers.sh
-
-  test-verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Syntax check
+        # Auto-discover and run every unit-test script. New scripts/test_*.sh files
+        # are picked up without naming them here.
         run: |
-          bash -n verify.sh
-          bash -n scripts/verify_helpers.sh
-          bash -n scripts/test_verify_helpers.sh
-
-      - name: Run tests
-        run: bash scripts/test_verify_helpers.sh
+          shopt -s nullglob
+          tests=(scripts/test_*.sh)
+          if [[ ${#tests[@]} -eq 0 ]]; then
+            echo "No test scripts found (scripts/test_*.sh)" && exit 1
+          fi
+          fail=0
+          for t in "${tests[@]}"; do
+            echo ""
+            echo "=============================================="
+            echo "Running $t"
+            echo "=============================================="
+            bash "$t" || fail=1
+          done
+          if [[ "$fail" -ne 0 ]]; then
+            echo "One or more test scripts failed." && exit 1
+          fi
+          echo "All unit-test scripts passed."
