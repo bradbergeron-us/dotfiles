@@ -1,0 +1,34 @@
+# .pre-commit-config.yaml — secret scanning for the dotfiles repo itself.
+#
+# The dotfiles install.sh sets core.hooksPath to a global pre-commit stub, so
+# this hook runs automatically on `git commit` in this repo once `pre-commit`
+# is installed (it is in the Brewfile). pre-commit fetches/builds gitleaks in
+# its own isolated environment (language: golang), so no separate install of
+# gitleaks is required. To run manually:
+#
+#   pre-commit run --all-files
+#
+# Skip for a single commit (use sparingly):  SKIP=gitleaks git commit ...
+# Bump pinned versions with:                 pre-commit autoupdate
+
+repos:
+  # ------------------
+  # Secrets detection
+  # ------------------
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.26.0  # pin to a version; update with: pre-commit autoupdate
+    hooks:
+      - id: gitleaks
+        name: gitleaks (detect hardcoded secrets)
+
+  # ------------------
+  # Template validation — assert templates carry placeholders, not real secrets
+  # ------------------
+  - repo: local
+    hooks:
+      - id: validate-templates
+        name: validate templates (no real secrets)
+        entry: scripts/validate_templates.sh
+        language: script
+        pass_filenames: false
+        files: '\.template$'
