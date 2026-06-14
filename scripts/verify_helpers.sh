@@ -94,7 +94,10 @@ check_mise_version_drift() {
 
     # Extract from bootstrap.sh: mise install ...tool@version...
     local bootstrap_ver
-    bootstrap_ver=$(grep -oE "${tool}@[^[:space:]]+" "$bootstrap_file" 2>/dev/null \
+    # Match only version characters so surrounding shell syntax in bootstrap.sh
+    # (quoted array elements like "ruby@3.3.6" and the closing paren on "go@1.24")
+    # is never captured as part of the version.
+    bootstrap_ver=$(grep -oE "${tool}@[A-Za-z0-9._-]+" "$bootstrap_file" 2>/dev/null \
       | head -1 | sed "s/${tool}@//")
 
     # Skip tools not tracked in either file
