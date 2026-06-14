@@ -137,96 +137,6 @@ else
   fail "check_symlinks: empty list" "subshell exited non-zero"
 fi
 
-# ── check_mise_version_drift ──────────────────────────────────────────────────
-echo ""
-echo "=== check_mise_version_drift ==="
-
-TOML_MATCH="$TMPDIR_BASE/mise_match.toml"
-TOML_DRIFT="$TMPDIR_BASE/mise_drift.toml"
-TOML_MISSING_RUBY="$TMPDIR_BASE/mise_missing_ruby.toml"
-BOOTSTRAP_REF="$TMPDIR_BASE/bootstrap_ref.sh"
-
-cat > "$TOML_MATCH" << 'EOF'
-[tools]
-ruby = "3.3.6"
-node = "22"
-java = "temurin-21"
-python = "3.12"
-go = "1.24"
-EOF
-
-cat > "$TOML_DRIFT" << 'EOF'
-[tools]
-ruby = "3.3.0"
-node = "20"
-java = "temurin-21"
-python = "3.12"
-go = "1.24"
-EOF
-
-cat > "$TOML_MISSING_RUBY" << 'EOF'
-[tools]
-node = "22"
-java = "temurin-21"
-python = "3.12"
-go = "1.24"
-EOF
-
-cat > "$BOOTSTRAP_REF" << 'EOF'
-mise install ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
-mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24
-EOF
-
-# Case 1: no drift
-if (
-  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
-  check_mise_version_drift "$TOML_MATCH" "$BOOTSTRAP_REF"
-  [[ "$DRIFT_COUNT" -eq 0 ]] || { printf "  FAIL  drift: expected 0, got %s\n" "$DRIFT_COUNT"; exit 1; }
-); then
-  pass "check_mise_version_drift: matching versions → DRIFT=0"
-else
-  fail "check_mise_version_drift: matching versions" "subshell exited non-zero"
-fi
-
-# Case 2: 2 drifted tools (ruby 3.3.0 vs 3.3.6, node 20 vs 22)
-if (
-  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
-  check_mise_version_drift "$TOML_DRIFT" "$BOOTSTRAP_REF"
-  [[ "$DRIFT_COUNT" -eq 2 ]] || { printf "  FAIL  drift: expected 2, got %s\n" "$DRIFT_COUNT"; exit 1; }
-); then
-  pass "check_mise_version_drift: ruby+node drifted → DRIFT=2"
-else
-  fail "check_mise_version_drift: 2 drifted tools" "subshell exited non-zero"
-fi
-
-# Case 3: drift list names the correct tools
-drift_items=$(
-  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
-  check_mise_version_drift "$TOML_DRIFT" "$BOOTSTRAP_REF"
-  printf '%s\n' "${DRIFT_LIST[@]}"
-)
-if echo "$drift_items" | grep -q "^ruby:"; then
-  pass "check_mise_version_drift: DRIFT_LIST contains ruby entry"
-else
-  fail "check_mise_version_drift: DRIFT_LIST contains ruby entry" "got: $drift_items"
-fi
-if echo "$drift_items" | grep -q "^node:"; then
-  pass "check_mise_version_drift: DRIFT_LIST contains node entry"
-else
-  fail "check_mise_version_drift: DRIFT_LIST contains node entry" "got: $drift_items"
-fi
-
-# Case 4: ruby absent from toml → detected as drift
-if (
-  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
-  check_mise_version_drift "$TOML_MISSING_RUBY" "$BOOTSTRAP_REF"
-  [[ "$DRIFT_COUNT" -ge 1 ]] || { printf "  FAIL  drift: expected >= 1, got %s\n" "$DRIFT_COUNT"; exit 1; }
-); then
-  pass "check_mise_version_drift: ruby missing from toml → DRIFT>=1"
-else
-  fail "check_mise_version_drift: ruby missing from toml" "subshell exited non-zero"
-fi
-
 # ── check_required_tools ──────────────────────────────────────────────────────
 echo ""
 echo "=== check_required_tools ==="
@@ -431,9 +341,20 @@ else
   fail "check_git_lfs_global: lfs config present" "subshell exited non-zero"
 fi
 
-# ── check_mise_installed ──────────────────────────────────────────────────
+# ── check_mise_installed ───────────────────────────
 echo ""
 echo "=== check_mise_installed ==="
+
+# Fixture: a mise config whose [tools] table lists the expected runtimes.
+TOML_MATCH="$TMPDIR_BASE/mise_match.toml"
+cat > "$TOML_MATCH" << 'EOF'
+[tools]
+ruby = "3.3.6"
+node = "22"
+java = "temurin-21"
+python = "3.12"
+go = "1.24"
+EOF
 
 # Case 1: mise not on PATH → silently returns count=0 (no-op)
 mkdir -p "$TMPDIR_BASE/empty_bin"
@@ -448,9 +369,12 @@ else
   fail "check_mise_installed: mise not on PATH" "subshell exited non-zero"
 fi
 
-# Case 2: all tools installed (reuse TOML_MATCH from earlier; only runs if mise is present)
+# Case 2: tool list derived from mise.toml; only runs if mise is present.
+# check_mise_installed uses parse_mise_runtimes, so source bootstrap_helpers.sh
+# too (verify.sh sources both, in this order, at runtime).
 if command -v mise &>/dev/null; then
   if (
+    source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
     source "$SCRIPT_DIR/../lib/verify_helpers.sh"
     check_mise_installed "$TOML_MATCH"
     # We can't assert count=0 since tools may not be installed in CI,

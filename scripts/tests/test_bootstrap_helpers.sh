@@ -184,6 +184,52 @@ else
   fail "output helpers" "subshell exited non-zero"
 fi
 
+# ── parse_mise_runtimes ───────────────────────────────────────────────────────
+echo ""
+echo "=== parse_mise_runtimes ==="
+
+PMR_TMP=$(mktemp -d)
+trap 'rm -rf "$PMR_TMP"' EXIT
+
+# Fixture: a representative mise config with a comment, blank lines, and a
+# trailing table that must be ignored.
+PMR_TOML="$PMR_TMP/mise.toml"
+cat > "$PMR_TOML" << 'EOF'
+# managed runtimes
+
+[tools]
+ruby = "3.3.6"
+node = "22"
+java = "temurin-21"
+python = "3.12"
+go = "1.24"
+
+[settings]
+experimental = true
+EOF
+
+# Case 1: emits one tool@version line per [tools] entry, preserving order
+pmr_out=$(
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
+  parse_mise_runtimes "$PMR_TOML"
+)
+pmr_expected=$'ruby@3.3.6\nnode@22\njava@temurin-21\npython@3.12\ngo@1.24'
+assert_eq "parse_mise_runtimes: parses [tools] into tool@version lines" "$pmr_expected" "$pmr_out"
+
+# Case 2: ignores comments, blank lines, and non-[tools] tables (exactly 5 entries)
+pmr_count=$(
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
+  parse_mise_runtimes "$PMR_TOML" | grep -c '@'
+)
+assert_eq "parse_mise_runtimes: ignores comments/blanks/other tables" "5" "$pmr_count"
+
+# Case 3: a missing file prints nothing and exits 0
+pmr_missing=$(
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
+  parse_mise_runtimes "$PMR_TMP/does_not_exist.toml"
+)
+assert_eq "parse_mise_runtimes: missing file → empty output" "" "$pmr_missing"
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"

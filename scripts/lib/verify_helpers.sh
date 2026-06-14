@@ -72,56 +72,6 @@ check_symlinks() {
   done
 }
 
-# check_mise_version_drift TOML_FILE BOOTSTRAP_FILE
-# Compares runtime versions in config/mise.toml against the pinned versions in bootstrap.sh.
-# Detects drift introduced by editing one file without updating the other.
-# Sets:
-#   DRIFT_COUNT — number of mismatches
-#   DRIFT_LIST  — array of "tool: mise.toml=X  bootstrap.sh=Y" descriptions
-check_mise_version_drift() {
-  local toml_file="$1"
-  local bootstrap_file="$2"
-  DRIFT_COUNT=0
-  DRIFT_LIST=()
-
-  local tools=(ruby node java python go)
-
-  for tool in "${tools[@]}"; do
-    # Extract from mise.toml: tool = "version"
-    local toml_ver
-    toml_ver=$(grep -E "^${tool}[[:space:]]*=" "$toml_file" 2>/dev/null \
-      | sed 's/.*=[[:space:]]*"\(.*\)".*/\1/' | tr -d '[:space:]')
-
-    # Extract from bootstrap.sh: mise install ...tool@version...
-    local bootstrap_ver
-    # Match only version characters so surrounding shell syntax in bootstrap.sh
-    # (quoted array elements like "ruby@3.3.6" and the closing paren on "go@1.24")
-    # is never captured as part of the version.
-    bootstrap_ver=$(grep -oE "${tool}@[A-Za-z0-9._-]+" "$bootstrap_file" 2>/dev/null \
-      | head -1 | sed "s/${tool}@//")
-
-    # Skip tools not tracked in either file
-    [[ -z "$toml_ver" && -z "$bootstrap_ver" ]] && continue
-
-    if [[ -z "$toml_ver" ]]; then
-      DRIFT_COUNT=$(( DRIFT_COUNT + 1 ))
-      DRIFT_LIST+=("$tool: present in bootstrap.sh ($bootstrap_ver) but missing from mise.toml")
-      continue
-    fi
-
-    if [[ -z "$bootstrap_ver" ]]; then
-      DRIFT_COUNT=$(( DRIFT_COUNT + 1 ))
-      DRIFT_LIST+=("$tool: present in mise.toml ($toml_ver) but not found in bootstrap.sh")
-      continue
-    fi
-
-    if [[ "$toml_ver" != "$bootstrap_ver" ]]; then
-      DRIFT_COUNT=$(( DRIFT_COUNT + 1 ))
-      DRIFT_LIST+=("$tool: mise.toml=$toml_ver  bootstrap.sh=$bootstrap_ver")
-    fi
-  done
-}
-
 # check_required_tools TOOL [TOOL ...]
 # Checks each named tool is available on PATH via command -v.
 # Sets:
@@ -211,18 +161,20 @@ check_mise_installed() {
 
   command -v mise &>/dev/null || return 0
 
-  local tools=(ruby node java python go)
-  for tool in "${tools[@]}"; do
-    local toml_ver
-    toml_ver=$(grep -E "^${tool}[[:space:]]*=" "$toml_file" 2>/dev/null \
-      | sed 's/.*=[[:space:]]*"\(.*\)".*/\1/' | tr -d '[:space:]')
-    [[ -z "$toml_ver" ]] && continue
-
+  # Derive the runtime list from mise.toml (the single source of truth) via
+  # parse_mise_runtimes (from bootstrap_helpers.sh, which verify.sh sources
+  # before this file), so a tool added to or removed from mise.toml is
+  # reflected here automatically.
+  local entry tool toml_ver
+  while IFS= read -r entry; do
+    [[ -n "$entry" ]] || continue
+    tool="${entry%@*}"
+    toml_ver="${entry#*@}"
     if ! mise where "$tool" &>/dev/null 2>&1; then
       MISE_UNINSTALLED_COUNT=$(( MISE_UNINSTALLED_COUNT + 1 ))
       MISE_UNINSTALLED_LIST+=("$tool@$toml_ver not installed — run: mise install")
     fi
-  done
+  done < <(parse_mise_runtimes "$toml_file")
 }
 
 # check_dotfiles_git_health DOTFILES_DIR
