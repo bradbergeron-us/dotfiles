@@ -9,15 +9,15 @@
 # bootstrap.sh --dry-run (previews them), and the CI install-smoke job.
 # Add a tracked dotfile by adding one line here — every consumer picks it up.
 #
-# Non-symlink setup (local.gitconfig seed, global pre-commit hook, VS Code
-# settings/extensions) stays bespoke in install.sh and is intentionally not
-# listed here.
+# Non-symlink setup (the ~/.gitconfig thin include, local.gitconfig seed, global
+# pre-commit hook, VS Code settings/extensions) stays bespoke in install.sh and
+# is intentionally not listed here. ~/.gitconfig is a real file (not a symlink)
+# so `git config --global` and tools never write into the tracked repo file.
 
 # Home-directory dotfiles
 home/zshrc             .zshrc
 home/zprofile          .zprofile
-home/gitconfig         .gitconfig
-home/tmux.conf         .tmux.conf
+home/tmux.conf          .tmux.conf
 home/hyper.js          .hyper.js
 home/gitignore_global  .gitignore_global
 home/gemrc             .gemrc

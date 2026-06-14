@@ -263,6 +263,11 @@ check_dotfile_symlinks() {
     dry_run_log "Create ~/.config/git/local.gitconfig from template"
     info "Would create: ~/.config/git/local.gitconfig (git signing key)"
   fi
+
+  if [[ ! -f "$HOME/.gitconfig" ]] || [[ -L "$HOME/.gitconfig" ]]; then
+    dry_run_log "Write ~/.gitconfig thin include (replaces any symlink)"
+    info "Would create: ~/.gitconfig (thin include of home/gitconfig)"
+  fi
 }
 
 # Check work configs

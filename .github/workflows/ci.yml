@@ -108,6 +108,17 @@ jobs:
           echo "All symlinks verified."
 
           echo ""
+          echo "--- Verifying ~/.gitconfig is a thin include (not a symlink) ---"
+          if [[ -L "$HOME/.gitconfig" ]]; then
+            echo "FAIL  ~/.gitconfig is a symlink (should be a thin include file)" && exit 1
+          fi
+          if [[ -f "$HOME/.gitconfig" ]] && grep -q "home/gitconfig" "$HOME/.gitconfig"; then
+            echo "OK  ~/.gitconfig includes the tracked config"
+          else
+            echo "FAIL  ~/.gitconfig missing or does not include home/gitconfig" && exit 1
+          fi
+
+          echo ""
           echo "--- Idempotency: a second run must back up nothing ---"
           # Re-run against the SAME temp HOME. Every dotfile is already linked, so
           # the summary must report "0 backed up".

@@ -59,6 +59,33 @@ fi
 # Harden ~/.ssh perms (the directory is created above when linking ssh_config)
 [[ -d "$HOME/.ssh" ]] && chmod 700 "$HOME/.ssh"
 
+# Git config: a thin, REAL ~/.gitconfig that *includes* the tracked config.
+# Deliberately NOT a symlink — this keeps `git config --global` and tools like
+# `gh auth setup-git` from writing into the tracked dotfile (home/gitconfig).
+# Machine/tool-written settings accumulate here and override the shared defaults.
+GITCONFIG_DEST="$HOME/.gitconfig"
+GITCONFIG_SRC="$DOTFILES_DIR/home/gitconfig"
+GITCONFIG_SHORT="${GITCONFIG_DEST/$HOME/\~}"
+if [[ -f "$GITCONFIG_DEST" && ! -L "$GITCONFIG_DEST" ]] && grep -qF "path = $GITCONFIG_SRC" "$GITCONFIG_DEST"; then
+  success "current   $GITCONFIG_SHORT (thin include of dotfiles gitconfig)"
+else
+  if [[ -e "$GITCONFIG_DEST" || -L "$GITCONFIG_DEST" ]]; then
+    mkdir -p "$BACKUP_DIR"
+    mv "$GITCONFIG_DEST" "$BACKUP_DIR/"
+    backup "backed up  $GITCONFIG_SHORT (was a symlink/real file)"
+  fi
+  cat > "$GITCONFIG_DEST" <<EOF
+# ~/.gitconfig — managed by dotfiles (thin include; intentionally NOT a symlink).
+# Keeping this a real file means 'git config --global ...' and tools such as
+# 'gh auth setup-git' write here instead of into the tracked repo file. Shared
+# config is pulled in from the repo below; anything written after the include
+# (by you or tooling) overrides those defaults on this machine only.
+[include]
+	path = $GITCONFIG_SRC
+EOF
+  success "linked    $GITCONFIG_SHORT (thin include → home/gitconfig)"
+fi
+
 # Local git config (signing key, work email overrides — not committed)
 mkdir -p "$HOME/.config/git"
 if [[ ! -f "$HOME/.config/git/local.gitconfig" ]]; then

@@ -537,7 +537,73 @@ else
   fail "check_dotfiles_git_health: non-git directory" "subshell exited non-zero"
 fi
 
-# ── check_brewfile_drift ──────────────────────────────────────────────────
+# ── check_gitconfig_include ─────────────────────────────────
+echo ""
+echo "=== check_gitconfig_include ==="
+
+GCI_DOTFILES="$TMPDIR_BASE/gci_dotfiles"
+mkdir -p "$GCI_DOTFILES/home"
+touch "$GCI_DOTFILES/home/gitconfig"
+
+# Case 1: real file that includes the tracked config → OK=true
+GCI_HOME_OK="$TMPDIR_BASE/gci_home_ok"
+mkdir -p "$GCI_HOME_OK"
+printf '[include]\n\tpath = %s/home/gitconfig\n' "$GCI_DOTFILES" > "$GCI_HOME_OK/.gitconfig"
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  check_gitconfig_include "$GCI_HOME_OK" "$GCI_DOTFILES"
+  [[ "$GITCONFIG_INCLUDE_OK" == "true" ]] || { printf "  FAIL  expected OK=true, got %s\n" "$GITCONFIG_INCLUDE_OK"; exit 1; }
+  [[ -z "$GITCONFIG_INCLUDE_ISSUE" ]] || { printf "  FAIL  expected empty issue, got %s\n" "$GITCONFIG_INCLUDE_ISSUE"; exit 1; }
+); then
+  pass "check_gitconfig_include: thin include file → OK=true"
+else
+  fail "check_gitconfig_include: thin include" "subshell exited non-zero"
+fi
+
+# Case 2: ~/.gitconfig is a symlink → OK=false, issue mentions symlink
+GCI_HOME_LINK="$TMPDIR_BASE/gci_home_link"
+mkdir -p "$GCI_HOME_LINK"
+ln -sf "$GCI_DOTFILES/home/gitconfig" "$GCI_HOME_LINK/.gitconfig"
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  check_gitconfig_include "$GCI_HOME_LINK" "$GCI_DOTFILES"
+  [[ "$GITCONFIG_INCLUDE_OK" == "false" ]] || { printf "  FAIL  expected OK=false for symlink\n"; exit 1; }
+  echo "$GITCONFIG_INCLUDE_ISSUE" | grep -q "symlink" || { printf "  FAIL  issue should mention symlink, got %s\n" "$GITCONFIG_INCLUDE_ISSUE"; exit 1; }
+); then
+  pass "check_gitconfig_include: symlink → OK=false, issue mentions symlink"
+else
+  fail "check_gitconfig_include: symlink" "subshell exited non-zero"
+fi
+
+# Case 3: ~/.gitconfig missing → OK=false
+GCI_HOME_MISSING="$TMPDIR_BASE/gci_home_missing"
+mkdir -p "$GCI_HOME_MISSING"
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  check_gitconfig_include "$GCI_HOME_MISSING" "$GCI_DOTFILES"
+  [[ "$GITCONFIG_INCLUDE_OK" == "false" ]] || { printf "  FAIL  expected OK=false when missing\n"; exit 1; }
+  [[ -n "$GITCONFIG_INCLUDE_ISSUE" ]] || { printf "  FAIL  expected non-empty issue\n"; exit 1; }
+); then
+  pass "check_gitconfig_include: missing ~/.gitconfig → OK=false"
+else
+  fail "check_gitconfig_include: missing" "subshell exited non-zero"
+fi
+
+# Case 4: real file without the include → OK=false
+GCI_HOME_NOINC="$TMPDIR_BASE/gci_home_noinc"
+mkdir -p "$GCI_HOME_NOINC"
+printf '[user]\n\tname = test\n' > "$GCI_HOME_NOINC/.gitconfig"
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  check_gitconfig_include "$GCI_HOME_NOINC" "$GCI_DOTFILES"
+  [[ "$GITCONFIG_INCLUDE_OK" == "false" ]] || { printf "  FAIL  expected OK=false without include\n"; exit 1; }
+); then
+  pass "check_gitconfig_include: file without include → OK=false"
+else
+  fail "check_gitconfig_include: no include" "subshell exited non-zero"
+fi
+
+# ── check_brewfile_drift ─────────────────────────────────
 echo ""
 echo "=== check_brewfile_drift ==="
 

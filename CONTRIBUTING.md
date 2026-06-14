@@ -7,9 +7,9 @@ A maintainer-facing guide to how this repository is wired together and the conve
 Four entry-point scripts form the pipeline; everything in `scripts/` exists to support them.
 
 1. **`bootstrap.sh`** (bash) — one-time setup on a fresh Mac. Runs `scripts/preflight.sh` first (unless `--skip-preflight` or `--dry-run`), installs Homebrew and the `Brewfile`, language runtimes via `mise`, Yarn via Corepack (from the mise-managed Node), Rust via `rustup`, and `git-lfs`, then hands off to `install.sh` for symlinks, and finally prompts for work configs (`scripts/setup_work_configs.sh`) and macOS defaults (`scripts/macos.sh`). Supports `--dry-run` and `--skip-preflight`.
-2. **`install.sh`** (zsh) — the symlinker. Links every tracked dotfile into `$HOME`, backing up any pre-existing real file to `~/.dotfiles_backup/<timestamp>/`. It also seeds `~/.config/git/local.gitconfig` from `home/examples/gitconfig.local.example` and installs a global pre-commit hook at `~/.config/git/hooks/pre-commit`. Idempotent: a second run relinks nothing already correct and reports `linked / current / backed up`.
+2. **`install.sh`** (zsh) — the symlinker. Links every tracked dotfile (per `config/symlinks.map`) into `$HOME`, backing up any pre-existing real file to `~/.dotfiles_backup/<timestamp>/`. It also writes a thin `~/.gitconfig` that *includes* the tracked `home/gitconfig` (a real file, not a symlink, so `git config --global` and tools like `gh auth setup-git` never write into the repo), seeds `~/.config/git/local.gitconfig` from `home/examples/gitconfig.local.example`, and installs a global pre-commit hook at `~/.config/git/hooks/pre-commit`. Idempotent: a second run relinks nothing already correct and reports `linked / current / backed up`.
 3. **`update.sh`** (bash) — keep-current. `git pull --rebase --autostash`, re-runs `install.sh` to pick up new symlinks, upgrades Homebrew / `mise` / `rustup` / gems / `uv` tools, then runs `verify.sh`. Schedulable via `scripts/setup-scheduler.sh` (launchd, daily at 9 AM).
-4. **`verify.sh`** (bash) — health check. Eight checks: symlinks, required tools, stale backups, SSH key, global git-lfs init, mise-installed runtimes, dotfiles git health, and Brewfile drift. Broken symlinks are the only hard error (exit 1); everything else is a warning (exit 0).
+4. **`verify.sh`** (bash) — health check. Nine checks: symlinks, required tools, stale backups, SSH key, global git-lfs init, mise-installed runtimes, dotfiles git health, Brewfile drift, and git config include. Broken symlinks are the only hard error (exit 1); everything else is a warning (exit 0).
 
 ```
 bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
@@ -20,7 +20,7 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 ## Layout
 
 - **Root** — the four entry-point scripts (`bootstrap.sh`, `install.sh`, `update.sh`, `verify.sh`), package manifests (`Brewfile`, `Brewfile.work`), and repo meta (`README.md`, `CONTRIBUTING.md`).
-- **`home/`** — the tracked dotfiles symlinked into `$HOME` (`zshrc`, `zprofile`, `gitconfig`, `tmux.conf`, …); `home/examples/` holds the `*.local.example` templates.
+- **`home/`** — the tracked dotfiles symlinked into `$HOME` (`zshrc`, `zprofile`, `tmux.conf`, …); `home/examples/` holds the `*.local.example` templates. (`gitconfig` lives here too but is loaded via a thin `~/.gitconfig` include rather than symlinked, so global writes never touch the repo.)
 - **`scripts/`** — the secondary entry scripts (`macos.sh`, `setup-scheduler.sh`, `uninstall.sh`, `quick-fix.sh`) and supporting/work-setup scripts. Sourced helper libraries live in **`scripts/lib/`** and unit tests in **`scripts/tests/`** (see below). Has its own [README](scripts/README.md).
 - **`config/`** — XDG configs symlinked under `~/.config` (`starship.toml`, `mise.toml`, `direnvrc`).
 - **`templates/`** — work / secret-bearing configs shipped as `*.template` placeholders (see [templates/README.md](templates/README.md)).
@@ -30,7 +30,7 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 ## Helpers
 
 - **`scripts/lib/bootstrap_helpers.sh`** — sourced by `bootstrap.sh`, `update.sh`, and `verify.sh`. Side-effect-free output helpers (`setup_colors`, `step`, `info`, `success`, `warn`; call `setup_colors` once after sourcing) plus `parse_mise_runtimes`, which reads the `[tools]` table of `config/mise.toml` — the single source of truth for runtime versions.
-- **`scripts/lib/verify_helpers.sh`** — sourced by `verify.sh`. Pure check functions (`check_symlinks`, `check_required_tools`, `check_ssh_key`, `check_git_lfs_global`, `check_mise_installed`, `check_stale_backups`, `check_dotfiles_git_health`, `check_brewfile_drift`). Each sets result globals (e.g. `SYMLINK_BROKEN_COUNT`, `SYMLINK_BROKEN_LIST`) rather than printing or exiting, which makes them unit-testable. `load_symlink_map` populates the `DOTFILES_SYMLINKS` array from `config/symlinks.map`, the canonical symlink manifest (see below).
+- **`scripts/lib/verify_helpers.sh`** — sourced by `verify.sh`. Pure check functions (`check_symlinks`, `check_required_tools`, `check_ssh_key`, `check_git_lfs_global`, `check_mise_installed`, `check_stale_backups`, `check_dotfiles_git_health`, `check_brewfile_drift`, `check_gitconfig_include`). Each sets result globals (e.g. `SYMLINK_BROKEN_COUNT`, `SYMLINK_BROKEN_LIST`) rather than printing or exiting, which makes them unit-testable. `load_symlink_map` populates the `DOTFILES_SYMLINKS` array from `config/symlinks.map`, the canonical symlink manifest (see below).
 - **`scripts/lib/dryrun_helpers.sh`** — sourced by `bootstrap.sh` only when `--dry-run` is set. Provides `dry_run_step`, per-step `check_*` previews (including `check_corepack`) that record intended actions via `dry_run_log`, and `show_dry_run_summary`.
 - **`scripts/preflight.sh`** — standalone (defines its own colors and `error`/`warn`/`success`/`info`). Validates the system before bootstrap.
 
@@ -74,7 +74,7 @@ The dotfile→destination mapping is a single source of truth in `config/symlink
 2. **`config/symlinks.map`** — add one `src  dest` line (src relative to the repo root, dest relative to `$HOME`). Every consumer picks it up automatically — no other script or workflow needs editing.
 3. **`README.md`** — add a row to the Dotfiles table (human-readable reference).
 
-Non-symlink setup (the `~/.config/git/local.gitconfig` seed, the global pre-commit hook, and VS Code settings/extensions) is intentionally bespoke in `install.sh` and is deliberately not part of the manifest.
+Non-symlink setup (the thin `~/.gitconfig` include, the `~/.config/git/local.gitconfig` seed, the global pre-commit hook, and VS Code settings/extensions) is intentionally bespoke in `install.sh` and is deliberately not part of the manifest.
 
 ### Add a configuration template
 

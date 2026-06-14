@@ -147,7 +147,7 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 |------|-------------|--------------|
 | `home/zshrc` | `~/.zshrc` | Shell config — mise, PATH, aliases, plugins |
 | `home/zprofile` | `~/.zprofile` | Login profile — Homebrew PATH setup |
-| `home/gitconfig` | `~/.gitconfig` | Git defaults, delta pager, SSH signing |
+| `home/gitconfig` | `~/.gitconfig` _(include)_ | Git defaults, delta pager, SSH signing — loaded via a thin `~/.gitconfig` (not a symlink) so `git config --global` / tool writes stay out of the repo |
 | `home/gitignore_global` | `~/.gitignore_global` | Global ignores — macOS, editors, Java, Go |
 | `home/tmux.conf` | `~/.tmux.conf` | tmux — `C-a` prefix, vim keys, TPM plugins |
 | `home/hyper.js` | `~/.hyper.js` | Hyper — Tokyo Night theme, JetBrains Mono |
@@ -349,7 +349,7 @@ Or for additional work-specific topics: [docs/work-machine.md](docs/work-machine
 
 ## Making changes
 
-Because dotfiles are symlinked, editing `~/.zshrc` edits `~/dotfiles/home/zshrc` directly:
+Because most dotfiles are symlinked, editing `~/.zshrc` edits `~/dotfiles/home/zshrc` directly. (Exception: `~/.gitconfig` is a thin _include_, not a symlink — edit `home/gitconfig` for shared settings; machine-specific or tool-written git config stays in `~/.gitconfig` / `~/.config/git/local.gitconfig`.)
 
 ```sh
 cd ~/dotfiles

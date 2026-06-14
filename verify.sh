@@ -10,6 +10,7 @@
 #   6. mise tools installed   (warnings — exit 0)
 #   7. dotfiles git health    (warnings — exit 0)
 #   8. Brewfile drift         (warnings — exit 0)
+#   9. git config include     (warnings — exit 0)
 #
 # Usage:   bash ~/dotfiles/verify.sh
 # Called by update.sh automatically after each update cycle.
@@ -23,7 +24,7 @@ WARNINGS=0
 # shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
 # shellcheck disable=SC2034
-TOTAL_STEPS=8
+TOTAL_STEPS=9
 
 # shellcheck source=scripts/lib/bootstrap_helpers.sh
 source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
@@ -150,6 +151,17 @@ elif [[ "$BREWFILE_DRIFT_OK" == "true" ]]; then
   success "Brewfile in sync with installed packages"
 else
   warn "$BREWFILE_DRIFT_ISSUE"
+  WARNINGS=$(( WARNINGS + 1 ))
+fi
+
+# ── 9. Git config include ────────────────────────────────────────────
+step "🔧  Git config include"
+check_gitconfig_include "$HOME" "$DOTFILES_DIR"
+
+if [[ "$GITCONFIG_INCLUDE_OK" == "true" ]]; then
+  success "Git config: ~/.gitconfig includes the tracked config (not a symlink)"
+else
+  warn "$GITCONFIG_INCLUDE_ISSUE"
   WARNINGS=$(( WARNINGS + 1 ))
 fi
 

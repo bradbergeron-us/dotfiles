@@ -221,6 +221,8 @@ if (
     || { printf "  FAIL  missing zshrc.local not logged\n"; exit 1; }
   printf '%s\n' "${DRY_RUN_ACTIONS[@]}" | grep -q "Create ~/.config/git/local.gitconfig from template" \
     || { printf "  FAIL  missing local.gitconfig not logged\n"; exit 1; }
+  printf '%s\n' "${DRY_RUN_ACTIONS[@]}" | grep -q "Write ~/.gitconfig thin include" \
+    || { printf "  FAIL  gitconfig thin-include action not logged\n"; exit 1; }
 ); then
   pass "check_dotfile_symlinks: logs create actions for missing local configs"
 else
