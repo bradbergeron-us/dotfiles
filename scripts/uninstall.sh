@@ -2,10 +2,10 @@
 # uninstall.sh — reverse install.sh: remove dotfiles symlinks and restore backups
 #
 # Usage:
-#   bash ~/dotfiles/uninstall.sh            # interactive (asks for confirmation)
-#   bash ~/dotfiles/uninstall.sh --dry-run  # print what would happen, change nothing
-#   bash ~/dotfiles/uninstall.sh --yes      # skip the confirmation prompt
-#   bash ~/dotfiles/uninstall.sh --help
+#   bash ~/dotfiles/scripts/uninstall.sh            # interactive (asks for confirmation)
+#   bash ~/dotfiles/scripts/uninstall.sh --dry-run  # print what would happen, change nothing
+#   bash ~/dotfiles/scripts/uninstall.sh --yes      # skip the confirmation prompt
+#   bash ~/dotfiles/scripts/uninstall.sh --help
 #
 # What it does:
 #   1. Removes the symlinks install.sh creates — but ONLY the ones that actually
@@ -21,7 +21,7 @@
 
 set -euo pipefail
 
-DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BACKUP_ROOT="$HOME/.dotfiles_backup"
 
 # shellcheck source=scripts/bootstrap_helpers.sh

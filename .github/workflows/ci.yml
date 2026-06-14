@@ -62,7 +62,7 @@ jobs:
         # install.sh and scripts/setup_gpg_signing.sh are zsh (skipped by the
         # shellcheck job), so they are syntax-checked here with a real zsh.
         run: |
-          for f in home/zshrc home/zprofile install.sh bootstrap.sh macos.sh scripts/setup_gpg_signing.sh; do
+          for f in home/zshrc home/zprofile install.sh bootstrap.sh scripts/macos.sh scripts/setup_gpg_signing.sh; do
             echo "zsh -n $f"
             zsh -n "$f"
           done

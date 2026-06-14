@@ -362,7 +362,7 @@ For Clipboard History: assign `Cmd+Shift+V` in Settings → Extensions → Clipb
 ## Scripts
 
 ### [`update.sh`](../update.sh)
-A one-command maintenance script that keeps the machine current without a full re-bootstrap. Run it manually any time, or automate it with `setup-scheduler.sh`.
+A one-command maintenance script that keeps the machine current without a full re-bootstrap. Run it manually any time, or automate it with `scripts/setup-scheduler.sh`.
 
 ```sh
 bash ~/dotfiles/update.sh
@@ -404,12 +404,12 @@ Errors require action (run `install.sh`). Warnings are informational — the exi
 
 ---
 
-### [`setup-scheduler.sh`](../setup-scheduler.sh)
+### [`setup-scheduler.sh`](../scripts/setup-scheduler.sh)
 Installs a launchd `LaunchAgent` that runs `update.sh` daily at 9 AM. Uses the modern `launchctl bootstrap`/`bootout` API.
 
 ```sh
-bash ~/dotfiles/setup-scheduler.sh             # install
-bash ~/dotfiles/setup-scheduler.sh --uninstall # remove
+bash ~/dotfiles/scripts/setup-scheduler.sh             # install
+bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall # remove
 ```
 
 What it does:
@@ -418,7 +418,7 @@ What it does:
 - Calls `launchctl bootstrap gui/<uid>` to activate it immediately (no login required)
 - Creates `~/dotfiles/logs/` for capturing stdout/stderr
 
-The plist template is tracked at `LaunchAgents/com.dotfiles.update.plist`. To change the schedule, edit `Hour` and `Minute` in that file and re-run `setup-scheduler.sh`.
+The plist template is tracked at `LaunchAgents/com.dotfiles.update.plist`. To change the schedule, edit `Hour` and `Minute` in that file and re-run `scripts/setup-scheduler.sh`.
 
 Logs land at `~/dotfiles/logs/update.log`. To monitor:
 ```sh

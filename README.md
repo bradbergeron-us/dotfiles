@@ -50,7 +50,7 @@ bash ~/dotfiles/update.sh
 
 Pulls the latest dotfiles, re-symlinks, upgrades all Homebrew packages, updates mise runtimes, Rust toolchain, and global gems. Finishes with a health check. Safe to run any time.
 
-To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/setup-scheduler.sh`
+To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/scripts/setup-scheduler.sh`
 
 To run the health check standalone: `bash ~/dotfiles/verify.sh`
 
@@ -162,8 +162,8 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `home/npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
 | `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, version drift, missing tools, stale backups |
-| `setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
-| `macos.sh` | _(run once)_ | macOS developer defaults |
+| `scripts/setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
+| `scripts/macos.sh` | _(run once)_ | macOS developer defaults |
 | `home/examples/zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 
 ---

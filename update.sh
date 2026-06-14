@@ -3,8 +3,8 @@
 #
 # Run manually:     bash ~/dotfiles/update.sh
 # Schedule daily with launchd (one command):
-#   bash ~/dotfiles/setup-scheduler.sh             # install
-#   bash ~/dotfiles/setup-scheduler.sh --uninstall # remove
+#   bash ~/dotfiles/scripts/setup-scheduler.sh             # install
+#   bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall # remove
 #
 # What it does:
 #   1. Pulls latest dotfiles from GitHub

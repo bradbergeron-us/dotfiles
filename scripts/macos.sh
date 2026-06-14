@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # macos.sh — set sensible macOS defaults for developers
-# Run once after setting up a new Mac: bash ~/dotfiles/macos.sh
+# Run once after setting up a new Mac: bash ~/dotfiles/scripts/macos.sh
 # Most changes take effect immediately; some require logout/restart.
 #
 # To revert any setting, look up the corresponding `defaults delete` command.

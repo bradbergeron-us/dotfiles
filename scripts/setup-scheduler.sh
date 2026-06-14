@@ -2,8 +2,8 @@
 # setup-scheduler.sh — schedule update.sh to run daily via launchd
 #
 # Usage:
-#   bash ~/dotfiles/setup-scheduler.sh             # install (runs at 9 AM daily)
-#   bash ~/dotfiles/setup-scheduler.sh --uninstall # remove the scheduled job
+#   bash ~/dotfiles/scripts/setup-scheduler.sh             # install (runs at 9 AM daily)
+#   bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall # remove the scheduled job
 #
 # Logs are written to ~/dotfiles/logs/update.log
 # Edit LaunchAgents/com.dotfiles.update.plist to change the schedule.
@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PLIST_LABEL="com.dotfiles.update"
 PLIST_SRC="$DOTFILES_DIR/LaunchAgents/$PLIST_LABEL.plist"
 PLIST_DEST="$HOME/Library/LaunchAgents/$PLIST_LABEL.plist"
@@ -61,5 +61,5 @@ success "update.sh scheduled — runs daily at 9 AM"
 info "Log:       $LOG_DIR/update.log (auto-rotated; keeps ${DOTFILES_LOG_KEEP:-5} copies)"
 info "Status:    $LOG_DIR/update.status"
 info "Plist:     $PLIST_DEST"
-info "Uninstall: bash ~/dotfiles/setup-scheduler.sh --uninstall"
+info "Uninstall: bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall"
 echo ""

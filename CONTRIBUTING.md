@@ -6,9 +6,9 @@ A maintainer-facing guide to how this repository is wired together and the conve
 
 Four entry-point scripts form the pipeline; everything in `scripts/` exists to support them.
 
-1. **`bootstrap.sh`** (bash) — one-time setup on a fresh Mac. Runs `scripts/preflight.sh` first (unless `--skip-preflight` or `--dry-run`), installs Homebrew and the `Brewfile`, language runtimes via `mise`, Rust via `rustup`, and `git-lfs`, then hands off to `install.sh` for symlinks, and finally prompts for work configs (`scripts/setup_work_configs.sh`) and macOS defaults (`macos.sh`). Supports `--dry-run` and `--skip-preflight`.
+1. **`bootstrap.sh`** (bash) — one-time setup on a fresh Mac. Runs `scripts/preflight.sh` first (unless `--skip-preflight` or `--dry-run`), installs Homebrew and the `Brewfile`, language runtimes via `mise`, Rust via `rustup`, and `git-lfs`, then hands off to `install.sh` for symlinks, and finally prompts for work configs (`scripts/setup_work_configs.sh`) and macOS defaults (`scripts/macos.sh`). Supports `--dry-run` and `--skip-preflight`.
 2. **`install.sh`** (zsh) — the symlinker. Links every tracked dotfile into `$HOME`, backing up any pre-existing real file to `~/.dotfiles_backup/<timestamp>/`. It also seeds `~/.config/git/local.gitconfig` from `home/examples/gitconfig.local.example` and installs a global pre-commit hook at `~/.config/git/hooks/pre-commit`. Idempotent: a second run relinks nothing already correct and reports `linked / current / backed up`.
-3. **`update.sh`** (bash) — keep-current. `git pull --rebase --autostash`, re-runs `install.sh` to pick up new symlinks, upgrades Homebrew / `mise` / `rustup` / gems / `uv` tools, then runs `verify.sh`. Schedulable via `setup-scheduler.sh` (launchd, daily at 9 AM).
+3. **`update.sh`** (bash) — keep-current. `git pull --rebase --autostash`, re-runs `install.sh` to pick up new symlinks, upgrades Homebrew / `mise` / `rustup` / gems / `uv` tools, then runs `verify.sh`. Schedulable via `scripts/setup-scheduler.sh` (launchd, daily at 9 AM).
 4. **`verify.sh`** (bash) — health check. Seven checks: symlinks, `mise.toml` vs `bootstrap.sh` version drift, required tools, stale backups, SSH key, global git-lfs init, and mise-installed runtimes. Broken symlinks are the only hard error (exit 1); everything else is a warning (exit 0).
 
 ```
@@ -19,9 +19,9 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 
 ## Layout
 
-- **Root** — entry scripts (`bootstrap.sh`, `install.sh`, `update.sh`, `verify.sh`, `setup-scheduler.sh`, `macos.sh`).
+- **Root** — the four entry-point scripts (`bootstrap.sh`, `install.sh`, `update.sh`, `verify.sh`), package manifests (`Brewfile`, `Brewfile.work`), and repo meta (`README.md`, `CONTRIBUTING.md`).
 - **`home/`** — the tracked dotfiles symlinked into `$HOME` (`zshrc`, `zprofile`, `gitconfig`, `tmux.conf`, …); `home/examples/` holds the `*.local.example` templates.
-- **`scripts/`** — helpers, supporting/work-setup scripts, and unit tests (see below). Has its own [README](scripts/README.md).
+- **`scripts/`** — helpers, the secondary entry scripts (`macos.sh`, `setup-scheduler.sh`, `uninstall.sh`, `quick-fix.sh`), supporting/work-setup scripts, and unit tests (see below). Has its own [README](scripts/README.md).
 - **`config/`** — XDG configs symlinked under `~/.config` (`starship.toml`, `mise.toml`, `direnvrc`).
 - **`templates/`** — work / secret-bearing configs shipped as `*.template` placeholders (see [templates/README.md](templates/README.md)).
 - **`docs/`** — long-form documentation. **`.github/workflows/`** — CI.
