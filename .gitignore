@@ -9,6 +9,9 @@ logs/*.log
 
 # VS Code extension folders (publisher.extension-name format)
 *.*/
+# ...but never ignore .github/ — the broad `*.*/` above also matches it (the
+# directory name contains a dot), which would silently drop NEW workflow files.
+!.github/
 .claude/
 .continue/
 dbaeumer.*/
