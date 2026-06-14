@@ -41,31 +41,23 @@ echo ""
 print -P "%F{cyan}  🔗  dotfiles%f  ─  symlinking from ${DOTFILES_DIR/$HOME/\~}"
 echo "  ─────────────────────────────────────────────────"
 
-# Home directory symlinks
-symlink "$DOTFILES_DIR/home/zshrc"    "$HOME/.zshrc"
-symlink "$DOTFILES_DIR/home/zprofile" "$HOME/.zprofile"
-symlink "$DOTFILES_DIR/home/gitconfig" "$HOME/.gitconfig"
-symlink "$DOTFILES_DIR/home/tmux.conf" "$HOME/.tmux.conf"
-symlink "$DOTFILES_DIR/home/hyper.js"  "$HOME/.hyper.js"
+# Tracked dotfile symlinks — single source of truth: config/symlinks.map
+# (install.sh creates them; verify.sh, bootstrap --dry-run, and CI read the
+# same file, so the mapping lives in exactly one place.)
+SYMLINK_MAP="$DOTFILES_DIR/config/symlinks.map"
+if [[ -r "$SYMLINK_MAP" ]]; then
+  while read -r src_rel dest_rel; do
+    [[ -z "$src_rel" || "$src_rel" == \#* ]] && continue
+    dest="$HOME/$dest_rel"
+    mkdir -p "$(dirname "$dest")"
+    symlink "$DOTFILES_DIR/$src_rel" "$dest"
+  done < "$SYMLINK_MAP"
+else
+  backup "symlink manifest not found: $SYMLINK_MAP"
+fi
 
-# Git global ignore
-symlink "$DOTFILES_DIR/home/gitignore_global" "$HOME/.gitignore_global"
-
-# Ruby — skip docs on every gem install
-symlink "$DOTFILES_DIR/home/gemrc" "$HOME/.gemrc"
-
-# Ruby REPL defaults (IRB + Pry)
-symlink "$DOTFILES_DIR/home/irbrc" "$HOME/.irbrc"
-symlink "$DOTFILES_DIR/home/pryrc" "$HOME/.pryrc"
-
-# PostgreSQL client defaults (pairs with Postgres.app)
-symlink "$DOTFILES_DIR/home/psqlrc" "$HOME/.psqlrc"
-
-# npm client defaults (save-exact, no fund noise)
-symlink "$DOTFILES_DIR/home/npmrc" "$HOME/.npmrc"
-
-# EditorConfig global fallback (project-level .editorconfig overrides this)
-symlink "$DOTFILES_DIR/home/editorconfig" "$HOME/.editorconfig"
+# Harden ~/.ssh perms (the directory is created above when linking ssh_config)
+[[ -d "$HOME/.ssh" ]] && chmod 700 "$HOME/.ssh"
 
 # Local git config (signing key, work email overrides — not committed)
 mkdir -p "$HOME/.config/git"
@@ -91,23 +83,6 @@ EOF
 else
   success "Already exists: global pre-commit hook"
 fi
-
-# ~/.config symlinks
-mkdir -p "$HOME/.config"
-symlink "$DOTFILES_DIR/config/starship.toml" "$HOME/.config/starship.toml"
-
-# direnv global helpers (layout_python, layout_node)
-mkdir -p "$HOME/.config/direnv"
-symlink "$DOTFILES_DIR/config/direnvrc" "$HOME/.config/direnv/direnvrc"
-
-# mise global config (pinned Ruby + Node versions)
-mkdir -p "$HOME/.config/mise"
-symlink "$DOTFILES_DIR/config/mise.toml" "$HOME/.config/mise/config.toml"
-
-# SSH config
-mkdir -p "$HOME/.ssh"
-chmod 700 "$HOME/.ssh"
-symlink "$DOTFILES_DIR/home/ssh_config" "$HOME/.ssh/config"
 
 # VS Code settings
 VSCODE_DIR="$HOME/Library/Application Support/Code/User"

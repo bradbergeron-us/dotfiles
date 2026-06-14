@@ -30,7 +30,7 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 ## Helpers
 
 - **`scripts/lib/bootstrap_helpers.sh`** — sourced by `bootstrap.sh`, `update.sh`, and `verify.sh`. Side-effect-free output helpers (`setup_colors`, `step`, `info`, `success`, `warn`; call `setup_colors` once after sourcing) plus `parse_mise_runtimes`, which reads the `[tools]` table of `config/mise.toml` — the single source of truth for runtime versions.
-- **`scripts/lib/verify_helpers.sh`** — sourced by `verify.sh`. Pure check functions (`check_symlinks`, `check_required_tools`, `check_ssh_key`, `check_git_lfs_global`, `check_mise_installed`, `check_stale_backups`, `check_dotfiles_git_health`, `check_brewfile_drift`). Each sets result globals (e.g. `SYMLINK_BROKEN_COUNT`, `SYMLINK_BROKEN_LIST`) rather than printing or exiting, which makes them unit-testable. The canonical symlink map lives here as the `DOTFILES_SYMLINKS` array.
+- **`scripts/lib/verify_helpers.sh`** — sourced by `verify.sh`. Pure check functions (`check_symlinks`, `check_required_tools`, `check_ssh_key`, `check_git_lfs_global`, `check_mise_installed`, `check_stale_backups`, `check_dotfiles_git_health`, `check_brewfile_drift`). Each sets result globals (e.g. `SYMLINK_BROKEN_COUNT`, `SYMLINK_BROKEN_LIST`) rather than printing or exiting, which makes them unit-testable. `load_symlink_map` populates the `DOTFILES_SYMLINKS` array from `config/symlinks.map`, the canonical symlink manifest (see below).
 - **`scripts/lib/dryrun_helpers.sh`** — sourced by `bootstrap.sh` only when `--dry-run` is set. Provides `dry_run_step`, per-step `check_*` previews (including `check_corepack`) that record intended actions via `dry_run_log`, and `show_dry_run_summary`.
 - **`scripts/preflight.sh`** — standalone (defines its own colors and `error`/`warn`/`success`/`info`). Validates the system before bootstrap.
 
@@ -62,20 +62,19 @@ Because the helpers are side-effect-free, tests exercise them directly against t
 ## CI
 
 - **`.github/workflows/ci.yml`** — three jobs: `shellcheck` (bash scripts, `-S warning`), `zsh-syntax` (`zsh -n` on the zsh files plus a `Brewfile` parse check), and `install-smoke` (runs `zsh install.sh` against a throwaway `$HOME` and asserts every expected symlink exists).
-- **`.github/workflows/test-bootstrap.yml`** — runs the `scripts/tests/test_*.sh` unit tests (currently `test_bootstrap_helpers.sh`, `test_dryrun_helpers.sh`, `test_verify_helpers.sh`, and `test_validate_templates.sh`) plus `bash -n` syntax checks when the relevant scripts change.
+- **`.github/workflows/test-bootstrap.yml`** — runs the `scripts/tests/test_*.sh` unit tests (currently `test_bootstrap_helpers.sh`, `test_dryrun_helpers.sh`, `test_verify_helpers.sh`, `test_update_helpers.sh`, and `test_validate_templates.sh`) plus `bash -n` syntax checks when the relevant scripts change.
 
 ## Common tasks
 
 ### Add a managed dotfile
 
-A tracked dotfile is represented in several independent lists. Update all of them so install, verify, dry-run, CI, and the docs stay in agreement:
+The dotfile→destination mapping is a single source of truth in `config/symlinks.map`; `install.sh`, `verify.sh`, `bootstrap.sh --dry-run`, and the CI install-smoke job all read it. To track a new dotfile:
 
 1. Add the file to the repo (`home/`, or `config/` for XDG configs).
-2. **`install.sh`** — add a `symlink "$DOTFILES_DIR/home/<src>" "$HOME/<dest>"` line.
-3. **`scripts/lib/verify_helpers.sh`** — add `"home/<src>:<dest>"` to the `DOTFILES_SYMLINKS` array so `verify.sh` checks it.
-4. **`scripts/lib/dryrun_helpers.sh`** — add the same pair to the list in `check_dotfile_symlinks` so `--dry-run` previews it.
-5. **`README.md`** — add a row to the Dotfiles table.
-6. **`.github/workflows/ci.yml`** — add the destination to the install-smoke symlink list so the smoke test verifies it.
+2. **`config/symlinks.map`** — add one `src  dest` line (src relative to the repo root, dest relative to `$HOME`). Every consumer picks it up automatically — no other script or workflow needs editing.
+3. **`README.md`** — add a row to the Dotfiles table (human-readable reference).
+
+Non-symlink setup (the `~/.config/git/local.gitconfig` seed, the global pre-commit hook, and VS Code settings/extensions) is intentionally bespoke in `install.sh` and is deliberately not part of the manifest.
 
 ### Add a configuration template
 

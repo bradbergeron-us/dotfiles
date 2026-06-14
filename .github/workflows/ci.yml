@@ -92,37 +92,17 @@ jobs:
           echo ""
           echo "--- Verifying symlinks ---"
 
-          # Home-level dotfiles
-          for link in \
-            .zshrc .zprofile \
-            .gitconfig .gitignore_global \
-            .tmux.conf .hyper.js \
-            .gemrc .psqlrc .editorconfig \
-            .irbrc .pryrc .npmrc; do
-            if [[ -L "$HOME/$link" ]]; then
-              echo "OK  $link"
+          # Verify every destination in the manifest is a symlink. The manifest
+          # (config/symlinks.map) is the single source of truth install.sh links
+          # from, so this list can never drift from what install.sh creates.
+          while read -r src dest; do
+            [[ -z "$src" || "$src" == \#* ]] && continue
+            if [[ -L "$HOME/$dest" ]]; then
+              echo "OK  $dest"
             else
-              echo "MISSING  $link" && exit 1
+              echo "MISSING  $dest" && exit 1
             fi
-          done
-
-          # XDG config files
-          for cfg in \
-            .config/starship.toml \
-            .config/mise/config.toml; do
-            if [[ -L "$HOME/$cfg" ]]; then
-              echo "OK  $cfg"
-            else
-              echo "MISSING  $cfg" && exit 1
-            fi
-          done
-
-          # SSH config
-          if [[ -L "$HOME/.ssh/config" ]]; then
-            echo "OK  .ssh/config"
-          else
-            echo "MISSING  .ssh/config" && exit 1
-          fi
+          done < config/symlinks.map
 
           echo ""
           echo "All symlinks verified."

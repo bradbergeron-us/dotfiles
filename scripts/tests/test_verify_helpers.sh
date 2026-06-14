@@ -137,7 +137,62 @@ else
   fail "check_symlinks: empty list" "subshell exited non-zero"
 fi
 
-# ── check_required_tools ──────────────────────────────────────────────────────
+# ── load_symlink_map ─────────────────────────────────────────────────────
+echo ""
+echo "=== load_symlink_map ==="
+
+MAP_FIXTURE="$TMPDIR_BASE/symlinks.map"
+cat > "$MAP_FIXTURE" << 'EOF'
+# comment line ignored
+home/zshrc        .zshrc
+
+config/mise.toml  .config/mise/config.toml
+EOF
+
+# Case 1: parses records into src:dest entries, ignoring comments/blank lines
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  load_symlink_map "$MAP_FIXTURE"
+  [[ "${#DOTFILES_SYMLINKS[@]}" -eq 2 ]] || { printf "  FAIL  count: expected 2, got %s\n" "${#DOTFILES_SYMLINKS[@]}"; exit 1; }
+  [[ "${DOTFILES_SYMLINKS[0]}" == "home/zshrc:.zshrc" ]] || { printf "  FAIL  entry0: got %s\n" "${DOTFILES_SYMLINKS[0]}"; exit 1; }
+  [[ "${DOTFILES_SYMLINKS[1]}" == "config/mise.toml:.config/mise/config.toml" ]] || { printf "  FAIL  entry1: got %s\n" "${DOTFILES_SYMLINKS[1]}"; exit 1; }
+); then
+  pass "load_symlink_map: parses manifest into src:dest, ignores comments/blanks"
+else
+  fail "load_symlink_map: parse" "subshell exited non-zero"
+fi
+
+# Case 2: a missing manifest leaves DOTFILES_SYMLINKS empty
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  load_symlink_map "$TMPDIR_BASE/does_not_exist.map"
+  [[ "${#DOTFILES_SYMLINKS[@]}" -eq 0 ]] || { printf "  FAIL  expected empty, got %s\n" "${#DOTFILES_SYMLINKS[@]}"; exit 1; }
+); then
+  pass "load_symlink_map: missing manifest → empty array"
+else
+  fail "load_symlink_map: missing manifest" "subshell exited non-zero"
+fi
+
+# Case 3: check_symlinks consumes a manifest-loaded map end-to-end
+MAP_DOTFILES="$TMPDIR_BASE/map_dotfiles"
+MAP_HOME="$TMPDIR_BASE/map_home"
+mkdir -p "$MAP_DOTFILES/home" "$MAP_HOME"
+touch "$MAP_DOTFILES/home/zshrc"
+printf 'home/zshrc  .zshrc\n' > "$MAP_DOTFILES/symlinks.map"
+ln -sf "$MAP_DOTFILES/home/zshrc" "$MAP_HOME/.zshrc"
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  load_symlink_map "$MAP_DOTFILES/symlinks.map"
+  check_symlinks "$MAP_DOTFILES" "$MAP_HOME"
+  [[ "$SYMLINK_OK_COUNT" -eq 1 ]] || { printf "  FAIL  ok: expected 1, got %s\n" "$SYMLINK_OK_COUNT"; exit 1; }
+  [[ "$SYMLINK_BROKEN_COUNT" -eq 0 ]] || { printf "  FAIL  broken: expected 0, got %s\n" "$SYMLINK_BROKEN_COUNT"; exit 1; }
+); then
+  pass "load_symlink_map + check_symlinks: manifest-driven check passes end-to-end"
+else
+  fail "load_symlink_map + check_symlinks end-to-end" "subshell exited non-zero"
+fi
+
+# ── check_required_tools ────────────────────────────────────────────────────────
 echo ""
 echo "=== check_required_tools ==="
 
