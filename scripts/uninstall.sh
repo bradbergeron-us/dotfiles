@@ -24,8 +24,8 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BACKUP_ROOT="$HOME/.dotfiles_backup"
 
-# shellcheck source=scripts/bootstrap_helpers.sh
-source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
+# shellcheck source=scripts/lib/bootstrap_helpers.sh
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 setup_colors
 
 DRY_RUN=0

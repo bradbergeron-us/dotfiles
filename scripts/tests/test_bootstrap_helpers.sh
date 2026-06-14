@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test_bootstrap_helpers.sh — lightweight unit tests for bootstrap_helpers.sh
-# Usage: bash scripts/test_bootstrap_helpers.sh
+# Usage: bash scripts/tests/test_bootstrap_helpers.sh
 # shellcheck disable=SC1091,SC2030,SC2031,SC2034  # dynamic source path; intentional subshell scoping; vars used by sourced fns
 
 set -euo pipefail
@@ -47,49 +47,49 @@ echo "=== setup_colors ==="
 # When stdout is NOT a tty (piped to file), colors should be empty
 result=$(
   # Source in a subshell where stdout goes to a pipe (not a tty)
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   echo "$RESET"
 )
 assert_eq "setup_colors (non-tty): RESET is empty" "" "$result"
 
 result=$(
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   echo "$BOLD"
 )
 assert_eq "setup_colors (non-tty): BOLD is empty" "" "$result"
 
 result=$(
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   echo "$GREEN"
 )
 assert_eq "setup_colors (non-tty): GREEN is empty" "" "$result"
 
 result=$(
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   echo "$YELLOW"
 )
 assert_eq "setup_colors (non-tty): YELLOW is empty" "" "$result"
 
 result=$(
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   echo "$CYAN"
 )
 assert_eq "setup_colors (non-tty): CYAN is empty" "" "$result"
 
 result=$(
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   echo "$BLUE"
 )
 assert_eq "setup_colors (non-tty): BLUE is empty" "" "$result"
 
 result=$(
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   echo "$DIM"
 )
@@ -100,7 +100,7 @@ assert_eq "setup_colors (non-tty): DIM is empty" "" "$result"
 if command -v script &>/dev/null; then
   # Use script(1) to run inside a pty so [[ -t 1 ]] is true
   tty_output=$(script -q /dev/null bash -c "
-    source '$SCRIPT_DIR/bootstrap_helpers.sh'
+    source '$SCRIPT_DIR/../lib/bootstrap_helpers.sh'
     setup_colors
     printf '%s' \"\$RESET\"
   " 2>/dev/null | tr -d '\r') || true
@@ -121,7 +121,7 @@ echo "=== step counter ==="
 
 # Source helpers and test step increments
 if (
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   STEP=0
   TOTAL_STEPS=5
@@ -142,7 +142,7 @@ fi
 
 # Verify step() output includes the counter
 output=$(
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
   STEP=0
   TOTAL_STEPS=10
@@ -165,7 +165,7 @@ echo ""
 echo "=== output helpers ==="
 
 if (
-  source "$SCRIPT_DIR/bootstrap_helpers.sh"
+  source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
   setup_colors
 
   out=$(info "hello info")

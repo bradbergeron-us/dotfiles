@@ -156,6 +156,19 @@ check_mise_runtimes() {
   fi
 }
 
+# Check Corepack / yarn enablement (yarn ships with Node via Corepack)
+check_corepack() {
+  if ! command -v corepack &>/dev/null; then
+    info "Would skip Corepack (corepack not found — installed with Node via mise)"
+  elif command -v yarn &>/dev/null; then
+    success "yarn already available ($(yarn --version 2>/dev/null || echo 'installed')) — skip"
+  else
+    dry_run_log "Enable Corepack (yarn + pnpm shims)"
+    info "Would run: corepack enable"
+    info "Would run: corepack prepare yarn@stable --activate"
+  fi
+}
+
 # Check Rust installation
 check_rust() {
   if brew list rust &>/dev/null 2>&1; then

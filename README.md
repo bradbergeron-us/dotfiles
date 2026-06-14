@@ -68,39 +68,43 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
   Date     Mon Jun 01 2026  08:00
   ─────────────────────────────────────────────────
 
-  ▸ [1/13]  🛠️  Xcode Command Line Tools
+  ▸ [1/14]  🛠️  Xcode Command Line Tools
   ✓ Xcode CLI Tools
 
-  ▸ [2/13]  🍺  Homebrew
+  ▸ [2/14]  🍺  Homebrew
   ✓ Homebrew 4.5.2
 
-  ▸ [3/13]  📦  Packages (brew bundle)
+  ▸ [3/14]  📦  Packages (brew bundle)
   → Installing packages from Brewfile...
   ✓ Brew packages installed
 
-  ▸ [4/13]  🔍  fzf shell integration
+  ▸ [4/14]  🔍  fzf shell integration
   ✓ fzf configured
 
-  ▸ [5/13]  🔑  SSH key for commit signing
+  ▸ [5/14]  🔑  SSH key for commit signing
   ✓ SSH key already exists at ~/.ssh/id_ed25519 — skipping
 
-  ▸ [6/13]  🐙  GitHub CLI authentication
+  ▸ [6/14]  🐙  GitHub CLI authentication
   ✓ GitHub CLI already authenticated
 
-  ▸ [7/13]  ⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)
+  ▸ [7/14]  ⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)
   → Installing Ruby, Node, Java, Python, and Go via mise...
   ✓ Ruby, Node, Java, Python, and Go installed via mise
 
-  ▸ [8/13]  🦀  Rust (rustup)
+  ▸ [8/14]  🧶  Yarn via Corepack (from Node)
+  → Enabling Corepack (yarn + pnpm shims)...
+  ✓ Corepack enabled — yarn 4.9.1
+
+  ▸ [9/14]  🦀  Rust (rustup)
   ✓ rustup already installed: rustc 1.86.0
 
-  ▸ [9/13]  🖥️  tmux plugin manager (TPM)
+  ▸ [10/14]  🖥️  tmux plugin manager (TPM)
   ✓ TPM already installed
 
-  ▸ [10/13]  📁  git-lfs
+  ▸ [11/14]  📁  git-lfs
   ✓ git-lfs
 
-  ▸ [11/13]  🔗  Dotfile symlinks
+  ▸ [12/14]  🔗  Dotfile symlinks
 
   🔗  dotfiles  ─  symlinking from ~/dotfiles
   ─────────────────────────────────────────────────
@@ -113,14 +117,14 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
   ✓ 3 linked  ·  14 current  ·  0 backed up
   ✓ 🎉  Done — open a new shell or: source ~/.zshrc
 
-  ▸ [12/13]  🏢  Work-specific configurations
+  ▸ [13/14]  🏢  Work-specific configurations
 
   Setup work configs (.m2, .yarnrc, .continue, .claude, .aws)?
 
   Run work configuration setup? [y/N]: y
   ✓ Work configurations installed
 
-  ▸ [13/13]  ⚙️  macOS developer defaults
+  ▸ [14/14]  ⚙️  macOS developer defaults
   Apply recommended macOS defaults? [y/N]: y
 
   ─────────────────────────────────────────────────
@@ -223,6 +227,7 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 | [ruff](https://docs.astral.sh/ruff/) | Fast Python linter + formatter — replaces flake8, black, isort |
 | Go (via mise) | Go 1.24 — `~/go/bin` in PATH for `go install` tools |
 | [Rust](https://www.rust-lang.org) (via [rustup](https://rustup.rs)) | Rust stable + rustfmt + clippy |
+| [Yarn](https://yarnpkg.com) (via Corepack) | JS package manager — enabled from the mise-managed Node, no separate install |
 
 ### Apps
 

@@ -229,6 +229,17 @@ This replaced `chruby` + `ruby-install` + `nvm` — three separate tools, three 
 
 **`~/.gemrc`** — a one-line config (`gem: --no-document`) that skips generating `ri` and `rdoc` on every `gem install`. Makes installs noticeably faster and saves hundreds of megabytes of rarely-read documentation.
 
+### Yarn (via [Corepack](https://github.com/nodejs/corepack))
+Yarn comes from **Corepack**, the package-manager shim manager bundled with Node. Because Node is managed by `mise`, there is no separate Yarn install — `bootstrap.sh` runs `corepack enable` (and `corepack prepare yarn@stable --activate`) so the `yarn` and `pnpm` shims land on `PATH`. In a project whose `package.json` pins a `packageManager` field, Corepack automatically uses that exact Yarn/pnpm version.
+
+```sh
+corepack enable                          # install yarn + pnpm shims (run by bootstrap.sh)
+corepack prepare yarn@stable --activate  # pin a default global Yarn
+yarn --version                           # verify
+```
+
+Work machines that need a private registry still copy `~/.yarnrc` from `templates/yarnrc.template` via `scripts/setup_work_configs.sh`.
+
 ### [uv](https://docs.astral.sh/uv/)
 A fast Python package and project manager written in Rust by [Astral](https://astral.sh) (same team as `ruff`). Replaces `pip`, `virtualenv`, `pipx`, and `pip-tools` in a single binary that is 10–100× faster.
 

@@ -6,7 +6,7 @@ A maintainer-facing guide to how this repository is wired together and the conve
 
 Four entry-point scripts form the pipeline; everything in `scripts/` exists to support them.
 
-1. **`bootstrap.sh`** (bash) — one-time setup on a fresh Mac. Runs `scripts/preflight.sh` first (unless `--skip-preflight` or `--dry-run`), installs Homebrew and the `Brewfile`, language runtimes via `mise`, Rust via `rustup`, and `git-lfs`, then hands off to `install.sh` for symlinks, and finally prompts for work configs (`scripts/setup_work_configs.sh`) and macOS defaults (`scripts/macos.sh`). Supports `--dry-run` and `--skip-preflight`.
+1. **`bootstrap.sh`** (bash) — one-time setup on a fresh Mac. Runs `scripts/preflight.sh` first (unless `--skip-preflight` or `--dry-run`), installs Homebrew and the `Brewfile`, language runtimes via `mise`, Yarn via Corepack (from the mise-managed Node), Rust via `rustup`, and `git-lfs`, then hands off to `install.sh` for symlinks, and finally prompts for work configs (`scripts/setup_work_configs.sh`) and macOS defaults (`scripts/macos.sh`). Supports `--dry-run` and `--skip-preflight`.
 2. **`install.sh`** (zsh) — the symlinker. Links every tracked dotfile into `$HOME`, backing up any pre-existing real file to `~/.dotfiles_backup/<timestamp>/`. It also seeds `~/.config/git/local.gitconfig` from `home/examples/gitconfig.local.example` and installs a global pre-commit hook at `~/.config/git/hooks/pre-commit`. Idempotent: a second run relinks nothing already correct and reports `linked / current / backed up`.
 3. **`update.sh`** (bash) — keep-current. `git pull --rebase --autostash`, re-runs `install.sh` to pick up new symlinks, upgrades Homebrew / `mise` / `rustup` / gems / `uv` tools, then runs `verify.sh`. Schedulable via `scripts/setup-scheduler.sh` (launchd, daily at 9 AM).
 4. **`verify.sh`** (bash) — health check. Seven checks: symlinks, `mise.toml` vs `bootstrap.sh` version drift, required tools, stale backups, SSH key, global git-lfs init, and mise-installed runtimes. Broken symlinks are the only hard error (exit 1); everything else is a warning (exit 0).
@@ -21,7 +21,7 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 
 - **Root** — the four entry-point scripts (`bootstrap.sh`, `install.sh`, `update.sh`, `verify.sh`), package manifests (`Brewfile`, `Brewfile.work`), and repo meta (`README.md`, `CONTRIBUTING.md`).
 - **`home/`** — the tracked dotfiles symlinked into `$HOME` (`zshrc`, `zprofile`, `gitconfig`, `tmux.conf`, …); `home/examples/` holds the `*.local.example` templates.
-- **`scripts/`** — helpers, the secondary entry scripts (`macos.sh`, `setup-scheduler.sh`, `uninstall.sh`, `quick-fix.sh`), supporting/work-setup scripts, and unit tests (see below). Has its own [README](scripts/README.md).
+- **`scripts/`** — the secondary entry scripts (`macos.sh`, `setup-scheduler.sh`, `uninstall.sh`, `quick-fix.sh`) and supporting/work-setup scripts. Sourced helper libraries live in **`scripts/lib/`** and unit tests in **`scripts/tests/`** (see below). Has its own [README](scripts/README.md).
 - **`config/`** — XDG configs symlinked under `~/.config` (`starship.toml`, `mise.toml`, `direnvrc`).
 - **`templates/`** — work / secret-bearing configs shipped as `*.template` placeholders (see [templates/README.md](templates/README.md)).
 - **`docs/`** — long-form documentation. **`.github/workflows/`** — CI.
@@ -29,9 +29,9 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 
 ## Helpers
 
-- **`scripts/bootstrap_helpers.sh`** — sourced by `bootstrap.sh`, `update.sh`, and `verify.sh`. Side-effect-free output helpers: `setup_colors`, `step`, `info`, `success`, `warn`. Call `setup_colors` once after sourcing.
-- **`scripts/verify_helpers.sh`** — sourced by `verify.sh`. Pure check functions (`check_symlinks`, `check_mise_version_drift`, `check_required_tools`, `check_ssh_key`, `check_git_lfs_global`, `check_mise_installed`, `check_stale_backups`). Each sets result globals (e.g. `SYMLINK_BROKEN_COUNT`, `SYMLINK_BROKEN_LIST`) rather than printing or exiting, which makes them unit-testable. The canonical symlink map lives here as the `DOTFILES_SYMLINKS` array.
-- **`scripts/dryrun_helpers.sh`** — sourced by `bootstrap.sh` only when `--dry-run` is set. Provides `dry_run_step`, per-step `check_*` previews that record intended actions via `dry_run_log`, and `show_dry_run_summary`.
+- **`scripts/lib/bootstrap_helpers.sh`** — sourced by `bootstrap.sh`, `update.sh`, and `verify.sh`. Side-effect-free output helpers: `setup_colors`, `step`, `info`, `success`, `warn`. Call `setup_colors` once after sourcing.
+- **`scripts/lib/verify_helpers.sh`** — sourced by `verify.sh`. Pure check functions (`check_symlinks`, `check_mise_version_drift`, `check_required_tools`, `check_ssh_key`, `check_git_lfs_global`, `check_mise_installed`, `check_stale_backups`). Each sets result globals (e.g. `SYMLINK_BROKEN_COUNT`, `SYMLINK_BROKEN_LIST`) rather than printing or exiting, which makes them unit-testable. The canonical symlink map lives here as the `DOTFILES_SYMLINKS` array.
+- **`scripts/lib/dryrun_helpers.sh`** — sourced by `bootstrap.sh` only when `--dry-run` is set. Provides `dry_run_step`, per-step `check_*` previews (including `check_corepack`) that record intended actions via `dry_run_log`, and `show_dry_run_summary`.
 - **`scripts/preflight.sh`** — standalone (defines its own colors and `error`/`warn`/`success`/`info`). Validates the system before bootstrap.
 
 ## Dry-run and pre-flight
@@ -43,14 +43,14 @@ Two independent safety layers; full user-facing detail is in [docs/DRY_RUN_AND_P
 
 ## Tests
 
-Tests are plain bash scripts under `scripts/test_*.sh` — there is no test framework. Run one directly:
+Tests are plain bash scripts under `scripts/tests/test_*.sh` — there is no test framework. Run one directly:
 
 ```bash
-bash scripts/test_verify_helpers.sh
-bash scripts/test_bootstrap_helpers.sh
+bash scripts/tests/test_verify_helpers.sh
+bash scripts/tests/test_bootstrap_helpers.sh
 ```
 
-Convention (see `scripts/test_verify_helpers.sh` for the reference implementation):
+Convention (see `scripts/tests/test_verify_helpers.sh` for the reference implementation):
 
 - `set -euo pipefail`; `pass` / `fail` helpers that increment run/pass/fail counters.
 - Build fixtures under a single `mktemp -d` directory and clean it up with `trap '...' EXIT`.
@@ -62,7 +62,7 @@ Because the helpers are side-effect-free, tests exercise them directly against t
 ## CI
 
 - **`.github/workflows/ci.yml`** — three jobs: `shellcheck` (bash scripts, `-S warning`), `zsh-syntax` (`zsh -n` on the zsh files plus a `Brewfile` parse check), and `install-smoke` (runs `zsh install.sh` against a throwaway `$HOME` and asserts every expected symlink exists).
-- **`.github/workflows/test-bootstrap.yml`** — runs the `scripts/test_*.sh` unit tests (currently `test_bootstrap_helpers.sh` and `test_verify_helpers.sh`) plus `bash -n` syntax checks when the relevant scripts change.
+- **`.github/workflows/test-bootstrap.yml`** — runs the `scripts/tests/test_*.sh` unit tests (currently `test_bootstrap_helpers.sh`, `test_dryrun_helpers.sh`, `test_verify_helpers.sh`, and `test_validate_templates.sh`) plus `bash -n` syntax checks when the relevant scripts change.
 
 ## Common tasks
 
@@ -72,8 +72,8 @@ A tracked dotfile is represented in several independent lists. Update all of the
 
 1. Add the file to the repo (`home/`, or `config/` for XDG configs).
 2. **`install.sh`** — add a `symlink "$DOTFILES_DIR/home/<src>" "$HOME/<dest>"` line.
-3. **`scripts/verify_helpers.sh`** — add `"home/<src>:<dest>"` to the `DOTFILES_SYMLINKS` array so `verify.sh` checks it.
-4. **`scripts/dryrun_helpers.sh`** — add the same pair to the list in `check_dotfile_symlinks` so `--dry-run` previews it.
+3. **`scripts/lib/verify_helpers.sh`** — add `"home/<src>:<dest>"` to the `DOTFILES_SYMLINKS` array so `verify.sh` checks it.
+4. **`scripts/lib/dryrun_helpers.sh`** — add the same pair to the list in `check_dotfile_symlinks` so `--dry-run` previews it.
 5. **`README.md`** — add a row to the Dotfiles table.
 6. **`.github/workflows/ci.yml`** — add the destination to the install-smoke symlink list so the smoke test verifies it.
 
@@ -88,12 +88,12 @@ Templates exist for configs that can't be committed verbatim because they carry 
 
 ### Add a verify check
 
-Add a side-effect-free `check_*` function to `scripts/verify_helpers.sh` that sets result globals, add cases for it to `scripts/test_verify_helpers.sh`, then wire a `step` + report block into `verify.sh`.
+Add a side-effect-free `check_*` function to `scripts/lib/verify_helpers.sh` that sets result globals, add cases for it to `scripts/tests/test_verify_helpers.sh`, then wire a `step` + report block into `verify.sh`.
 
 ## Before you commit
 
 - Run `shellcheck -S warning <script>` on any bash you touched, and `zsh -n <file>` on zsh files (`install.sh`, `scripts/setup_gpg_signing.sh`, `home/zshrc`, `home/zprofile`).
-- Run the relevant `scripts/test_*.sh`.
+- Run the relevant `scripts/tests/test_*.sh`.
 - For changes to install/verify behavior, exercise them against an isolated `HOME=$(mktemp -d)`.
-- New bash scripts start with `#!/usr/bin/env bash` and `set -euo pipefail`, and reuse `scripts/bootstrap_helpers.sh` for output.
+- New bash scripts start with `#!/usr/bin/env bash` and `set -euo pipefail`, and reuse `scripts/lib/bootstrap_helpers.sh` for output.
 - A repo-local pre-commit hook runs when `pre-commit` is installed and a `.pre-commit-config.yaml` is present.
