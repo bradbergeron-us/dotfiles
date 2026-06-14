@@ -3,26 +3,27 @@
 # No side effects, no interactive prompts, no exits.
 # shellcheck disable=SC2034  # variables are used by callers that source this file
 
-# ── Symlink map ───────────────────────────────────────────────────────────────
-# Each entry is "src_relative_to_DOTFILES_DIR:dest_relative_to_HOME"
-DOTFILES_SYMLINKS=(
-  "home/zshrc:.zshrc"
-  "home/zprofile:.zprofile"
-  "home/gitconfig:.gitconfig"
-  "home/tmux.conf:.tmux.conf"
-  "home/hyper.js:.hyper.js"
-  "home/gitignore_global:.gitignore_global"
-  "home/gemrc:.gemrc"
-  "home/irbrc:.irbrc"
-  "home/pryrc:.pryrc"
-  "home/psqlrc:.psqlrc"
-  "home/npmrc:.npmrc"
-  "home/editorconfig:.editorconfig"
-  "config/starship.toml:.config/starship.toml"
-  "config/direnvrc:.config/direnv/direnvrc"
-  "config/mise.toml:.config/mise/config.toml"
-  "home/ssh_config:.ssh/config"
-)
+# ── Symlink map ───────────────────────────────────────────────────────────
+# The canonical dotfile→destination mapping lives in config/symlinks.map (the
+# single source of truth shared with install.sh, bootstrap --dry-run, and CI).
+# load_symlink_map reads it into DOTFILES_SYMLINKS as
+# "src_relative_to_DOTFILES_DIR:dest_relative_to_HOME" entries — the form
+# check_symlinks consumes. Defaults to empty so the array is always set.
+DOTFILES_SYMLINKS=()
+
+# load_symlink_map MANIFEST
+# Populates DOTFILES_SYMLINKS from a symlinks.map manifest of "src dest" records
+# (whitespace-separated; blank lines and # comments ignored). A missing manifest
+# leaves the array empty.
+load_symlink_map() {
+  local manifest="$1" src dest
+  DOTFILES_SYMLINKS=()
+  [[ -f "$manifest" ]] || return 0
+  while read -r src dest; do
+    [[ -z "$src" || "$src" == \#* ]] && continue
+    DOTFILES_SYMLINKS+=("$src:$dest")
+  done < "$manifest"
+}
 
 # check_symlinks DOTFILES_DIR HOME_DIR
 # Validates every entry in DOTFILES_SYMLINKS: source must exist in DOTFILES_DIR

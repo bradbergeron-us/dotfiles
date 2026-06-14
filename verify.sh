@@ -48,8 +48,9 @@ printf "  ${DIM}Machine${RESET}  %s\n" "$(scutil --get ComputerName 2>/dev/null 
 printf "  ${DIM}Date${RESET}     %s\n" "$(date '+%a %b %d %Y  %H:%M')"
 echo "  ─────────────────────────────────────────────────"
 
-# ── 1. Symlinks ───────────────────────────────────────────────────────────────
+# ── 1. Symlinks ───────────────────────────────────────────────────────────
 step "🔗  Symlinks"
+load_symlink_map "$DOTFILES_DIR/config/symlinks.map"
 check_symlinks "$DOTFILES_DIR" "$HOME"
 
 if [[ "$SYMLINK_BROKEN_COUNT" -eq 0 ]]; then
