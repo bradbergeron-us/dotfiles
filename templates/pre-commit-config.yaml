@@ -52,6 +52,16 @@ repos:
   # ------------------
   # Secrets detection
   # ------------------
+  # gitleaks — fast, regex + entropy based secret scanner (preferred).
+  # Runs via pre-commit's golang toolchain, so no separate install is needed.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.26.0  # pin to a version; update with: pre-commit autoupdate
+    hooks:
+      - id: gitleaks
+
+  # detect-secrets — entropy based scanner with a committed baseline.
+  # Keep alongside gitleaks for defense in depth, or remove if redundant.
+  # Generate the baseline once with: detect-secrets scan > .secrets.baseline
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
