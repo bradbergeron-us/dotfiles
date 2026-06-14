@@ -52,49 +52,39 @@ test_repo() {
     echo ""
 }
 
-# Test VA.gov repository
-if [[ -d ~/Code/va.gov ]]; then
-    VA_REPO=$(find ~/Code/va.gov -maxdepth 1 -type d -name "vets-*" | head -1)
-    if [[ -n "$VA_REPO" ]]; then
-        # Read expected values from config file
-        if [[ -f ~/.config/git/va.gitconfig ]]; then
-            VA_EMAIL=$(grep "email = " ~/.config/git/va.gitconfig | head -1 | awk '{print $3}')
-            VA_KEY=$(grep "signingkey = " ~/.config/git/va.gitconfig | head -1 | awk '{print $3}')
-            test_repo "$VA_REPO" "$VA_EMAIL" "$VA_KEY" "true" "VA.gov"
-        else
-            echo -e "${RED}❌ FAIL${NC} VA.gov configuration"
-            echo "  ~/.config/git/va.gitconfig not found"
-            echo "  Run: cp ~/dotfiles/templates/config/git/va.gitconfig.template ~/.config/git/va.gitconfig"
-            echo ""
-            ALL_PASSED=false
-        fi
-    fi
-else
-    echo -e "${YELLOW}⚠️  Skipping VA.gov: ~/Code/va.gov/ not found${NC}"
-    echo ""
-fi
+# Test work organization repositories (generic work1 / work2).
+# These mirror the includeIf "gitdir:~/Code/workN/" entries in gitconfig:
+#   ~/Code/work1/ → ~/.config/git/work1.gitconfig
+#   ~/Code/work2/ → ~/.config/git/work2.gitconfig
+for org in work1 work2; do
+    org_dir="$HOME/Code/$org"
+    org_config="$HOME/.config/git/$org.gitconfig"
 
-# Test AFS repository
-if [[ -d ~/Code/AFS ]]; then
-    AFS_REPO=$(find ~/Code/AFS -maxdepth 1 -type d -name "dgi-*" | head -1)
-    if [[ -n "$AFS_REPO" ]]; then
-        # Read expected values from config file
-        if [[ -f ~/.config/git/afs.gitconfig ]]; then
-            AFS_EMAIL=$(grep "email = " ~/.config/git/afs.gitconfig | head -1 | awk '{print $3}')
-            AFS_KEY=$(grep "signingkey = " ~/.config/git/afs.gitconfig | head -1 | awk '{print $3}')
-            test_repo "$AFS_REPO" "$AFS_EMAIL" "$AFS_KEY" "true" "Accenture Federal Services (AFS)"
-        else
-            echo -e "${RED}❌ FAIL${NC} AFS configuration"
-            echo "  ~/.config/git/afs.gitconfig not found"
-            echo "  Run: cp ~/dotfiles/templates/config/git/afs.gitconfig.template ~/.config/git/afs.gitconfig"
-            echo ""
-            ALL_PASSED=false
-        fi
+    if [[ ! -d "$org_dir" ]]; then
+        echo -e "${YELLOW}⚠️  Skipping ${org}: ~/Code/${org}/ not found${NC}"
+        echo ""
+        continue
     fi
-else
-    echo -e "${YELLOW}⚠️  Skipping AFS: ~/Code/AFS/ not found${NC}"
-    echo ""
-fi
+
+    org_repo=$(find "$org_dir" -mindepth 1 -maxdepth 1 -type d | head -1)
+    if [[ -z "$org_repo" ]]; then
+        echo -e "${YELLOW}⚠️  Skipping ${org}: no repositories under ~/Code/${org}/${NC}"
+        echo ""
+        continue
+    fi
+
+    if [[ -f "$org_config" ]]; then
+        org_email=$(grep "email = " "$org_config" | head -1 | awk '{print $3}')
+        org_key=$(grep "signingkey = " "$org_config" | head -1 | awk '{print $3}')
+        test_repo "$org_repo" "$org_email" "$org_key" "true" "Work org (${org})"
+    else
+        echo -e "${RED}❌ FAIL${NC} ${org} configuration"
+        echo "  ${org_config} not found"
+        echo "  Run: cp ~/dotfiles/templates/config/git/work.gitconfig.template ${org_config}"
+        echo ""
+        ALL_PASSED=false
+    fi
+done
 
 # Test personal repository (dotfiles)
 if [[ -d ~/dotfiles ]]; then
@@ -108,11 +98,6 @@ if [[ -d ~/dotfiles ]]; then
 else
     echo -e "${YELLOW}⚠️  Skipping personal repos: ~/dotfiles/ not found${NC}"
     echo ""
-fi
-
-# Test exception repository (should be unsigned)
-if [[ -d ~/Code/DGI-AGENTS ]]; then
-    test_repo ~/Code/DGI-AGENTS "$PERSONAL_EMAIL" "NONE" "false" "Exception (DGI-AGENTS)"
 fi
 
 # Summary
