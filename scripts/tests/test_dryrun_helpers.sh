@@ -371,6 +371,114 @@ else
   pass "check_macos_defaults: logs no actions"
 fi
 
+# ── check_* dry-run previews (tool present/absent branches) ───────────────
+echo ""
+echo "=== check_* previews ==="
+
+# A minimal PATH makes the real tools look "absent"; uname is symlinked in so
+# check_homebrew's arch probe still runs cleanly. Per-case bin dirs below add a
+# specific fake executable to exercise the "present" branches. Each check runs
+# inside a command-substitution subshell so the restricted PATH never leaks.
+PREVIEW_EMPTY="$TMPDIR_BASE/preview_empty_bin"
+mkdir -p "$PREVIEW_EMPTY"
+ln -sf "$(command -v uname)" "$PREVIEW_EMPTY/uname"
+
+make_fake_tool() {  # make_fake_tool DIR NAME EXIT_CODE
+  mkdir -p "$1"
+  printf '#!/bin/sh\nexit %s\n' "$3" > "$1/$2"
+  chmod +x "$1/$2"
+}
+
+# ---- tool-absent branches (deterministic on any machine) ----
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_xcode )
+if echo "$out" | grep -q "Would prompt to install Xcode CLI Tools"; then
+  pass "check_xcode: tools absent → would prompt to install"
+else
+  fail "check_xcode: absent branch" "got: $out"
+fi
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_homebrew )
+if echo "$out" | grep -q "Would install Homebrew"; then
+  pass "check_homebrew: brew absent → would install Homebrew"
+else
+  fail "check_homebrew: absent branch" "got: $out"
+fi
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_fzf )
+if echo "$out" | grep -q "Would skip fzf integration"; then
+  pass "check_fzf: fzf absent → would skip integration"
+else
+  fail "check_fzf: absent branch" "got: $out"
+fi
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_gh_auth )
+if echo "$out" | grep -q "Would skip GitHub CLI auth"; then
+  pass "check_gh_auth: gh absent → would skip auth"
+else
+  fail "check_gh_auth: absent branch" "got: $out"
+fi
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_corepack )
+if echo "$out" | grep -q "Would skip Corepack"; then
+  pass "check_corepack: corepack absent → would skip"
+else
+  fail "check_corepack: absent branch" "got: $out"
+fi
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_rust )
+if echo "$out" | grep -q "Would skip Rust"; then
+  pass "check_rust: rustup absent → would skip Rust"
+else
+  fail "check_rust: absent branch" "got: $out"
+fi
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_git_lfs )
+if echo "$out" | grep -q "Would skip git-lfs configuration"; then
+  pass "check_git_lfs: git-lfs absent → would skip configuration"
+else
+  fail "check_git_lfs: absent branch" "got: $out"
+fi
+
+out=$( export PATH="$PREVIEW_EMPTY"; check_mise_runtimes )
+if echo "$out" | grep -q "Would skip runtime installation"; then
+  pass "check_mise_runtimes: mise absent → would skip runtimes"
+else
+  fail "check_mise_runtimes: absent branch" "got: $out"
+fi
+
+# ---- tool-present branches (via fake executables) ----
+
+# corepack present, yarn absent → would enable Corepack
+COREPACK_BIN="$TMPDIR_BASE/corepack_bin"
+make_fake_tool "$COREPACK_BIN" corepack 0
+out=$( export PATH="$COREPACK_BIN"; check_corepack )
+if echo "$out" | grep -q "Would run: corepack enable"; then
+  pass "check_corepack: corepack present, yarn absent → would enable Corepack"
+else
+  fail "check_corepack: present branch" "got: $out"
+fi
+
+# gh present but not authenticated (fake gh exits non-zero) → would run gh auth login
+GH_BIN="$TMPDIR_BASE/gh_bin"
+make_fake_tool "$GH_BIN" gh 1
+out=$( export PATH="$GH_BIN"; check_gh_auth )
+if echo "$out" | grep -q "Would run: gh auth login"; then
+  pass "check_gh_auth: gh present, unauthenticated → would run gh auth login"
+else
+  fail "check_gh_auth: present/unauth branch" "got: $out"
+fi
+
+# git-lfs present → would configure git-lfs
+LFS_BIN="$TMPDIR_BASE/lfs_bin"
+make_fake_tool "$LFS_BIN" git-lfs 0
+out=$( export PATH="$LFS_BIN"; check_git_lfs )
+if echo "$out" | grep -q "Would run: git lfs install"; then
+  pass "check_git_lfs: git-lfs present → would configure"
+else
+  fail "check_git_lfs: present branch" "got: $out"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"
