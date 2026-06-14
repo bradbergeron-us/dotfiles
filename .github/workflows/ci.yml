@@ -26,15 +26,16 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
 
-      # Lint every top-level *.sh and scripts/*.sh in one pass so new scripts are
-      # covered automatically. zsh files (install.sh, scripts/setup_gpg_signing.sh)
-      # are detected by shebang and routed to the zsh-syntax job instead, since
-      # shellcheck only understands sh/bash/dash/ksh.
+      # Lint every top-level *.sh plus scripts/, scripts/lib/, and scripts/tests/
+      # in one pass so new scripts are covered automatically. zsh files
+      # (install.sh, scripts/setup_gpg_signing.sh) are detected by shebang and
+      # routed to the zsh-syntax job instead, since shellcheck only understands
+      # sh/bash/dash/ksh.
       - name: shellcheck all bash scripts
         run: |
           fail=0
           shopt -s nullglob
-          for script in *.sh scripts/*.sh; do
+          for script in *.sh scripts/*.sh scripts/lib/*.sh scripts/tests/*.sh; do
             if head -1 "$script" | grep -q 'zsh'; then
               echo "SKIP (zsh, see zsh-syntax job): $script"
               continue

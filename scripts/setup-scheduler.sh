@@ -22,8 +22,8 @@ PLIST_SRC="$DOTFILES_DIR/system/LaunchAgents/$PLIST_LABEL.plist"
 PLIST_DEST="$HOME/Library/LaunchAgents/$PLIST_LABEL.plist"
 LOG_DIR="$DOTFILES_DIR/logs"
 
-# shellcheck source=scripts/bootstrap_helpers.sh
-source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
+# shellcheck source=scripts/lib/bootstrap_helpers.sh
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 setup_colors
 
 echo ""

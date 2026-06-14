@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # test_validate_templates.sh — unit tests for validate_templates.sh
-# Usage: bash scripts/test_validate_templates.sh
+# Usage: bash scripts/tests/test_validate_templates.sh
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-VALIDATOR="$SCRIPT_DIR/validate_templates.sh"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+VALIDATOR="$SCRIPT_DIR/../validate_templates.sh"
 
 TESTS_RUN=0
 TESTS_PASSED=0

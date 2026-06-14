@@ -12,8 +12,8 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Source helper functions if available
-if [[ -f "$DOTFILES_DIR/scripts/bootstrap_helpers.sh" ]]; then
-  source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
+if [[ -f "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh" ]]; then
+  source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 else
   # Minimal fallback functions
   info() { echo "ℹ️  $*"; }

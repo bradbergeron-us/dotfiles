@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test_dryrun_helpers.sh — unit tests for dryrun_helpers.sh
-# Usage: bash scripts/test_dryrun_helpers.sh
+# Usage: bash scripts/tests/test_dryrun_helpers.sh
 # shellcheck disable=SC1091,SC2030,SC2031,SC2034  # dynamic source; intentional subshell scoping; vars used by sourced fns
 
 set -euo pipefail
@@ -33,11 +33,11 @@ trap 'rm -rf "$TMPDIR_BASE"' EXIT
 # Each test runs in its own subshell, which inherits this empty array and these
 # functions but cannot leak mutations back to the parent, so every test starts
 # from a clean slate.
-source "$SCRIPT_DIR/bootstrap_helpers.sh"
+source "$SCRIPT_DIR/../lib/bootstrap_helpers.sh"
 setup_colors
 STEP=0
 TOTAL_STEPS=13
-source "$SCRIPT_DIR/dryrun_helpers.sh"
+source "$SCRIPT_DIR/../lib/dryrun_helpers.sh"
 
 # ── Shared fake dotfiles checkout ─────────────────────────────────────────────
 # check_dotfile_symlinks reads $DOTFILES_DIR/<src> only for the readlink compare,

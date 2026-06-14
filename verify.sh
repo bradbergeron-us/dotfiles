@@ -26,10 +26,10 @@ STEP=0
 # shellcheck disable=SC2034
 TOTAL_STEPS=9
 
-# shellcheck source=scripts/bootstrap_helpers.sh
-source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
-# shellcheck source=scripts/verify_helpers.sh
-source "$DOTFILES_DIR/scripts/verify_helpers.sh"
+# shellcheck source=scripts/lib/bootstrap_helpers.sh
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
+# shellcheck source=scripts/lib/verify_helpers.sh
+source "$DOTFILES_DIR/scripts/lib/verify_helpers.sh"
 setup_colors
 
 REQUIRED_TOOLS=(
@@ -38,6 +38,7 @@ REQUIRED_TOOLS=(
   rustup rustc cargo
   jq shellcheck direnv
   starship pre-commit
+  yarn
 )
 
 # ── Banner ────────────────────────────────────────────────────────────────────

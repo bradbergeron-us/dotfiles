@@ -52,8 +52,8 @@ LOG_KEEP="${DOTFILES_LOG_KEEP:-5}"
 # Steps whose work failed during this run (reported in the summary + status file)
 FAILED_STEPS=()
 
-# shellcheck source=scripts/bootstrap_helpers.sh
-source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
+# shellcheck source=scripts/lib/bootstrap_helpers.sh
+source "$(dirname "$0")/scripts/lib/bootstrap_helpers.sh"
 setup_colors
 
 # ── Observability helpers ─────────────────────────────────────────────────────

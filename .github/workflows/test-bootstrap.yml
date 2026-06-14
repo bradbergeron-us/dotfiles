@@ -1,6 +1,6 @@
 name: Test shell scripts
 
-# Auto-discovers and runs every hand-rolled unit test (scripts/test_*.sh).
+# Auto-discovers and runs every hand-rolled unit test (scripts/tests/test_*.sh).
 # New test files are picked up without editing this workflow, so the trigger
 # watches the whole scripts/ directory plus the scripts under test.
 on:
@@ -28,30 +28,30 @@ jobs:
 
       - name: Syntax check
         # Syntax-check the scripts under test, their helpers, and every test file.
-        # Test files are globbed so new scripts/test_*.sh are covered automatically.
+        # Test files are globbed so new scripts/tests/test_*.sh are covered automatically.
         run: |
           for f in bootstrap.sh verify.sh \
-                   scripts/bootstrap_helpers.sh \
-                   scripts/verify_helpers.sh \
-                   scripts/dryrun_helpers.sh; do
+                   scripts/lib/bootstrap_helpers.sh \
+                   scripts/lib/verify_helpers.sh \
+                   scripts/lib/dryrun_helpers.sh; do
             echo "bash -n $f"
             bash -n "$f"
           done
           shopt -s nullglob
-          for t in scripts/test_*.sh; do
+          for t in scripts/tests/test_*.sh; do
             echo "bash -n $t"
             bash -n "$t"
           done
           echo "All scripts pass syntax check."
 
       - name: Run tests
-        # Auto-discover and run every unit-test script. New scripts/test_*.sh files
+        # Auto-discover and run every unit-test script. New scripts/tests/test_*.sh files
         # are picked up without naming them here.
         run: |
           shopt -s nullglob
-          tests=(scripts/test_*.sh)
+          tests=(scripts/tests/test_*.sh)
           if [[ ${#tests[@]} -eq 0 ]]; then
-            echo "No test scripts found (scripts/test_*.sh)" && exit 1
+            echo "No test scripts found (scripts/tests/test_*.sh)" && exit 1
           fi
           fail=0
           for t in "${tests[@]}"; do

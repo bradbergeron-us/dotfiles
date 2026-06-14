@@ -41,8 +41,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Reuse the shared output helpers (setup_colors, info, success, warn, step).
-# shellcheck source=scripts/bootstrap_helpers.sh
-source "$SCRIPT_DIR/bootstrap_helpers.sh"
+# shellcheck source=scripts/lib/bootstrap_helpers.sh
+source "$SCRIPT_DIR/lib/bootstrap_helpers.sh"
 # bootstrap_helpers.sh has no error(); define one consistent with preflight.sh.
 error() { printf "${YELLOW}  ✗ %s${RESET}\n" "$*"; }
 setup_colors

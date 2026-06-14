@@ -2,11 +2,17 @@
 
 Automation scripts for system setup, configuration, and maintenance.
 
+## Layout
+
+- **`scripts/`** — runnable scripts (work setup, installers, `macos.sh`, `uninstall.sh`, `validate_templates.sh`, …).
+- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`.
+- **`scripts/tests/`** — hand-rolled unit tests (`test_*.sh`) for the helpers and validators.
+
 ---
 
-## Core Scripts
+## Helper Libraries (`lib/`)
 
-### `bootstrap_helpers.sh`
+### `lib/bootstrap_helpers.sh`
 
 Shell functions used by `bootstrap.sh` and other scripts:
 
@@ -17,7 +23,7 @@ Shell functions used by `bootstrap.sh` and other scripts:
 
 **Usage:**
 ```bash
-source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
+source "$(dirname "$0")/scripts/lib/bootstrap_helpers.sh"
 setup_colors
 success "Task completed"
 ```
@@ -187,13 +193,13 @@ code --list-extensions
 
 ---
 
-## Testing Scripts
+## Tests (`tests/`)
 
-### `test_bootstrap_helpers.sh`
+### `tests/test_bootstrap_helpers.sh`
 
 **Unit tests for bootstrap helper functions**
 
-Tests the shell functions in `bootstrap_helpers.sh`:
+Tests the shell functions in `lib/bootstrap_helpers.sh`:
 - Color code initialization
 - Output functions (info, success, warn, error)
 - Step counter
@@ -201,19 +207,19 @@ Tests the shell functions in `bootstrap_helpers.sh`:
 
 **Usage:**
 ```bash
-bash ~/dotfiles/scripts/test_bootstrap_helpers.sh
+bash ~/dotfiles/scripts/tests/test_bootstrap_helpers.sh
 ```
 
 **Run in CI:**
 ```yaml
 # .github/workflows/test-bootstrap.yml
 - name: Test bootstrap helpers
-  run: bash scripts/test_bootstrap_helpers.sh
+  run: bash scripts/tests/test_bootstrap_helpers.sh
 ```
 
 ---
 
-### `verify_helpers.sh`
+### `lib/verify_helpers.sh`
 
 **Helper functions for verify.sh**
 
@@ -225,14 +231,14 @@ Utility functions used by the verification script:
 
 **Usage:**
 ```bash
-source "$(dirname "$0")/scripts/verify_helpers.sh"
+source "$(dirname "$0")/scripts/lib/verify_helpers.sh"
 check_command git
 verify_symlink ~/.zshrc
 ```
 
 ---
 
-### `test_verify_helpers.sh`
+### `tests/test_verify_helpers.sh`
 
 **Unit tests for verify helper functions**
 
@@ -240,7 +246,7 @@ Tests the verification utility functions.
 
 **Usage:**
 ```bash
-bash ~/dotfiles/scripts/test_verify_helpers.sh
+bash ~/dotfiles/scripts/tests/test_verify_helpers.sh
 ```
 
 ---
@@ -261,8 +267,8 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Source helpers if available
-if [[ -f "$DOTFILES_DIR/scripts/bootstrap_helpers.sh" ]]; then
-  source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
+if [[ -f "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh" ]]; then
+  source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 else
   # Minimal fallback functions
   info() { echo "ℹ️  $*"; }
@@ -347,7 +353,7 @@ cd /dotfiles && bash scripts/setup_work_configs.sh
 ```bash
 # Use absolute path from DOTFILES_DIR
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 ```
 
 ### Permission Denied

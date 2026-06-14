@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test_verify_helpers.sh — unit tests for verify_helpers.sh
-# Usage: bash scripts/test_verify_helpers.sh
+# Usage: bash scripts/tests/test_verify_helpers.sh
 # shellcheck disable=SC1091,SC2030,SC2031,SC2034  # dynamic source; intentional subshell scoping; vars used by sourced fns
 
 set -euo pipefail
@@ -44,7 +44,7 @@ ln -sf "$FAKE_DOTFILES/gitconfig"        "$FAKE_HOME/.gitconfig"
 ln -sf "$FAKE_DOTFILES/config/mise.toml" "$FAKE_HOME/.config/mise/config.toml"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   DOTFILES_SYMLINKS=(
     "zshrc:.zshrc"
     "gitconfig:.gitconfig"
@@ -66,7 +66,7 @@ ln -sf "$FAKE_DOTFILES/zshrc" "$FAKE_HOME2/.zshrc"
 # gitconfig symlink intentionally absent
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   DOTFILES_SYMLINKS=("zshrc:.zshrc" "gitconfig:.gitconfig")
   check_symlinks "$FAKE_DOTFILES" "$FAKE_HOME2"
   [[ "$SYMLINK_OK_COUNT"     -eq 1 ]] || { printf "  FAIL  ok count: expected 1, got %s\n"     "$SYMLINK_OK_COUNT";     exit 1; }
@@ -83,7 +83,7 @@ mkdir -p "$FAKE_HOME3"
 ln -sf "/some/completely/different/path" "$FAKE_HOME3/.zshrc"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   DOTFILES_SYMLINKS=("zshrc:.zshrc")
   check_symlinks "$FAKE_DOTFILES" "$FAKE_HOME3"
   [[ "$SYMLINK_BROKEN_COUNT" -eq 1 ]] || { printf "  FAIL  broken count: expected 1, got %s\n" "$SYMLINK_BROKEN_COUNT"; exit 1; }
@@ -99,7 +99,7 @@ mkdir -p "$FAKE_HOME4"
 echo "not a symlink" > "$FAKE_HOME4/.zshrc"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   DOTFILES_SYMLINKS=("zshrc:.zshrc")
   check_symlinks "$FAKE_DOTFILES" "$FAKE_HOME4"
   [[ "$SYMLINK_BROKEN_COUNT" -eq 1 ]] || { printf "  FAIL  broken count: expected 1, got %s\n" "$SYMLINK_BROKEN_COUNT"; exit 1; }
@@ -114,7 +114,7 @@ FAKE_HOME5="$TMPDIR_BASE/home5"
 mkdir -p "$FAKE_HOME5"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   DOTFILES_SYMLINKS=("nonexistent_src:.zshrc")
   check_symlinks "$FAKE_DOTFILES" "$FAKE_HOME5"
   [[ "$SYMLINK_BROKEN_COUNT" -eq 1 ]] || { printf "  FAIL  broken count: expected 1, got %s\n" "$SYMLINK_BROKEN_COUNT"; exit 1; }
@@ -126,7 +126,7 @@ fi
 
 # Case 6: empty symlink list → all counts zero
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   DOTFILES_SYMLINKS=()
   check_symlinks "$FAKE_DOTFILES" "$FAKE_HOME"
   [[ "$SYMLINK_OK_COUNT"     -eq 0 ]] || { printf "  FAIL  ok: expected 0, got %s\n"     "$SYMLINK_OK_COUNT";     exit 1; }
@@ -179,7 +179,7 @@ EOF
 
 # Case 1: no drift
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_mise_version_drift "$TOML_MATCH" "$BOOTSTRAP_REF"
   [[ "$DRIFT_COUNT" -eq 0 ]] || { printf "  FAIL  drift: expected 0, got %s\n" "$DRIFT_COUNT"; exit 1; }
 ); then
@@ -190,7 +190,7 @@ fi
 
 # Case 2: 2 drifted tools (ruby 3.3.0 vs 3.3.6, node 20 vs 22)
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_mise_version_drift "$TOML_DRIFT" "$BOOTSTRAP_REF"
   [[ "$DRIFT_COUNT" -eq 2 ]] || { printf "  FAIL  drift: expected 2, got %s\n" "$DRIFT_COUNT"; exit 1; }
 ); then
@@ -201,7 +201,7 @@ fi
 
 # Case 3: drift list names the correct tools
 drift_items=$(
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_mise_version_drift "$TOML_DRIFT" "$BOOTSTRAP_REF"
   printf '%s\n' "${DRIFT_LIST[@]}"
 )
@@ -218,7 +218,7 @@ fi
 
 # Case 4: ruby absent from toml → detected as drift
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_mise_version_drift "$TOML_MISSING_RUBY" "$BOOTSTRAP_REF"
   [[ "$DRIFT_COUNT" -ge 1 ]] || { printf "  FAIL  drift: expected >= 1, got %s\n" "$DRIFT_COUNT"; exit 1; }
 ); then
@@ -233,7 +233,7 @@ echo "=== check_required_tools ==="
 
 # Case 1: all present (universally available commands)
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_required_tools bash cat ls
   [[ "$TOOLS_PRESENT_COUNT" -eq 3 ]] || { printf "  FAIL  present: expected 3, got %s\n" "$TOOLS_PRESENT_COUNT"; exit 1; }
   [[ "$TOOLS_MISSING_COUNT" -eq 0 ]] || { printf "  FAIL  missing: expected 0, got %s\n" "$TOOLS_MISSING_COUNT"; exit 1; }
@@ -245,7 +245,7 @@ fi
 
 # Case 2: one clearly non-existent tool
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_required_tools bash __nonexistent_tool_xyz__
   [[ "$TOOLS_PRESENT_COUNT" -eq 1 ]] || { printf "  FAIL  present: expected 1, got %s\n" "$TOOLS_PRESENT_COUNT"; exit 1; }
   [[ "$TOOLS_MISSING_COUNT" -eq 1 ]] || { printf "  FAIL  missing: expected 1, got %s\n" "$TOOLS_MISSING_COUNT"; exit 1; }
@@ -257,7 +257,7 @@ fi
 
 # Case 3: missing tool name appears in TOOLS_MISSING_LIST
 missing_names=$(
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_required_tools bash __nonexistent_tool_xyz__
   printf '%s\n' "${TOOLS_MISSING_LIST[@]}"
 )
@@ -269,7 +269,7 @@ fi
 
 # Case 4: no tools passed → all counts zero
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_required_tools
   [[ "$TOOLS_PRESENT_COUNT" -eq 0 ]] || { printf "  FAIL  present: expected 0, got %s\n" "$TOOLS_PRESENT_COUNT"; exit 1; }
   [[ "$TOOLS_MISSING_COUNT" -eq 0 ]] || { printf "  FAIL  missing: expected 0, got %s\n" "$TOOLS_MISSING_COUNT"; exit 1; }
@@ -285,7 +285,7 @@ echo "=== check_stale_backups ==="
 
 # Case 1: backup dir does not exist
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_stale_backups "$TMPDIR_BASE/nonexistent_backup_dir"
   [[ "$STALE_BACKUP_COUNT" -eq 0 ]] || { printf "  FAIL  count: expected 0, got %s\n" "$STALE_BACKUP_COUNT"; exit 1; }
 ); then
@@ -299,7 +299,7 @@ BACKUP_EMPTY="$TMPDIR_BASE/backup_empty"
 mkdir -p "$BACKUP_EMPTY"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_stale_backups "$BACKUP_EMPTY"
   [[ "$STALE_BACKUP_COUNT" -eq 0 ]] || { printf "  FAIL  count: expected 0, got %s\n" "$STALE_BACKUP_COUNT"; exit 1; }
 ); then
@@ -313,7 +313,7 @@ BACKUP_RECENT="$TMPDIR_BASE/backup_recent"
 mkdir -p "$BACKUP_RECENT/20260601_120000"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_stale_backups "$BACKUP_RECENT" 30
   [[ "$STALE_BACKUP_COUNT" -eq 0 ]] || { printf "  FAIL  count: expected 0, got %s\n" "$STALE_BACKUP_COUNT"; exit 1; }
 ); then
@@ -328,7 +328,7 @@ mkdir -p "$BACKUP_OLD/20230101_120000"
 touch -t 202301010000 "$BACKUP_OLD/20230101_120000"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_stale_backups "$BACKUP_OLD" 30
   [[ "$STALE_BACKUP_COUNT" -eq 1 ]] || { printf "  FAIL  count: expected 1, got %s\n" "$STALE_BACKUP_COUNT"; exit 1; }
 ); then
@@ -339,7 +339,7 @@ fi
 
 # Case 5: stale path appears in STALE_BACKUP_LIST
 stale_paths=$(
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_stale_backups "$BACKUP_OLD" 30
   printf '%s\n' "${STALE_BACKUP_LIST[@]}"
 )
@@ -355,7 +355,7 @@ echo "=== check_ssh_key ==="
 
 # Case 1: key file does not exist → SSH_KEY_OK=false, SSH_KEY_ISSUE non-empty
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_ssh_key "$TMPDIR_BASE/nonexistent_key"
   [[ "$SSH_KEY_OK" == "false" ]] || { printf "  FAIL  SSH_KEY_OK should be false\n"; exit 1; }
   [[ -n "$SSH_KEY_ISSUE" ]] || { printf "  FAIL  SSH_KEY_ISSUE should be non-empty\n"; exit 1; }
@@ -371,7 +371,7 @@ TMP_KEY="$TMPDIR_BASE/test_id_ed25519"
 ssh-keygen -t ed25519 -f "$TMP_KEY" -N "" -C "test" &>/dev/null
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   check_ssh_key "$TMP_KEY"
   # Key exists but almost certainly not in this subshell's agent
   [[ "$SSH_KEY_OK" == "false" ]] || [[ "$SSH_KEY_OK" == "true" ]] || { printf "  FAIL  SSH_KEY_OK must be boolean\n"; exit 1; }
@@ -392,7 +392,7 @@ TMP_GIT_CONFIG="$TMPDIR_BASE/gitconfig_empty"
 touch "$TMP_GIT_CONFIG"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export GIT_CONFIG_GLOBAL="$TMP_GIT_CONFIG"
   check_git_lfs_global
   # If git-lfs is installed on this machine, it should report not-initialized
@@ -416,7 +416,7 @@ cat > "$TMP_GIT_CONFIG_WITH_LFS" << 'EOF'
 EOF
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export GIT_CONFIG_GLOBAL="$TMP_GIT_CONFIG_WITH_LFS"
   check_git_lfs_global
   if command -v git-lfs &>/dev/null; then
@@ -438,7 +438,7 @@ echo "=== check_mise_installed ==="
 # Case 1: mise not on PATH → silently returns count=0 (no-op)
 mkdir -p "$TMPDIR_BASE/empty_bin"
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export PATH="$TMPDIR_BASE/empty_bin"
   check_mise_installed "$TMPDIR_BASE/mise_match.toml"
   [[ "$MISE_UNINSTALLED_COUNT" -eq 0 ]] || { printf "  FAIL  count should be 0 when mise absent, got %s\n" "$MISE_UNINSTALLED_COUNT"; exit 1; }
@@ -451,7 +451,7 @@ fi
 # Case 2: all tools installed (reuse TOML_MATCH from earlier; only runs if mise is present)
 if command -v mise &>/dev/null; then
   if (
-    source "$SCRIPT_DIR/verify_helpers.sh"
+    source "$SCRIPT_DIR/../lib/verify_helpers.sh"
     check_mise_installed "$TOML_MATCH"
     # We can't assert count=0 since tools may not be installed in CI,
     # but we can verify the function runs without error and sets the globals.
@@ -487,7 +487,7 @@ echo "hello world" > "$GITREPO_CLEAN/file.txt"
 git -C "$GITREPO_CLEAN" add file.txt
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export GIT_CONFIG_GLOBAL="$CLEAN_GITCONFIG"
   check_dotfiles_git_health "$GITREPO_CLEAN"
   [[ "$DOTFILES_GIT_HEALTH_OK" == "true" ]] || { printf "  FAIL  expected OK=true, got %s\n" "$DOTFILES_GIT_HEALTH_OK"; exit 1; }
@@ -512,7 +512,7 @@ git -C "$GITREPO_CONFLICT" init -q
 git -C "$GITREPO_CONFLICT" add conflicted.txt
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export GIT_CONFIG_GLOBAL="$CLEAN_GITCONFIG"
   check_dotfiles_git_health "$GITREPO_CONFLICT"
   [[ "$DOTFILES_GIT_HEALTH_OK" == "false" ]] || { printf "  FAIL  expected OK=false\n"; exit 1; }
@@ -532,7 +532,7 @@ BROKEN_GITCONFIG="$TMPDIR_BASE/gitconfig_broken"
 } > "$BROKEN_GITCONFIG"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export GIT_CONFIG_GLOBAL="$BROKEN_GITCONFIG"
   check_dotfiles_git_health "$GITREPO_CLEAN"
   [[ "$DOTFILES_GIT_HEALTH_OK" == "false" ]] || { printf "  FAIL  expected OK=false with broken config\n"; exit 1; }
@@ -548,7 +548,7 @@ NOT_A_REPO="$TMPDIR_BASE/not_a_repo"
 mkdir -p "$NOT_A_REPO"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export GIT_CONFIG_GLOBAL="$CLEAN_GITCONFIG"
   check_dotfiles_git_health "$NOT_A_REPO"
   [[ "$DOTFILES_GIT_HEALTH_OK" == "false" ]] || { printf "  FAIL  expected OK=false for non-repo\n"; exit 1; }
@@ -582,7 +582,7 @@ chmod +x "$FAKE_BIN/brew"
 
 # Case 1: brew not on PATH → skipped, OK=true
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export PATH="$TMPDIR_BASE/empty_bin"
   check_brewfile_drift "$TMPDIR_BASE/whatever_Brewfile"
   [[ "$BREWFILE_DRIFT_SKIPPED" == "true" ]] || { printf "  FAIL  expected SKIPPED=true\n"; exit 1; }
@@ -598,7 +598,7 @@ BREWFILE_SYNC="$TMPDIR_BASE/Brewfile_sync"
 echo "# IN_SYNC marker" > "$BREWFILE_SYNC"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export PATH="$FAKE_BIN:$PATH"
   check_brewfile_drift "$BREWFILE_SYNC"
   [[ "$BREWFILE_DRIFT_SKIPPED" == "false" ]] || { printf "  FAIL  expected SKIPPED=false\n"; exit 1; }
@@ -614,7 +614,7 @@ BREWFILE_DRIFTED="$TMPDIR_BASE/Brewfile_drift"
 echo "brew \"git\"" > "$BREWFILE_DRIFTED"
 
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export PATH="$FAKE_BIN:$PATH"
   check_brewfile_drift "$BREWFILE_DRIFTED"
   [[ "$BREWFILE_DRIFT_OK" == "false" ]] || { printf "  FAIL  expected OK=false on drift\n"; exit 1; }
@@ -627,7 +627,7 @@ fi
 
 # Case 4: brew present but Brewfile missing → OK=false, issue mentions not found
 if (
-  source "$SCRIPT_DIR/verify_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
   export PATH="$FAKE_BIN:$PATH"
   check_brewfile_drift "$TMPDIR_BASE/does_not_exist_Brewfile"
   [[ "$BREWFILE_DRIFT_OK" == "false" ]] || { printf "  FAIL  expected OK=false for missing Brewfile\n"; exit 1; }

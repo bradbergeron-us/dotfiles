@@ -9,7 +9,7 @@ BOOTSTRAP_START=$SECONDS
 # shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
 # shellcheck disable=SC2034
-TOTAL_STEPS=13
+TOTAL_STEPS=14
 
 # Parse arguments
 export DRY_RUN=false
@@ -40,14 +40,14 @@ for arg in "$@"; do
   esac
 done
 
-# shellcheck source=scripts/bootstrap_helpers.sh
-source "$(dirname "$0")/scripts/bootstrap_helpers.sh"
+# shellcheck source=scripts/lib/bootstrap_helpers.sh
+source "$(dirname "$0")/scripts/lib/bootstrap_helpers.sh"
 setup_colors
 
 # Source dry-run helpers if needed
 if [[ "$DRY_RUN" == true ]]; then
-  # shellcheck source=scripts/dryrun_helpers.sh
-  source "$(dirname "$0")/scripts/dryrun_helpers.sh"
+  # shellcheck source=scripts/lib/dryrun_helpers.sh
+  source "$(dirname "$0")/scripts/lib/dryrun_helpers.sh"
 fi
 
 # ── Startup banner ───────────────────────────────────────────────────────────
@@ -304,6 +304,28 @@ elif command -v mise &>/dev/null; then
 else
   step "⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)"
   warn "mise not installed — skipping runtime installation (install it later with: brew install mise)"
+fi
+
+if [[ "$DRY_RUN" == true ]]; then
+  dry_run_step "🧶  Yarn via Corepack (from Node)"
+  check_corepack
+else
+  step "🧶  Yarn via Corepack (from Node)"
+  # Corepack ships with the mise-managed Node and provides the yarn (and pnpm)
+  # shims, so yarn comes "from Node" instead of a separate Homebrew formula.
+  if command -v corepack &>/dev/null; then
+    info "Enabling Corepack (yarn + pnpm shims)..."
+    if corepack enable 2>/dev/null; then
+      # Pin a default global Yarn so `yarn` resolves outside projects that set a
+      # packageManager field. Non-fatal — needs network on first download.
+      corepack prepare yarn@stable --activate &>/dev/null || true
+      success "Corepack enabled — yarn $(yarn --version 2>/dev/null || echo '(version pending first use)')"
+    else
+      warn "corepack enable failed — run manually later: corepack enable"
+    fi
+  else
+    warn "corepack not found — ensure Node is installed via mise, then run: corepack enable"
+  fi
 fi
 
 if [[ "$DRY_RUN" == true ]]; then
