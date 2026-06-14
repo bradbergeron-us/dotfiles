@@ -35,13 +35,6 @@ jobs:
           fail=0
           shopt -s nullglob
           for script in *.sh scripts/*.sh; do
-            # scripts/preflight.sh is excluded until feature/core-hygiene makes it
-            # shellcheck-clean.
-            # TODO(core-hygiene): drop this exclusion once scripts/preflight.sh is clean.
-            if [[ "$script" == "scripts/preflight.sh" ]]; then
-              echo "SKIP (excluded, see TODO): $script"
-              continue
-            fi
             if head -1 "$script" | grep -q 'zsh'; then
               echo "SKIP (zsh, see zsh-syntax job): $script"
               continue
