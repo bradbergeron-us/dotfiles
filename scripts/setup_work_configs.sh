@@ -2,6 +2,10 @@
 # Setup work-specific configurations from templates
 # Part of Phase 2: Installation Scripts
 
+# Note: the ~/… strings in the user-facing messages below are intentional
+# display text, not paths meant to expand, so suppress SC2088 file-wide.
+# shellcheck disable=SC2088
+
 set -e
 
 # Get the dotfiles directory
@@ -199,7 +203,8 @@ setup_claude_cli() {
   info "Checking Claude Code CLI installation..."
 
   if command -v claude &>/dev/null; then
-    local version=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+    local version
+    version=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
     success "Claude Code CLI already installed (version: $version)"
     return 0
   fi

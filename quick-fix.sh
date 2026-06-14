@@ -19,7 +19,7 @@ fi
 
 # 1. Symlink dotfiles (the most critical part)
 echo "Step 1: Symlinking dotfiles..."
-cd ~/dotfiles
+cd ~/dotfiles || exit 1
 zsh install.sh
 echo "✓ Dotfiles symlinked"
 echo ""
@@ -36,6 +36,7 @@ echo ""
 
 # 3. Source the new zshrc
 echo "Step 3: Reloading shell configuration..."
+# shellcheck source=/dev/null
 source ~/.zshrc 2>/dev/null || true
 echo "✓ Done"
 echo ""

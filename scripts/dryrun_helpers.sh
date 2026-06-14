@@ -60,7 +60,8 @@ check_brew_bundle() {
 
   if ! command -v brew &>/dev/null; then
     info "Would install packages from Brewfile (Homebrew not yet installed)"
-    local entry_count=$(grep -cE "^(brew|cask|tap|mas)" "$brewfile" || echo "0")
+    local entry_count
+    entry_count=$(grep -cE "^(brew|cask|tap|mas)" "$brewfile" || echo "0")
     info "Brewfile contains: $entry_count total entries"
     return
   fi
@@ -76,7 +77,8 @@ check_brew_bundle() {
     success "All Brewfile packages already installed — skip"
   else
     # Count missing packages from the output
-    local missing_count=$(echo "$check_output" | grep -c "needs to be installed" || echo "0")
+    local missing_count
+    missing_count=$(echo "$check_output" | grep -c "needs to be installed" || echo "0")
     if (( missing_count > 0 )); then
       info "Would install: $missing_count package(s)"
     else
@@ -133,7 +135,8 @@ check_mise_runtimes() {
   fi
 
   local -a runtimes=("ruby@3.3.6" "node@22" "java@temurin-21" "python@3.12" "go@1.24")
-  local installed=$(mise list 2>/dev/null || echo "")
+  local installed
+  installed=$(mise list 2>/dev/null || echo "")
   local -a missing=()
 
   for runtime in "${runtimes[@]}"; do
@@ -169,7 +172,8 @@ check_rust() {
       info "Would skip Rust (rustup not installed)"
     fi
   else
-    local rust_version=$(rustc --version 2>/dev/null | awk '{print $2}')
+    local rust_version
+    rust_version=$(rustc --version 2>/dev/null | awk '{print $2}' || true)
     success "rustup already installed (rustc $rust_version) — skip"
   fi
 }

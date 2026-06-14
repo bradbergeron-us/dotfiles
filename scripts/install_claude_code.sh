@@ -76,7 +76,8 @@ install_claude_code() {
 
       # Verify installation
       if command -v claude &>/dev/null; then
-        local installed_version=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+        local installed_version
+        installed_version=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
         success "Verified: claude command available (version $installed_version)"
       else
         warn "Installation completed but 'claude' not found in PATH"
@@ -109,7 +110,8 @@ install_claude_code() {
 
     # Verify installation
     if command -v claude &>/dev/null; then
-      local installed_version=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
+      local installed_version
+      installed_version=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "unknown")
       success "Verified: claude command available (version $installed_version)"
     else
       warn "Installation completed but 'claude' not found in PATH"
