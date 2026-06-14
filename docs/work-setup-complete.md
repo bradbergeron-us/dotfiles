@@ -250,13 +250,13 @@ bash ~/dotfiles/scripts/install_zscaler_cert.sh
 2. Installs to `~/.continue/certs/`
 3. Optionally installs to macOS System Keychain (requires sudo)
 4. Adds `NODE_EXTRA_CA_CERTS` to `~/.zshrc.local`
-5. Copies certificate to `~/dotfiles/certs/` for future use
+5. Copies certificate to `~/dotfiles/system/certs/` for future use
 
 ### Step 3.3: Certificate Locations
 
 After installation, the certificate will be in:
 - `~/.continue/certs/ZscalerRootCertificate-2048-SHA256.crt` - For Continue IDE
-- `~/dotfiles/certs/ZscalerRootCertificate-2048-SHA256.crt` - Backup copy (git-ignored)
+- `~/dotfiles/system/certs/ZscalerRootCertificate-2048-SHA256.crt` - Backup copy (git-ignored)
 - `/Library/Keychains/System.keychain` - System-wide (if you chose to install)
 
 ### Step 3.4: Verify Installation
@@ -289,7 +289,7 @@ bash ~/dotfiles/scripts/install_claude_code.sh
 **The script will:**
 1. Check if Claude Code is already installed
 2. Search for installer in:
-   - `~/dotfiles/installers/claude-code-installer`
+   - `~/dotfiles/system/installers/claude-code-installer`
    - `~/Downloads/ClaudeCode-macOS-*/claude-code-installer`
    - `~/Downloads/claude-code-installer`
 3. Install to `~/.local/bin/claude`
@@ -300,7 +300,7 @@ bash ~/dotfiles/scripts/install_claude_code.sh
 If the script can't find the installer:
 
 1. Download Claude Code from: https://claude.com/download
-2. Place installer in `~/dotfiles/installers/` or `~/Downloads/`
+2. Place installer in `~/dotfiles/system/installers/` or `~/Downloads/`
 3. Re-run: `bash ~/dotfiles/scripts/install_claude_code.sh`
 
 ### Verify Claude Code Installation
@@ -727,8 +727,8 @@ export AWS_PROFILE=commercial
 ### Never Commit Secrets
 
 These directories are git-ignored for security:
-- `~/dotfiles/certs/*.crt` (actual certificate files)
-- `~/dotfiles/installers/*` (binaries)
+- `~/dotfiles/system/certs/*.crt` (actual certificate files)
+- `~/dotfiles/system/installers/*` (binaries)
 - `~/dotfiles/vscode/extensions/*.vsix` (extension files)
 
 Only templates and documentation are committed.
@@ -743,7 +743,7 @@ Only templates and documentation are committed.
 ### Certificate Handling
 
 - Zscaler certificate is not secret but is environment-specific
-- Store in `~/dotfiles/certs/` for convenience (git-ignored)
+- Store in `~/dotfiles/system/certs/` for convenience (git-ignored)
 - System keychain installation is optional but recommended
 
 ---

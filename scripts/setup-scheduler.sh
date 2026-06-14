@@ -6,7 +6,7 @@
 #   bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall # remove the scheduled job
 #
 # Logs are written to ~/dotfiles/logs/update.log
-# Edit LaunchAgents/com.dotfiles.update.plist to change the schedule.
+# Edit system/LaunchAgents/com.dotfiles.update.plist to change the schedule.
 #
 # update.log is rotated automatically by update.sh (copytruncate-style) once it
 # exceeds DOTFILES_LOG_MAX_BYTES (default 1 MiB), keeping DOTFILES_LOG_KEEP
@@ -18,7 +18,7 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 PLIST_LABEL="com.dotfiles.update"
-PLIST_SRC="$DOTFILES_DIR/LaunchAgents/$PLIST_LABEL.plist"
+PLIST_SRC="$DOTFILES_DIR/system/LaunchAgents/$PLIST_LABEL.plist"
 PLIST_DEST="$HOME/Library/LaunchAgents/$PLIST_LABEL.plist"
 LOG_DIR="$DOTFILES_DIR/logs"
 

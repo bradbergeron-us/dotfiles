@@ -324,8 +324,8 @@ The work configuration setup creates templates for:
 
 All templates are safe to commit. Sensitive data (credentials, secrets, actual certificates) is stored locally and git-ignored:
 
-- `certs/*.crt` — Actual certificate files (ignored)
-- `installers/*` — Binary installers (ignored)
+- `system/certs/*.crt` — Actual certificate files (ignored)
+- `system/installers/*` — Binary installers (ignored)
 - `vscode/extensions/*.vsix` — Extension files (ignored)
 - `~/.aws/credentials` — Never created by scripts (use SSO or aws-vault)
 

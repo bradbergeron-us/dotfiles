@@ -413,12 +413,12 @@ bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall # remove
 ```
 
 What it does:
-- Substitutes the actual dotfiles path into `LaunchAgents/com.dotfiles.update.plist`
+- Substitutes the actual dotfiles path into `system/LaunchAgents/com.dotfiles.update.plist`
 - Copies the plist to `~/Library/LaunchAgents/`
 - Calls `launchctl bootstrap gui/<uid>` to activate it immediately (no login required)
 - Creates `~/dotfiles/logs/` for capturing stdout/stderr
 
-The plist template is tracked at `LaunchAgents/com.dotfiles.update.plist`. To change the schedule, edit `Hour` and `Minute` in that file and re-run `scripts/setup-scheduler.sh`.
+The plist template is tracked at `system/LaunchAgents/com.dotfiles.update.plist`. To change the schedule, edit `Hour` and `Minute` in that file and re-run `scripts/setup-scheduler.sh`.
 
 Logs land at `~/dotfiles/logs/update.log`. To monitor:
 ```sh

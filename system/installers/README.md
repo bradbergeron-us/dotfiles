@@ -12,11 +12,11 @@ Some tools (like Claude Code) provide installers that need to be downloaded manu
 
 ```bash
 # Copy installer to this directory
-cp ~/Downloads/claude-code-installer ~/dotfiles/installers/
-cp ~/Downloads/ClaudeCode-macOS-v1.2.0-20260327/claude ~/dotfiles/installers/
+cp ~/Downloads/claude-code-installer ~/dotfiles/system/installers/
+cp ~/Downloads/ClaudeCode-macOS-v1.2.0-20260327/claude ~/dotfiles/system/installers/
 
 # Make executable if needed
-chmod +x ~/dotfiles/installers/claude-code-installer
+chmod +x ~/dotfiles/system/installers/claude-code-installer
 ```
 
 ### Using Stored Installers
@@ -45,16 +45,16 @@ bash ~/dotfiles/scripts/install_claude_code.sh
 **Installation**:
 ```bash
 # If you have the installer package
-cp ~/Downloads/ClaudeCode-macOS-*/claude-code-installer ~/dotfiles/installers/
-cp ~/Downloads/ClaudeCode-macOS-*/claude ~/dotfiles/installers/
+cp ~/Downloads/ClaudeCode-macOS-*/claude-code-installer ~/dotfiles/system/installers/
+cp ~/Downloads/ClaudeCode-macOS-*/claude ~/dotfiles/system/installers/
 
 # Install manually
 mkdir -p ~/.local/bin
-cp ~/dotfiles/installers/claude ~/.local/bin/
+cp ~/dotfiles/system/installers/claude ~/.local/bin/
 chmod +x ~/.local/bin/claude
 
 # Or use the installer script
-bash ~/dotfiles/installers/claude-code-installer --prefix="$HOME/.local/bin"
+bash ~/dotfiles/system/installers/claude-code-installer --prefix="$HOME/.local/bin"
 ```
 
 ### VS Code Extensions (.vsix files)
@@ -81,7 +81,7 @@ This directory has a `.gitignore` that blocks all binary files by default to pre
 If you need to track a specific installer script (not binary), you can force-add it:
 
 ```bash
-git add -f installers/install-something.sh
+git add -f system/installers/install-something.sh
 ```
 
 ## Automation
@@ -117,7 +117,7 @@ Instead of storing installers, scripts can download them:
 # Example: download installer if not cached
 
 INSTALLER_URL="https://example.com/installer"
-INSTALLER_PATH="$HOME/dotfiles/installers/tool-installer"
+INSTALLER_PATH="$HOME/dotfiles/system/installers/tool-installer"
 
 if [[ ! -f "$INSTALLER_PATH" ]]; then
   echo "Downloading installer..."

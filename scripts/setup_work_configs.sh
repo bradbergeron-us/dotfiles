@@ -212,11 +212,11 @@ setup_claude_cli() {
   mkdir -p "$HOME/.local/bin"
 
   # Check for installer in dotfiles first
-  if [[ -f "$DOTFILES_DIR/installers/claude-code-installer" ]]; then
+  if [[ -f "$DOTFILES_DIR/system/installers/claude-code-installer" ]]; then
     info "Found Claude Code installer in dotfiles"
     read -rp "  Install Claude Code CLI? [Y/n] " install_claude
     if [[ ! "$install_claude" =~ ^[Nn]$ ]]; then
-      bash "$DOTFILES_DIR/installers/claude-code-installer" --prefix="$HOME/.local"
+      bash "$DOTFILES_DIR/system/installers/claude-code-installer" --prefix="$HOME/.local"
       success "Claude Code CLI installed"
     fi
   else

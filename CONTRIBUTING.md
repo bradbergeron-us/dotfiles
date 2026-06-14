@@ -25,6 +25,7 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 - **`config/`** — XDG configs symlinked under `~/.config` (`starship.toml`, `mise.toml`, `direnvrc`).
 - **`templates/`** — work / secret-bearing configs shipped as `*.template` placeholders (see [templates/README.md](templates/README.md)).
 - **`docs/`** — long-form documentation. **`.github/workflows/`** — CI.
+- **`system/`** — macOS / setup assets: `LaunchAgents/` (the launchd plist), plus the git-ignored `certs/` (SSL certs) and `installers/` (cached binaries).
 
 ## Helpers
 

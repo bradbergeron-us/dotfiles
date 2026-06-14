@@ -262,5 +262,5 @@ When adding new templates:
 
 - [Dotfiles README](../README.md) - Main dotfiles documentation
 - [Work Machine Setup](../docs/work-machine.md) - Complete work setup guide
-- [Certificates](../certs/README.md) - SSL certificate management
-- [Installers](../installers/README.md) - Binary installer storage
+- [Certificates](../system/certs/README.md) - SSL certificate management
+- [Installers](../system/installers/README.md) - Binary installer storage

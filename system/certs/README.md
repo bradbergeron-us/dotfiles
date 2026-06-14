@@ -33,11 +33,11 @@ Contact your IT department or export from your browser:
 
 ```bash
 # Copy certificate to this directory
-cp /path/to/YourOrgRootCertificate.crt ~/dotfiles/certs/
+cp /path/to/YourOrgRootCertificate.crt ~/dotfiles/system/certs/
 
 # Install for Node.js tools (Claude Code, Continue, npm, yarn)
 mkdir -p ~/.continue/certs
-cp ~/dotfiles/certs/YourOrgRootCertificate.crt ~/.continue/certs/
+cp ~/dotfiles/system/certs/YourOrgRootCertificate.crt ~/.continue/certs/
 
 # Add to shell environment
 echo 'export NODE_EXTRA_CA_CERTS="$HOME/.continue/certs/YourOrgRootCertificate.crt"' >> ~/.zshrc.local
@@ -46,7 +46,7 @@ source ~/.zshrc
 # (Optional) Install to macOS system keychain for system-wide trust
 sudo security add-trusted-cert -d -r trustRoot \
   -k /Library/Keychains/System.keychain \
-  ~/dotfiles/certs/YourOrgRootCertificate.crt
+  ~/dotfiles/system/certs/YourOrgRootCertificate.crt
 ```
 
 ## Security Notes
