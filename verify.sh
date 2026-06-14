@@ -9,6 +9,8 @@
 #   5. SSH key                (warnings — exit 0)
 #   6. git-lfs global init    (warnings — exit 0)
 #   7. mise tools installed   (warnings — exit 0)
+#   8. dotfiles git health    (warnings — exit 0)
+#   9. Brewfile drift         (warnings — exit 0)
 #
 # Usage:   bash ~/dotfiles/verify.sh
 # Called by update.sh automatically after each update cycle.
@@ -22,7 +24,7 @@ WARNINGS=0
 # shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
 # shellcheck disable=SC2034
-TOTAL_STEPS=7
+TOTAL_STEPS=9
 
 # shellcheck source=scripts/bootstrap_helpers.sh
 source "$DOTFILES_DIR/scripts/bootstrap_helpers.sh"
@@ -136,6 +138,32 @@ else
   done
   warn "$MISE_UNINSTALLED_COUNT runtime(s) not installed — run: mise install"
   WARNINGS=$(( WARNINGS + MISE_UNINSTALLED_COUNT ))
+fi
+
+# ── 8. Dotfiles git health ───────────────────────────────────────────────
+step "🩺  Dotfiles git health"
+check_dotfiles_git_health "$DOTFILES_DIR"
+
+if [[ "$DOTFILES_GIT_HEALTH_OK" == "true" ]]; then
+  success "No conflict markers in tracked dotfiles; git config parses cleanly"
+else
+  for issue in "${DOTFILES_GIT_HEALTH_ISSUES[@]}"; do
+    warn "$issue"
+  done
+  WARNINGS=$(( WARNINGS + ${#DOTFILES_GIT_HEALTH_ISSUES[@]} ))
+fi
+
+# ── 9. Brewfile drift ────────────────────────────────────────────────────
+step "🍺  Brewfile drift"
+check_brewfile_drift "$DOTFILES_DIR/Brewfile"
+
+if [[ "$BREWFILE_DRIFT_SKIPPED" == "true" ]]; then
+  info "brew not installed — skipping Brewfile drift check"
+elif [[ "$BREWFILE_DRIFT_OK" == "true" ]]; then
+  success "Brewfile in sync with installed packages"
+else
+  warn "$BREWFILE_DRIFT_ISSUE"
+  WARNINGS=$(( WARNINGS + 1 ))
 fi
 
 # ── Summary ───────────────────────────────────────────────────────────────────

@@ -465,6 +465,179 @@ else
   pass "check_mise_installed: mise not installed — skipped"
 fi
 
+# ── check_dotfiles_git_health ─────────────────────────────────────────────
+echo ""
+echo "=== check_dotfiles_git_health ==="
+
+# Build conflict markers at runtime so this test file never contains a literal
+# 7-character marker (which would trip the very check it exercises).
+CM_BEGIN=$(printf '<%.0s' {1..7})
+CM_SEP=$(printf '=%.0s' {1..7})
+CM_END=$(printf '>%.0s' {1..7})
+
+# Clean global config so git operations succeed in the scan cases.
+CLEAN_GITCONFIG="$TMPDIR_BASE/gitconfig_clean"
+touch "$CLEAN_GITCONFIG"
+
+# Case 1: clean tracked files + clean config → OK=true
+GITREPO_CLEAN="$TMPDIR_BASE/gitrepo_clean"
+mkdir -p "$GITREPO_CLEAN"
+git -C "$GITREPO_CLEAN" init -q
+echo "hello world" > "$GITREPO_CLEAN/file.txt"
+git -C "$GITREPO_CLEAN" add file.txt
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export GIT_CONFIG_GLOBAL="$CLEAN_GITCONFIG"
+  check_dotfiles_git_health "$GITREPO_CLEAN"
+  [[ "$DOTFILES_GIT_HEALTH_OK" == "true" ]] || { printf "  FAIL  expected OK=true, got %s\n" "$DOTFILES_GIT_HEALTH_OK"; exit 1; }
+  [[ "${#DOTFILES_CONFLICT_FILES[@]}" -eq 0 ]] || { printf "  FAIL  expected 0 conflict files\n"; exit 1; }
+); then
+  pass "check_dotfiles_git_health: clean repo + clean config → OK=true"
+else
+  fail "check_dotfiles_git_health: clean repo" "subshell exited non-zero"
+fi
+
+# Case 2: a tracked file containing conflict markers → OK=false, file listed
+GITREPO_CONFLICT="$TMPDIR_BASE/gitrepo_conflict"
+mkdir -p "$GITREPO_CONFLICT"
+git -C "$GITREPO_CONFLICT" init -q
+{
+  echo "$CM_BEGIN HEAD"
+  echo "ours"
+  echo "$CM_SEP"
+  echo "theirs"
+  echo "$CM_END branch"
+} > "$GITREPO_CONFLICT/conflicted.txt"
+git -C "$GITREPO_CONFLICT" add conflicted.txt
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export GIT_CONFIG_GLOBAL="$CLEAN_GITCONFIG"
+  check_dotfiles_git_health "$GITREPO_CONFLICT"
+  [[ "$DOTFILES_GIT_HEALTH_OK" == "false" ]] || { printf "  FAIL  expected OK=false\n"; exit 1; }
+  printf '%s\n' "${DOTFILES_CONFLICT_FILES[@]}" | grep -q "conflicted.txt" || { printf "  FAIL  conflicted.txt not in DOTFILES_CONFLICT_FILES\n"; exit 1; }
+); then
+  pass "check_dotfiles_git_health: tracked file with markers → OK=false, file listed"
+else
+  fail "check_dotfiles_git_health: conflict markers" "subshell exited non-zero"
+fi
+
+# Case 3: broken global config (contains a conflict marker) → git config fails → OK=false
+BROKEN_GITCONFIG="$TMPDIR_BASE/gitconfig_broken"
+{
+  echo "[user]"
+  echo "  name = test"
+  echo "$CM_BEGIN HEAD"
+} > "$BROKEN_GITCONFIG"
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export GIT_CONFIG_GLOBAL="$BROKEN_GITCONFIG"
+  check_dotfiles_git_health "$GITREPO_CLEAN"
+  [[ "$DOTFILES_GIT_HEALTH_OK" == "false" ]] || { printf "  FAIL  expected OK=false with broken config\n"; exit 1; }
+  [[ "${#DOTFILES_GIT_HEALTH_ISSUES[@]}" -ge 1 ]] || { printf "  FAIL  expected at least one issue\n"; exit 1; }
+); then
+  pass "check_dotfiles_git_health: broken global config → OK=false"
+else
+  fail "check_dotfiles_git_health: broken global config" "subshell exited non-zero"
+fi
+
+# Case 4: path that is not a git work tree → OK=false with an issue
+NOT_A_REPO="$TMPDIR_BASE/not_a_repo"
+mkdir -p "$NOT_A_REPO"
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export GIT_CONFIG_GLOBAL="$CLEAN_GITCONFIG"
+  check_dotfiles_git_health "$NOT_A_REPO"
+  [[ "$DOTFILES_GIT_HEALTH_OK" == "false" ]] || { printf "  FAIL  expected OK=false for non-repo\n"; exit 1; }
+); then
+  pass "check_dotfiles_git_health: non-git directory → OK=false"
+else
+  fail "check_dotfiles_git_health: non-git directory" "subshell exited non-zero"
+fi
+
+# ── check_brewfile_drift ──────────────────────────────────────────────────
+echo ""
+echo "=== check_brewfile_drift ==="
+
+# Fake brew stub: `brew bundle check --file=F` exits 0 iff F contains IN_SYNC.
+FAKE_BIN="$TMPDIR_BASE/fakebin"
+mkdir -p "$FAKE_BIN"
+cat > "$FAKE_BIN/brew" << 'EOF'
+#!/usr/bin/env bash
+f=""
+for a in "$@"; do
+  case "$a" in
+    --file=*) f="${a#--file=}" ;;
+  esac
+done
+if [[ "${1:-}" == "bundle" ]]; then
+  if [[ -f "$f" ]] && grep -q IN_SYNC "$f"; then exit 0; else exit 1; fi
+fi
+exit 0
+EOF
+chmod +x "$FAKE_BIN/brew"
+
+# Case 1: brew not on PATH → skipped, OK=true
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export PATH="$TMPDIR_BASE/empty_bin"
+  check_brewfile_drift "$TMPDIR_BASE/whatever_Brewfile"
+  [[ "$BREWFILE_DRIFT_SKIPPED" == "true" ]] || { printf "  FAIL  expected SKIPPED=true\n"; exit 1; }
+  [[ "$BREWFILE_DRIFT_OK" == "true" ]] || { printf "  FAIL  expected OK=true when skipped\n"; exit 1; }
+); then
+  pass "check_brewfile_drift: brew absent → skipped, OK=true"
+else
+  fail "check_brewfile_drift: brew absent" "subshell exited non-zero"
+fi
+
+# Case 2: brew present, Brewfile in sync → OK=true, not skipped
+BREWFILE_SYNC="$TMPDIR_BASE/Brewfile_sync"
+echo "# IN_SYNC marker" > "$BREWFILE_SYNC"
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export PATH="$FAKE_BIN:$PATH"
+  check_brewfile_drift "$BREWFILE_SYNC"
+  [[ "$BREWFILE_DRIFT_SKIPPED" == "false" ]] || { printf "  FAIL  expected SKIPPED=false\n"; exit 1; }
+  [[ "$BREWFILE_DRIFT_OK" == "true" ]] || { printf "  FAIL  expected OK=true in sync\n"; exit 1; }
+); then
+  pass "check_brewfile_drift: in sync → OK=true"
+else
+  fail "check_brewfile_drift: in sync" "subshell exited non-zero"
+fi
+
+# Case 3: brew present, Brewfile drifted → OK=false, issue set
+BREWFILE_DRIFTED="$TMPDIR_BASE/Brewfile_drift"
+echo "brew \"git\"" > "$BREWFILE_DRIFTED"
+
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export PATH="$FAKE_BIN:$PATH"
+  check_brewfile_drift "$BREWFILE_DRIFTED"
+  [[ "$BREWFILE_DRIFT_OK" == "false" ]] || { printf "  FAIL  expected OK=false on drift\n"; exit 1; }
+  [[ -n "$BREWFILE_DRIFT_ISSUE" ]] || { printf "  FAIL  expected non-empty issue\n"; exit 1; }
+); then
+  pass "check_brewfile_drift: drift detected → OK=false, issue set"
+else
+  fail "check_brewfile_drift: drift detected" "subshell exited non-zero"
+fi
+
+# Case 4: brew present but Brewfile missing → OK=false, issue mentions not found
+if (
+  source "$SCRIPT_DIR/verify_helpers.sh"
+  export PATH="$FAKE_BIN:$PATH"
+  check_brewfile_drift "$TMPDIR_BASE/does_not_exist_Brewfile"
+  [[ "$BREWFILE_DRIFT_OK" == "false" ]] || { printf "  FAIL  expected OK=false for missing Brewfile\n"; exit 1; }
+  echo "$BREWFILE_DRIFT_ISSUE" | grep -q "not found" || { printf "  FAIL  issue should mention 'not found'\n"; exit 1; }
+); then
+  pass "check_brewfile_drift: missing Brewfile → OK=false, 'not found' issue"
+else
+  fail "check_brewfile_drift: missing Brewfile" "subshell exited non-zero"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"

@@ -222,6 +222,84 @@ check_mise_installed() {
   done
 }
 
+# check_dotfiles_git_health DOTFILES_DIR
+# Repository/config integrity guard:
+#   1. No tracked dotfile contains git merge-conflict markers.
+#   2. `git config --list` parses cleanly (catches a broken ~/.gitconfig before
+#      install.sh symlinks gitconfig over it).
+# Sets:
+#   DOTFILES_GIT_HEALTH_OK     — true when both checks pass
+#   DOTFILES_GIT_HEALTH_ISSUES — array of human-readable problems (empty when OK)
+#   DOTFILES_CONFLICT_FILES    — array of tracked files containing markers
+check_dotfiles_git_health() {
+  local dotfiles_dir="$1"
+  DOTFILES_GIT_HEALTH_OK=true
+  DOTFILES_GIT_HEALTH_ISSUES=()
+  DOTFILES_CONFLICT_FILES=()
+
+  # Build conflict-marker patterns at runtime so this source file never
+  # contains a literal 7-character marker that would match itself.
+  local _b _s _e marker_re
+  _b=$(printf '<%.0s' {1..7})
+  _s=$(printf '=%.0s' {1..7})
+  _e=$(printf '>%.0s' {1..7})
+  marker_re="^${_b}|^${_e}|^${_s}\$"
+
+  if git -C "$dotfiles_dir" rev-parse --is-inside-work-tree &>/dev/null; then
+    local matches
+    matches=$(git -C "$dotfiles_dir" grep -lE "$marker_re" -- . 2>/dev/null || true)
+    if [[ -n "$matches" ]]; then
+      while IFS= read -r f; do
+        [[ -n "$f" ]] || continue
+        DOTFILES_CONFLICT_FILES+=("$f")
+        DOTFILES_GIT_HEALTH_ISSUES+=("conflict markers in tracked file: $f")
+      done <<< "$matches"
+      DOTFILES_GIT_HEALTH_OK=false
+    fi
+  else
+    DOTFILES_GIT_HEALTH_ISSUES+=("$dotfiles_dir is not a git work tree — cannot scan tracked files")
+    DOTFILES_GIT_HEALTH_OK=false
+  fi
+
+  if ! git config --list &>/dev/null; then
+    DOTFILES_GIT_HEALTH_ISSUES+=("git config --list failed — ~/.gitconfig may be broken")
+    DOTFILES_GIT_HEALTH_OK=false
+  fi
+}
+
+# check_brewfile_drift BREWFILE
+# Detects divergence between installed Homebrew packages and the Brewfile via
+# `brew bundle check`. Silently skips when brew is not on PATH (check_required_tools
+# already reports a missing brew).
+# Sets:
+#   BREWFILE_DRIFT_OK      — true when packages match the Brewfile (or skipped)
+#   BREWFILE_DRIFT_SKIPPED — true when brew is unavailable
+#   BREWFILE_DRIFT_ISSUE   — human-readable problem description (empty when OK)
+check_brewfile_drift() {
+  local brewfile="$1"
+  BREWFILE_DRIFT_OK=true
+  BREWFILE_DRIFT_SKIPPED=false
+  BREWFILE_DRIFT_ISSUE=""
+
+  if ! command -v brew &>/dev/null; then
+    BREWFILE_DRIFT_SKIPPED=true
+    return 0
+  fi
+
+  if [[ ! -f "$brewfile" ]]; then
+    BREWFILE_DRIFT_OK=false
+    BREWFILE_DRIFT_ISSUE="Brewfile not found at $brewfile"
+    return 0
+  fi
+
+  if brew bundle check --file="$brewfile" &>/dev/null; then
+    BREWFILE_DRIFT_OK=true
+  else
+    BREWFILE_DRIFT_OK=false
+    BREWFILE_DRIFT_ISSUE="installed packages diverge from Brewfile — run: brew bundle install --file=$brewfile"
+  fi
+}
+
 # check_stale_backups BACKUP_DIR [DAYS]
 # Finds backup directories inside BACKUP_DIR that are older than DAYS (default: 30).
 # Sets:

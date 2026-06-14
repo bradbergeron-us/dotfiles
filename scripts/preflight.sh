@@ -11,6 +11,7 @@ set -euo pipefail
 
 # Colors
 BOLD="\033[1m"
+# shellcheck disable=SC2034  # DIM kept for palette parity with other scripts
 DIM="\033[2m"
 RESET="\033[0m"
 RED="\033[31m"
@@ -219,6 +220,39 @@ if command -v git &>/dev/null; then
   else
     success "Git configured as: $_git_name <$_git_email>"
   fi
+fi
+
+# ── 13. Dotfiles Repository Integrity ────────────────────────────────────────
+# Catches a corrupted gitconfig (e.g. leftover merge-conflict markers) BEFORE
+# bootstrap symlinks it over ~/.gitconfig and breaks git globally.
+info "Checking dotfiles repository integrity..."
+_dotfiles_dir=$(cd "$(dirname "$0")/.." && pwd)
+
+# Build conflict-marker patterns at runtime so this script never contains a
+# literal 7-character marker that would match itself during the scan.
+_cm_begin=$(printf '<%.0s' {1..7})
+_cm_sep=$(printf '=%.0s' {1..7})
+_cm_end=$(printf '>%.0s' {1..7})
+_cm_re="^${_cm_begin}|^${_cm_end}|^${_cm_sep}\$"
+
+if git -C "$_dotfiles_dir" rev-parse --is-inside-work-tree &>/dev/null; then
+  _cm_hits=$(git -C "$_dotfiles_dir" grep -lE "$_cm_re" -- . 2>/dev/null || true)
+  if [[ -n "$_cm_hits" ]]; then
+    error "Merge-conflict markers found in tracked dotfiles:"
+    while IFS= read -r _f; do
+      [[ -n "$_f" ]] && error "    $_f"
+    done <<< "$_cm_hits"
+  else
+    success "No merge-conflict markers in tracked dotfiles"
+  fi
+else
+  warn "Not inside the dotfiles git work tree — skipping conflict-marker scan"
+fi
+
+if git config --list &>/dev/null; then
+  success "git config --list parses cleanly"
+else
+  error "git config --list failed — ~/.gitconfig may be broken (fix before symlinking)"
 fi
 
 # ── Summary ──────────────────────────────────────────────────────────────────

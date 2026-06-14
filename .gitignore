@@ -20,6 +20,25 @@ streetsidesoftware.*/
 usernamehw.*/
 visualstudioexptteam.*/
 
+# VS Code extension residue — FILE form (no trailing slash), e.g.
+# `eamodio.gitlens`, `continue.continue`, `docker.docker`. `code
+# --install-extension` can leave these empty files in the cwd. install.sh now
+# runs that from a temp dir, but these patterns guard against any stragglers.
+# Scoped to known extension publishers (see vscode/extensions.txt) so real
+# tracked files (gitconfig, gitignore_global, Brewfile.work, *.local.example)
+# are NOT ignored.
+continue.*
+dbaeumer.*
+docker.*
+eamodio.*
+github.*
+mhutchie.*
+streetsidesoftware.*
+stylelint.*
+usernamehw.*
+visualstudioexptteam.*
+vivaxy.*
+
 # Git configs with actual keys/emails (only templates are tracked)
 config/git/*.gitconfig
 !config/git/*.template
