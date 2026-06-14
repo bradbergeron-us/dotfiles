@@ -44,9 +44,13 @@ STEP=0
 TOTAL_STEPS=7
 
 LOG_DIR="$DOTFILES_DIR/logs"
+# shellcheck disable=SC2034  # used by update_helpers.sh (sourced below)
 LOG_FILE="$LOG_DIR/update.log"
+# shellcheck disable=SC2034  # used by update_helpers.sh (sourced below)
 STATUS_FILE="$LOG_DIR/update.status"
+# shellcheck disable=SC2034  # used by update_helpers.sh (sourced below)
 LOG_MAX_BYTES="${DOTFILES_LOG_MAX_BYTES:-1048576}"  # 1 MiB
+# shellcheck disable=SC2034  # used by update_helpers.sh (sourced below)
 LOG_KEEP="${DOTFILES_LOG_KEEP:-5}"
 
 # Steps whose work failed during this run (reported in the summary + status file)
