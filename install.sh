@@ -116,7 +116,14 @@ if [[ -d "$VSCODE_DIR" ]]; then
   success "VS Code settings linked"
   if command -v code &>/dev/null; then
     info "Installing VS Code extensions..."
-    grep -v '^#' "$DOTFILES_DIR/vscode/extensions.txt" | xargs -L1 code --install-extension --force 2>/dev/null
+    # Run the install loop inside a subshell rooted at a throwaway temp dir.
+    # `code --install-extension` drops empty `publisher.extension` residue
+    # files into the cwd; isolating cwd here guarantees that residue never
+    # lands in the dotfiles repo (the root cause of past stray files).
+    (
+      cd "$(mktemp -d)" || exit 1
+      grep -v '^#' "$DOTFILES_DIR/vscode/extensions.txt" | xargs -L1 code --install-extension --force 2>/dev/null
+    )
     success "VS Code extensions installed"
   fi
 else
