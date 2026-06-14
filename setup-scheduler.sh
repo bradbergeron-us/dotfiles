@@ -7,6 +7,12 @@
 #
 # Logs are written to ~/dotfiles/logs/update.log
 # Edit LaunchAgents/com.dotfiles.update.plist to change the schedule.
+#
+# update.log is rotated automatically by update.sh (copytruncate-style) once it
+# exceeds DOTFILES_LOG_MAX_BYTES (default 1 MiB), keeping DOTFILES_LOG_KEEP
+# (default 5) rotated copies — so the launchd log can't grow unbounded.
+# update.sh also writes ~/dotfiles/logs/update.status after every run with the
+# last-run timestamp, overall success/failure, and any failed steps.
 
 set -euo pipefail
 
@@ -52,7 +58,8 @@ launchctl bootstrap "gui/$(id -u)" "$PLIST_DEST"
 
 echo ""
 success "update.sh scheduled — runs daily at 9 AM"
-info "Log:       $LOG_DIR/update.log"
+info "Log:       $LOG_DIR/update.log (auto-rotated; keeps ${DOTFILES_LOG_KEEP:-5} copies)"
+info "Status:    $LOG_DIR/update.status"
 info "Plist:     $PLIST_DEST"
 info "Uninstall: bash ~/dotfiles/setup-scheduler.sh --uninstall"
 echo ""
