@@ -80,7 +80,8 @@ install_work_vscode_extensions() {
   local failed=0
 
   for vsix in "${vsix_files[@]}"; do
-    local ext_name=$(basename "$vsix")
+    local ext_name
+    ext_name=$(basename "$vsix")
     info "Installing $ext_name..."
 
     if code --install-extension "$vsix" --force 2>/dev/null; then

@@ -18,10 +18,6 @@ else
   error() { echo "❌ $*" >&2; }
 fi
 
-# Color codes
-CYAN='\033[0;36m'
-RESET='\033[0m'
-
 CERT_NAME="ZscalerRootCertificate-2048-SHA256"
 CERT_FILE="${CERT_NAME}.crt"
 

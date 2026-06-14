@@ -29,9 +29,10 @@ test_repo() {
     fi
 
     cd "$repo_path"
-    local actual_email=$(git config user.email)
-    local actual_key=$(git config user.signingkey 2>/dev/null || echo "NONE")
-    local actual_sign=$(git config commit.gpgsign)
+    local actual_email actual_key actual_sign
+    actual_email=$(git config user.email || true)
+    actual_key=$(git config user.signingkey 2>/dev/null || echo "NONE")
+    actual_sign=$(git config commit.gpgsign || true)
 
     local status="✅ PASS"
     local color=$GREEN
