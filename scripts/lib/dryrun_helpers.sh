@@ -134,7 +134,17 @@ check_mise_runtimes() {
     return
   fi
 
-  local -a runtimes=("ruby@3.3.6" "node@22" "java@temurin-21" "python@3.12" "go@1.24")
+  # Read the runtime list from config/mise.toml — the single source of truth.
+  local _rt
+  local -a runtimes=()
+  while IFS= read -r _rt; do
+    [[ -n "$_rt" ]] && runtimes+=("$_rt")
+  done < <(parse_mise_runtimes "$DOTFILES_DIR/config/mise.toml")
+  if [[ ${#runtimes[@]} -eq 0 ]]; then
+    info "No runtimes declared in config/mise.toml"
+    return
+  fi
+
   local installed
   installed=$(mise list 2>/dev/null || echo "")
   local -a missing=()

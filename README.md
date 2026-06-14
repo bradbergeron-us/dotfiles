@@ -165,7 +165,7 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `Brewfile` | _(used by bootstrap)_ | All Homebrew packages and casks |
 | `home/npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
 | `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
-| `verify.sh` | _(run to verify)_ | Health check — symlinks, version drift, missing tools, stale backups |
+| `verify.sh` | _(run to verify)_ | Health check — symlinks, missing tools, installed runtimes, stale backups |
 | `scripts/setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
 | `scripts/macos.sh` | _(run once)_ | macOS developer defaults |
 | `home/examples/zshrc.local.example` | _(template)_ | Template for machine-specific overrides |

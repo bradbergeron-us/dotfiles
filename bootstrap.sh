@@ -245,60 +245,71 @@ if [[ "$DRY_RUN" == true ]]; then
   check_mise_runtimes
 elif command -v mise &>/dev/null; then
   step "⚡  Runtimes via mise  (Ruby · Node · Java · Python · Go)"
-  # Check what's already installed
-  _installed=$(mise list 2>/dev/null || echo "")
+  # Read the runtime list from config/mise.toml — the single source of truth.
+  declare -a runtimes=()
+  while IFS= read -r _rt; do
+    [[ -n "$_rt" ]] && runtimes+=("$_rt")
+  done < <(parse_mise_runtimes "$DOTFILES_DIR/config/mise.toml")
 
-  # Define runtimes to install
-  declare -a runtimes=("ruby@3.3.6" "node@22" "java@temurin-21" "python@3.12" "go@1.24")
-  declare -a to_install=()
-
-  # Check which runtimes need installation
-  for runtime in "${runtimes[@]}"; do
-    if echo "$_installed" | grep -q "$runtime"; then
-      success "$runtime already installed"
-    else
-      to_install+=("$runtime")
-    fi
-  done
-
-  # If nothing to install, skip the prompt
-  if [[ ${#to_install[@]} -eq 0 ]]; then
-    mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24 2>/dev/null || true
-    success "All runtimes already configured: Ruby 3.3.6 · Node 22 · Java 21 · Python 3.12 · Go 1.24"
+  if [[ ${#runtimes[@]} -eq 0 ]]; then
+    warn "No runtimes declared in config/mise.toml — skipping mise setup"
   else
-    echo ""
-    printf "  ${DIM}Installing ${#to_install[@]} runtime(s) can take 5-10 minutes (compiling from source).${RESET}\n"
-    echo ""
-    read -t 10 -rp "  Install missing runtimes now? [Y/n] (auto-yes in 10s) " install_runtimes || install_runtimes="y"
-    if [[ "$install_runtimes" =~ ^[Nn]$ ]]; then
-      info "Skipped. Install later with: mise install"
+    # Check what's already installed
+    _installed=$(mise list 2>/dev/null || echo "")
+    declare -a to_install=()
+
+    # Check which runtimes need installation
+    for runtime in "${runtimes[@]}"; do
+      if echo "$_installed" | grep -q "$runtime"; then
+        success "$runtime already installed"
+      else
+        to_install+=("$runtime")
+      fi
+    done
+
+    # Human-readable summary derived from the parsed list ("ruby@3.3.6 · …")
+    printf -v _rt_summary '%s · ' "${runtimes[@]}"
+    _rt_summary="${_rt_summary% · }"
+
+    # If nothing to install, skip the prompt
+    if [[ ${#to_install[@]} -eq 0 ]]; then
+      mise use --global "${runtimes[@]}" 2>/dev/null || true
+      success "All runtimes already configured: ${_rt_summary}"
     else
-      # Install only missing runtimes with progress feedback
-      declare -i total=${#to_install[@]}
-      declare -i current=0
+      echo ""
+      printf "  ${DIM}Installing ${#to_install[@]} runtime(s) can take 5-10 minutes (compiling from source).${RESET}\n"
+      echo ""
+      read -t 10 -rp "  Install missing runtimes now? [Y/n] (auto-yes in 10s) " install_runtimes || install_runtimes="y"
+      if [[ "$install_runtimes" =~ ^[Nn]$ ]]; then
+        info "Skipped. Install later with: mise install"
+      else
+        # Install only missing runtimes with progress feedback
+        declare -i total=${#to_install[@]}
+        declare -i current=0
 
-      # Disable exit-on-error for runtime installations
-      set +e
+        # Disable exit-on-error for runtime installations
+        set +e
 
-      for runtime in "${to_install[@]}"; do
-        (( current++ ))
-        percentage=$(( current * 100 / total ))
-        echo ""
-        printf "${CYAN}  → [$current/$total - ${percentage}%%] Installing $runtime...${RESET}\n"
-        echo ""
-        # Show full output so user can see progress
-        if mise install "$runtime" 2>&1; then
-          printf "${GREEN}  ✓ [$current/$total - ${percentage}%%] $runtime installed${RESET}\n"
-        else
-          warn "Failed to install $runtime (continuing anyway)"
-        fi
-      done
+        for runtime in "${to_install[@]}"; do
+          (( current++ ))
+          percentage=$(( current * 100 / total ))
+          echo ""
+          printf "${CYAN}  → [$current/$total - ${percentage}%%] Installing $runtime...${RESET}\n"
+          echo ""
+          # Show full output so user can see progress
+          if mise install "$runtime" 2>&1; then
+            printf "${GREEN}  ✓ [$current/$total - ${percentage}%%] $runtime installed${RESET}\n"
+          else
+            warn "Failed to install $runtime (continuing anyway)"
+          fi
+        done
 
-      # Re-enable exit-on-error
-      set -e
+        # Re-enable exit-on-error
+        set -e
 
-      mise use --global ruby@3.3.6 node@22 java@temurin-21 python@3.12 go@1.24 2>/dev/null || true
-      success "Runtime installation complete (some may have failed - check above)"
+        mise use --global "${runtimes[@]}" 2>/dev/null || true
+        success "Runtime installation complete (some may have failed - check above)"
+      fi
     fi
   fi
 else

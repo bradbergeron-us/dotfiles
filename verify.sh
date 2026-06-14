@@ -3,14 +3,13 @@
 #
 # Reports:
 #   1. Broken symlinks        (errors   — exit 1)
-#   2. Version drift          (warnings — exit 0)
-#   3. Missing required tools (warnings — exit 0)
-#   4. Stale backups          (warnings — exit 0)
-#   5. SSH key                (warnings — exit 0)
-#   6. git-lfs global init    (warnings — exit 0)
-#   7. mise tools installed   (warnings — exit 0)
-#   8. dotfiles git health    (warnings — exit 0)
-#   9. Brewfile drift         (warnings — exit 0)
+#   2. Required tools         (warnings — exit 0)
+#   3. Stale backups          (warnings — exit 0)
+#   4. SSH key                (warnings — exit 0)
+#   5. git-lfs global init    (warnings — exit 0)
+#   6. mise tools installed   (warnings — exit 0)
+#   7. dotfiles git health    (warnings — exit 0)
+#   8. Brewfile drift         (warnings — exit 0)
 #
 # Usage:   bash ~/dotfiles/verify.sh
 # Called by update.sh automatically after each update cycle.
@@ -24,7 +23,7 @@ WARNINGS=0
 # shellcheck disable=SC2034  # used by step() in helpers
 STEP=0
 # shellcheck disable=SC2034
-TOTAL_STEPS=9
+TOTAL_STEPS=8
 
 # shellcheck source=scripts/lib/bootstrap_helpers.sh
 source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
@@ -63,21 +62,7 @@ else
   ERRORS=$(( ERRORS + SYMLINK_BROKEN_COUNT ))
 fi
 
-# ── 2. Version drift ──────────────────────────────────────────────────────────
-step "📌  Version drift (mise.toml vs bootstrap.sh)"
-check_mise_version_drift "$DOTFILES_DIR/config/mise.toml" "$DOTFILES_DIR/bootstrap.sh"
-
-if [[ "$DRIFT_COUNT" -eq 0 ]]; then
-  success "mise.toml and bootstrap.sh agree on all runtime versions"
-else
-  for drift in "${DRIFT_LIST[@]}"; do
-    warn "$drift"
-  done
-  warn "$DRIFT_COUNT version(s) out of sync — update mise.toml or bootstrap.sh"
-  WARNINGS=$(( WARNINGS + DRIFT_COUNT ))
-fi
-
-# ── 3. Required tools ─────────────────────────────────────────────────────────
+# ── 2. Required tools ─────────────────────────────────────────────────────────
 step "🧰  Required tools"
 check_required_tools "${REQUIRED_TOOLS[@]}"
 
@@ -91,7 +76,7 @@ else
   WARNINGS=$(( WARNINGS + TOOLS_MISSING_COUNT ))
 fi
 
-# ── 4. Stale backups ──────────────────────────────────────────────────────────
+# ── 3. Stale backups ──────────────────────────────────────────────────────────
 step "🗂️   Stale backups"
 check_stale_backups "$HOME/.dotfiles_backup"
 
@@ -105,7 +90,7 @@ else
   WARNINGS=$(( WARNINGS + STALE_BACKUP_COUNT ))
 fi
 
-# ── 5. SSH key ─────────────────────────────────────────────────────────
+# ── 4. SSH key ─────────────────────────────────────────────────────────
 step "🔑  SSH key"
 check_ssh_key
 
@@ -116,7 +101,7 @@ else
   WARNINGS=$(( WARNINGS + 1 ))
 fi
 
-# ── 6. git-lfs ──────────────────────────────────────────────────────
+# ── 5. git-lfs ──────────────────────────────────────────────────────
 step "📁  git-lfs"
 check_git_lfs_global
 
@@ -127,7 +112,7 @@ else
   WARNINGS=$(( WARNINGS + 1 ))
 fi
 
-# ── 7. mise tools installed ──────────────────────────────────────────────
+# ── 6. mise tools installed ──────────────────────────────────────────────
 step "⚡  mise tools installed"
 check_mise_installed "$DOTFILES_DIR/config/mise.toml"
 
@@ -141,7 +126,7 @@ else
   WARNINGS=$(( WARNINGS + MISE_UNINSTALLED_COUNT ))
 fi
 
-# ── 8. Dotfiles git health ───────────────────────────────────────────────
+# ── 7. Dotfiles git health ───────────────────────────────────────────────
 step "🩺  Dotfiles git health"
 check_dotfiles_git_health "$DOTFILES_DIR"
 
@@ -154,7 +139,7 @@ else
   WARNINGS=$(( WARNINGS + ${#DOTFILES_GIT_HEALTH_ISSUES[@]} ))
 fi
 
-# ── 9. Brewfile drift ────────────────────────────────────────────────────
+# ── 8. Brewfile drift ────────────────────────────────────────────────────
 step "🍺  Brewfile drift"
 check_brewfile_drift "$DOTFILES_DIR/Brewfile"
 
