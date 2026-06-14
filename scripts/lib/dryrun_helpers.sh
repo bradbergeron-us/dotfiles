@@ -215,30 +215,24 @@ check_git_lfs() {
 check_dotfile_symlinks() {
   dry_run_log "Run: install.sh (symlink dotfiles)"
 
-  local -a files=(
-    "$HOME/.zshrc:zshrc"
-    "$HOME/.zprofile:zprofile"
-    "$HOME/.gitconfig:gitconfig"
-    "$HOME/.tmux.conf:tmux.conf"
-    "$HOME/.hyper.js:hyper.js"
-    "$HOME/.gitignore_global:gitignore_global"
-    "$HOME/.gemrc:gemrc"
-    "$HOME/.irbrc:irbrc"
-    "$HOME/.pryrc:pryrc"
-    "$HOME/.psqlrc:psqlrc"
-    "$HOME/.npmrc:npmrc"
-    "$HOME/.editorconfig:editorconfig"
-    "$HOME/.config/starship.toml:config/starship.toml"
-    "$HOME/.config/direnv/direnvrc:config/direnvrc"
-    "$HOME/.config/mise/config.toml:config/mise.toml"
-    "$HOME/.ssh/config:ssh_config"
-  )
+  # Read tracked symlinks from config/symlinks.map (single source of truth) as
+  # "dest_abs:src_rel" entries so the comparison loop below is unchanged. Using
+  # the same manifest install.sh and verify.sh read means this preview can never
+  # drift from what is actually linked.
+  local -a files=()
+  local manifest="$DOTFILES_DIR/config/symlinks.map" _src _dest
+  if [[ -r "$manifest" ]]; then
+    while read -r _src _dest; do
+      [[ -z "$_src" || "$_src" == \#* ]] && continue
+      files+=("$HOME/$_dest:$_src")
+    done < "$manifest"
+  fi
 
   local to_link=0
   local already_linked=0
   local to_backup=0
 
-  for entry in "${files[@]}"; do
+  for entry in ${files[@]+"${files[@]}"}; do
     local dest="${entry%%:*}"
     local src_rel="${entry##*:}"
     local src="$DOTFILES_DIR/$src_rel"

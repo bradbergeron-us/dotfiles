@@ -45,25 +45,35 @@ source "$SCRIPT_DIR/../lib/dryrun_helpers.sh"
 FAKE_DOTFILES="$TMPDIR_BASE/dotfiles"
 mkdir -p "$FAKE_DOTFILES/config/git"
 
-# The destination/source pairs check_dotfile_symlinks iterates over (16 entries).
-DOTFILE_PAIRS=(
-  ".zshrc:zshrc"
-  ".zprofile:zprofile"
-  ".gitconfig:gitconfig"
-  ".tmux.conf:tmux.conf"
-  ".hyper.js:hyper.js"
-  ".gitignore_global:gitignore_global"
-  ".gemrc:gemrc"
-  ".irbrc:irbrc"
-  ".pryrc:pryrc"
-  ".psqlrc:psqlrc"
-  ".npmrc:npmrc"
-  ".editorconfig:editorconfig"
-  ".config/starship.toml:config/starship.toml"
-  ".config/direnv/direnvrc:config/direnvrc"
-  ".config/mise/config.toml:config/mise.toml"
-  ".ssh/config:ssh_config"
-)
+# Fixture manifest — the single source of truth check_dotfile_symlinks reads
+# (mirrors the real config/symlinks.map; src paths keep their home/ or config/
+# prefix). The src files need not exist: only the readlink target is compared.
+cat > "$FAKE_DOTFILES/config/symlinks.map" << 'EOF'
+home/zshrc               .zshrc
+home/zprofile            .zprofile
+home/gitconfig           .gitconfig
+home/tmux.conf           .tmux.conf
+home/hyper.js            .hyper.js
+home/gitignore_global    .gitignore_global
+home/gemrc               .gemrc
+home/irbrc               .irbrc
+home/pryrc               .pryrc
+home/psqlrc              .psqlrc
+home/npmrc               .npmrc
+home/editorconfig        .editorconfig
+home/ssh_config          .ssh/config
+config/starship.toml     .config/starship.toml
+config/direnvrc          .config/direnv/direnvrc
+config/mise.toml         .config/mise/config.toml
+EOF
+
+# Destination/source pairs derived from the manifest (dest:src, 16 entries),
+# used to materialize symlinks in the "all linked" case below.
+DOTFILE_PAIRS=()
+while read -r _s _d; do
+  [[ -z "$_s" || "$_s" == \#* ]] && continue
+  DOTFILE_PAIRS+=("$_d:$_s")
+done < "$FAKE_DOTFILES/config/symlinks.map"
 
 # ── dry_run_log ───────────────────────────────────────────────────────────────
 echo ""

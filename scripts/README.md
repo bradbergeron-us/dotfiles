@@ -5,7 +5,7 @@ Automation scripts for system setup, configuration, and maintenance.
 ## Layout
 
 - **`scripts/`** — runnable scripts (work setup, installers, `macos.sh`, `uninstall.sh`, `validate_templates.sh`, …).
-- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`.
+- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`.
 - **`scripts/tests/`** — hand-rolled unit tests (`test_*.sh`) for the helpers and validators.
 
 ---
@@ -14,12 +14,12 @@ Automation scripts for system setup, configuration, and maintenance.
 
 ### `lib/bootstrap_helpers.sh`
 
-Shell functions used by `bootstrap.sh` and other scripts:
+Shell functions sourced by `bootstrap.sh`, `update.sh`, and `verify.sh`:
 
+- **`setup_colors()`** — Initialize color codes (call once after sourcing)
 - **`step()`** — Display numbered progress steps
-- **`info()`**, **`success()`**, **`warn()`**, **`error()`** — Colored output
-- **`setup_colors()`** — Initialize color codes
-- **`check_internet()`** — Verify network connectivity
+- **`info()`**, **`success()`**, **`warn()`** — Colored output
+- **`parse_mise_runtimes()`** — Read the `[tools]` table of `config/mise.toml`, the single source of truth for runtime versions
 
 **Usage:**
 ```bash
@@ -195,15 +195,17 @@ code --list-extensions
 
 ## Tests (`tests/`)
 
+Hand-rolled unit tests (no framework), auto-discovered and run by `.github/workflows/test-bootstrap.yml`: `test_bootstrap_helpers.sh`, `test_verify_helpers.sh`, `test_dryrun_helpers.sh`, `test_update_helpers.sh`, and `test_validate_templates.sh`. Run one directly with `bash scripts/tests/<file>`.
+
 ### `tests/test_bootstrap_helpers.sh`
 
 **Unit tests for bootstrap helper functions**
 
 Tests the shell functions in `lib/bootstrap_helpers.sh`:
-- Color code initialization
-- Output functions (info, success, warn, error)
-- Step counter
-- Helper utilities
+- Color code initialization (`setup_colors`)
+- Output functions (`info`, `success`, `warn`)
+- Step counter (`step`)
+- mise runtime parsing (`parse_mise_runtimes`)
 
 **Usage:**
 ```bash
@@ -221,19 +223,21 @@ bash ~/dotfiles/scripts/tests/test_bootstrap_helpers.sh
 
 ### `lib/verify_helpers.sh`
 
-**Helper functions for verify.sh**
+**Pure check functions for verify.sh**
 
-Utility functions used by the verification script:
-- Check if command exists
-- Verify file symlinks
-- Check version strings
-- Report findings
+Each sets result globals (counts + lists) instead of printing or exiting, which makes them unit-testable:
+- **`check_symlinks`** / **`load_symlink_map`** — validate tracked symlinks loaded from `config/symlinks.map`
+- **`check_required_tools`** — report tools missing from `PATH`
+- **`check_ssh_key`** / **`check_git_lfs_global`** — signing key + global git-lfs init
+- **`check_mise_installed`** — runtimes declared in `config/mise.toml` are actually installed
+- **`check_stale_backups`** / **`check_dotfiles_git_health`** / **`check_brewfile_drift`**
 
 **Usage:**
 ```bash
 source "$(dirname "$0")/scripts/lib/verify_helpers.sh"
-check_command git
-verify_symlink ~/.zshrc
+load_symlink_map "$DOTFILES_DIR/config/symlinks.map"
+check_symlinks "$DOTFILES_DIR" "$HOME"
+echo "$SYMLINK_BROKEN_COUNT broken"
 ```
 
 ---
@@ -389,4 +393,4 @@ source ~/dotfiles/scripts/my_script.sh
 
 ---
 
-*Last updated: June 1, 2026*
+*Last updated: June 14, 2026*
