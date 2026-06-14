@@ -73,6 +73,36 @@ check_symlinks() {
   done
 }
 
+# check_gitconfig_include HOME_DIR DOTFILES_DIR
+# Confirms ~/.gitconfig is a real file (not a symlink) that includes the tracked
+# home/gitconfig. This is the structure that keeps `git config --global` and
+# tools like `gh auth setup-git` from writing into the tracked dotfile.
+# Sets:
+#   GITCONFIG_INCLUDE_OK    — true when the include is present and not a symlink
+#   GITCONFIG_INCLUDE_ISSUE — human-readable problem (empty when OK)
+check_gitconfig_include() {
+  local home_dir="$1"
+  local dotfiles_dir="$2"
+  local cfg="$home_dir/.gitconfig"
+  local want="$dotfiles_dir/home/gitconfig"
+  GITCONFIG_INCLUDE_OK=false
+  GITCONFIG_INCLUDE_ISSUE=""
+
+  if [[ -L "$cfg" ]]; then
+    GITCONFIG_INCLUDE_ISSUE="Git config: ~/.gitconfig is a symlink — global writes would pollute the tracked dotfile (run install.sh)"
+    return
+  fi
+  if [[ ! -f "$cfg" ]]; then
+    GITCONFIG_INCLUDE_ISSUE="Git config: ~/.gitconfig missing — run install.sh"
+    return
+  fi
+  if grep -qF "path = $want" "$cfg"; then
+    GITCONFIG_INCLUDE_OK=true
+  else
+    GITCONFIG_INCLUDE_ISSUE="Git config: ~/.gitconfig does not include $want — run install.sh"
+  fi
+}
+
 # check_required_tools TOOL [TOOL ...]
 # Checks each named tool is available on PATH via command -v.
 # Sets:
