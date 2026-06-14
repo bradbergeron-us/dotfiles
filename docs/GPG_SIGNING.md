@@ -61,7 +61,14 @@ Edit `~/.config/git/local.gitconfig`:
 	signingkey = EFF15FEC389D0F89
 ```
 
-The main `~/.gitconfig` is already configured to sign all commits and tags.
+The main `~/.gitconfig` sets `gpg.format = openpgp` and points Git at your `gpg` program, but leaves `commit.gpgsign = false` by default. To sign every commit on this machine, also enable signing in `~/.config/git/local.gitconfig`:
+
+```gitconfig
+[commit]
+	gpgsign = true
+```
+
+To sign only in specific directories instead, leave the global default off and use [Per-Organization (Conditional) Signing](#per-organization-conditional-signing) below — those configs enable signing automatically.
 
 ### 5. Export Your Public Key
 
@@ -92,6 +99,51 @@ Copy the entire output (including the `-----BEGIN PGP PUBLIC KEY BLOCK-----` and
 1. Go to: https://gitlab.com/-/profile/gpg_keys
 2. Paste your public key
 3. Click "Add key"
+
+## Per-Organization (Conditional) Signing
+
+The committed `gitconfig` can select a different identity and signing key automatically based on which directory a repository lives in, using Git's `includeIf` directives. This is useful when you contribute to multiple organizations that each require a different email and signed commits.
+
+### Organize repositories by organization
+
+```
+~/Code/
+├── work1/      # Organization 1 — auto-signs with org 1 email + key
+├── work2/      # Organization 2 — auto-signs with org 2 email + key
+└── personal/   # Personal projects
+```
+
+### How it works
+
+The main `gitconfig` pulls in an organization-specific config when you work under the matching directory:
+
+```gitconfig
+[includeIf "gitdir:~/Code/work1/"]
+    path = ~/.config/git/work1.gitconfig
+
+[includeIf "gitdir:~/Code/work2/"]
+    path = ~/.config/git/work2.gitconfig
+```
+
+Each organization config overrides `user.email` and `user.signingkey`, and sets `commit.gpgsign = true`, so commits made anywhere under that directory are signed with the right key.
+
+### Set up an organization
+
+1. Generate a key for the organization and upload its public key to that org's Git host (see [Manual Setup](#manual-setup) above).
+2. Create the organization config from the template (it is never committed):
+   ```bash
+   cp ~/dotfiles/templates/config/git/work.gitconfig.template ~/.config/git/work1.gitconfig
+   # Edit ~/.config/git/work1.gitconfig: set the organization email and signing key ID
+   ```
+   Repeat for `work2`, etc. The directories matched by `includeIf` (`~/Code/work1/`, `~/Code/work2/`) are defined in `gitconfig` — adjust them there if your layout differs.
+
+### Verify
+
+```bash
+bash ~/dotfiles/scripts/verify_git_signing.sh
+```
+
+This checks that repositories under each configured organization directory resolve to the expected email, signing key, and `commit.gpgsign = true`, reading the per-organization `~/.config/git/*.gitconfig` files. It prints a `PASS` / `FAIL` line per organization and exits non-zero if any are misconfigured.
 
 ## Verify Signing
 
@@ -131,6 +183,23 @@ If this fails, restart the GPG agent:
 ```bash
 gpgconf --kill gpg-agent
 gpg-agent --daemon
+```
+
+### Commits are not signed at all
+
+The committed `gitconfig` ships with `commit.gpgsign = false`. Confirm signing is enabled and see which config provides each value:
+
+```bash
+git config --show-origin --get commit.gpgsign
+git config --show-origin --list | grep -E 'user\.(email|signingkey)|commit\.gpgsign'
+```
+
+Enable it globally in `~/.config/git/local.gitconfig` (`[commit] gpgsign = true`), or rely on the per-organization configs described above.
+
+### Disable signing globally (emergency rollback)
+
+```bash
+git config --global commit.gpgsign false
 ```
 
 ### Wrong key being used
