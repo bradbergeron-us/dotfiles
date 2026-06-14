@@ -157,3 +157,21 @@ jobs:
             exit 1
           fi
           echo "OK  no residue files created in the repo dir"
+
+  # ------------------------------------------------------------------
+  # 4. secret-scan — gitleaks via the maintained action (prebuilt binary,
+  #    no on-the-fly build). On push/PR it scans only the new commits, so
+  #    it stays fast and green while catching newly introduced secrets.
+  # ------------------------------------------------------------------
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
