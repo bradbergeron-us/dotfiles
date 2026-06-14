@@ -8,13 +8,13 @@ echo "=============================================="
 echo ""
 
 # 0. Verify Claude Code won't be broken
-if [[ -f ~/.local/bin/claude ]] && ! grep -q '\.local/bin' ~/dotfiles/zshrc; then
+if [[ -f ~/.local/bin/claude ]] && ! grep -q '\.local/bin' ~/dotfiles/home/zshrc; then
   echo "⚠️  WARNING: Claude Code detected but zshrc missing ~/.local/bin in PATH"
   echo "   Adding safety PATH entry to preserve Claude Code access..."
   # This shouldn't happen with the updated zshrc, but just in case
-  echo "" >> ~/dotfiles/zshrc
-  echo "# Claude Code safety fallback" >> ~/dotfiles/zshrc
-  echo '[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"' >> ~/dotfiles/zshrc
+  echo "" >> ~/dotfiles/home/zshrc
+  echo "# Claude Code safety fallback" >> ~/dotfiles/home/zshrc
+  echo '[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"' >> ~/dotfiles/home/zshrc
 fi
 
 # 1. Symlink dotfiles (the most critical part)
@@ -27,7 +27,7 @@ echo ""
 # 2. Create local config if missing
 if [[ ! -f ~/.zshrc.local ]]; then
   echo "Step 2: Creating ~/.zshrc.local..."
-  cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
+  cp ~/dotfiles/home/examples/zshrc.local.example ~/.zshrc.local
   echo "✓ Created ~/.zshrc.local"
 else
   echo "Step 2: ~/.zshrc.local already exists"

@@ -22,7 +22,7 @@ brew bundle --file=~/dotfiles/Brewfile.work   # work additions
 `zshrc.local.example` is a richly commented template covering common work-machine needs. Copy it and uncomment the sections relevant to your setup:
 
 ```sh
-cp ~/dotfiles/zshrc.local.example ~/.zshrc.local
+cp ~/dotfiles/home/examples/zshrc.local.example ~/.zshrc.local
 # Open and uncomment the sections that apply to this machine
 ```
 

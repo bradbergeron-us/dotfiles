@@ -7,7 +7,7 @@ A maintainer-facing guide to how this repository is wired together and the conve
 Four entry-point scripts form the pipeline; everything in `scripts/` exists to support them.
 
 1. **`bootstrap.sh`** (bash) — one-time setup on a fresh Mac. Runs `scripts/preflight.sh` first (unless `--skip-preflight` or `--dry-run`), installs Homebrew and the `Brewfile`, language runtimes via `mise`, Rust via `rustup`, and `git-lfs`, then hands off to `install.sh` for symlinks, and finally prompts for work configs (`scripts/setup_work_configs.sh`) and macOS defaults (`macos.sh`). Supports `--dry-run` and `--skip-preflight`.
-2. **`install.sh`** (zsh) — the symlinker. Links every tracked dotfile into `$HOME`, backing up any pre-existing real file to `~/.dotfiles_backup/<timestamp>/`. It also seeds `~/.config/git/local.gitconfig` from `gitconfig.local.example` and installs a global pre-commit hook at `~/.config/git/hooks/pre-commit`. Idempotent: a second run relinks nothing already correct and reports `linked / current / backed up`.
+2. **`install.sh`** (zsh) — the symlinker. Links every tracked dotfile into `$HOME`, backing up any pre-existing real file to `~/.dotfiles_backup/<timestamp>/`. It also seeds `~/.config/git/local.gitconfig` from `home/examples/gitconfig.local.example` and installs a global pre-commit hook at `~/.config/git/hooks/pre-commit`. Idempotent: a second run relinks nothing already correct and reports `linked / current / backed up`.
 3. **`update.sh`** (bash) — keep-current. `git pull --rebase --autostash`, re-runs `install.sh` to pick up new symlinks, upgrades Homebrew / `mise` / `rustup` / gems / `uv` tools, then runs `verify.sh`. Schedulable via `setup-scheduler.sh` (launchd, daily at 9 AM).
 4. **`verify.sh`** (bash) — health check. Seven checks: symlinks, `mise.toml` vs `bootstrap.sh` version drift, required tools, stale backups, SSH key, global git-lfs init, and mise-installed runtimes. Broken symlinks are the only hard error (exit 1); everything else is a warning (exit 0).
 
@@ -19,7 +19,8 @@ bootstrap.sh ──▶ install.sh ──▶ update.sh ──▶ verify.sh
 
 ## Layout
 
-- **Root** — entry scripts (`bootstrap.sh`, `install.sh`, `update.sh`, `verify.sh`, `setup-scheduler.sh`, `macos.sh`) and the tracked dotfiles themselves (`zshrc`, `zprofile`, `gitconfig`, `tmux.conf`, …).
+- **Root** — entry scripts (`bootstrap.sh`, `install.sh`, `update.sh`, `verify.sh`, `setup-scheduler.sh`, `macos.sh`).
+- **`home/`** — the tracked dotfiles symlinked into `$HOME` (`zshrc`, `zprofile`, `gitconfig`, `tmux.conf`, …); `home/examples/` holds the `*.local.example` templates.
 - **`scripts/`** — helpers, supporting/work-setup scripts, and unit tests (see below). Has its own [README](scripts/README.md).
 - **`config/`** — XDG configs symlinked under `~/.config` (`starship.toml`, `mise.toml`, `direnvrc`).
 - **`templates/`** — work / secret-bearing configs shipped as `*.template` placeholders (see [templates/README.md](templates/README.md)).
@@ -68,9 +69,9 @@ Because the helpers are side-effect-free, tests exercise them directly against t
 
 A tracked dotfile is represented in several independent lists. Update all of them so install, verify, dry-run, CI, and the docs stay in agreement:
 
-1. Add the file to the repo (root, or `config/` for XDG configs).
-2. **`install.sh`** — add a `symlink "$DOTFILES_DIR/<src>" "$HOME/<dest>"` line.
-3. **`scripts/verify_helpers.sh`** — add `"<src>:<dest>"` to the `DOTFILES_SYMLINKS` array so `verify.sh` checks it.
+1. Add the file to the repo (`home/`, or `config/` for XDG configs).
+2. **`install.sh`** — add a `symlink "$DOTFILES_DIR/home/<src>" "$HOME/<dest>"` line.
+3. **`scripts/verify_helpers.sh`** — add `"home/<src>:<dest>"` to the `DOTFILES_SYMLINKS` array so `verify.sh` checks it.
 4. **`scripts/dryrun_helpers.sh`** — add the same pair to the list in `check_dotfile_symlinks` so `--dry-run` previews it.
 5. **`README.md`** — add a row to the Dotfiles table.
 6. **`.github/workflows/ci.yml`** — add the destination to the install-smoke symlink list so the smoke test verifies it.
@@ -90,7 +91,7 @@ Add a side-effect-free `check_*` function to `scripts/verify_helpers.sh` that se
 
 ## Before you commit
 
-- Run `shellcheck -S warning <script>` on any bash you touched, and `zsh -n <file>` on zsh files (`install.sh`, `scripts/setup_gpg_signing.sh`, `zshrc`, `zprofile`).
+- Run `shellcheck -S warning <script>` on any bash you touched, and `zsh -n <file>` on zsh files (`install.sh`, `scripts/setup_gpg_signing.sh`, `home/zshrc`, `home/zprofile`).
 - Run the relevant `scripts/test_*.sh`.
 - For changes to install/verify behavior, exercise them against an isolated `HOME=$(mktemp -d)`.
 - New bash scripts start with `#!/usr/bin/env bash` and `set -euo pipefail`, and reuse `scripts/bootstrap_helpers.sh` for output.

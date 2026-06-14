@@ -401,7 +401,7 @@ fi
 
 if [[ "$DRY_RUN" == false ]]; then
   if [[ ! -f "$HOME/.zshrc.local" ]]; then
-    cp "$DOTFILES_DIR/zshrc.local.example" "$HOME/.zshrc.local"
+    cp "$DOTFILES_DIR/home/examples/zshrc.local.example" "$HOME/.zshrc.local"
     warn "Created ~/.zshrc.local from template — edit it with machine-specific config"
   fi
 fi
