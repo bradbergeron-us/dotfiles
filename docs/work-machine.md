@@ -64,6 +64,40 @@ Then run `direnv allow` once to approve the file. After that, variables activate
 
 ---
 
+## Safe updates on a work machine
+
+`update.sh` is built not to disturb a working machine:
+
+- **Preview first** — `bash ~/dotfiles/update.sh --dry-run` prints every action it *would* take and changes nothing (no pull, no upgrades, no status-file write, no log rotation).
+- **No package upgrades** — `bash ~/dotfiles/update.sh --no-upgrade` (or `export DOTFILES_UPDATE_NO_UPGRADE=1`, e.g. in `~/.zshrc.local`) pulls the latest dotfiles, re-creates symlinks, and runs the health check, but skips `brew upgrade`, `mise upgrade`, `rustup update`, and `gem update`. Use this when work tooling depends on specific package versions.
+- **Dirty-tree guard** — if `~/dotfiles` has uncommitted changes to tracked files, `update.sh` skips the `git pull` instead of risking a `--rebase --autostash` conflict. Commit or stash first, or pass `--force-pull` to override.
+- **Abort-safe pull** — if a `pull --rebase` fails, the in-progress rebase is aborted so the repo is left exactly as it was.
+- **Skip the pull entirely** — `--no-pull` (or `DOTFILES_UPDATE_NO_PULL=1`) re-symlinks and verifies against whatever is already checked out.
+
+A conservative work-machine update is therefore:
+
+```sh
+bash ~/dotfiles/update.sh --dry-run --no-upgrade   # see exactly what will happen
+bash ~/dotfiles/update.sh --no-upgrade             # apply: pull + re-symlink + verify only
+```
+
+### One-time migration: `~/.gitconfig` became a thin include
+
+Older checkouts symlinked `~/.gitconfig` to the tracked `home/gitconfig`, so `git config --global …` wrote *into the repo* and left the work checkout permanently "dirty". The current layout makes `~/.gitconfig` a thin **real** file that `[include]`s `home/gitconfig`, with machine-specific settings in `~/.config/git/local.gitconfig`. With the dirty-tree guard above, those leftover local edits would otherwise block every pull, so clear them once:
+
+```sh
+cd ~/dotfiles
+git status                       # see what accumulated (often home/gitconfig)
+git stash                        # or: git checkout -- home/gitconfig
+git pull
+zsh install.sh                   # rewrites ~/.gitconfig as a thin include, heals moved symlinks
+# move any machine-specific git settings into ~/.config/git/local.gitconfig
+```
+
+`install.sh` backs up the old `~/.gitconfig` to `~/.dotfiles_backup/<timestamp>/` before replacing it, so nothing is lost.
+
+---
+
 ## NVM → mise migration
 
 If NVM is installed on a work machine, `bootstrap.sh` handles it automatically:
