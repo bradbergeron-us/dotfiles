@@ -68,3 +68,4 @@ nav:
   - Reference:
       - Tool Reference: tools.md
       - Shell Performance: performance.md
+  - Contributing: contributing.md
