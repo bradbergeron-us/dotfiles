@@ -60,12 +60,17 @@ Convention (see `scripts/tests/test_verify_helpers.bats` for the reference imple
 - Add new tests as `@test` blocks in the `*.bats` file next to the helper they cover; both CI and `bats scripts/tests/` auto-discover them, so no workflow edits are needed.
 
 Because the helpers are side-effect-free, tests exercise them directly against temporary `$HOME` / fixture directories.
+`scripts/tests/test_install.bats` is the exception — an integration test rather than a helper unit test. `install.sh` is a zsh entry-point with no extractable pure functions, so it runs the real script against an isolated `$HOME` (like the CI install-smoke job) and asserts on the resulting symlinks, the thin `~/.gitconfig` include, seeded files, backups, idempotency, and profile gating.
 
 ## CI
 
-- **`.github/workflows/ci.yml`** — three jobs: `shellcheck` (bash scripts, `-S warning`), `zsh-syntax` (`zsh -n` on the zsh files plus a `Brewfile` parse check), and `install-smoke` (runs `zsh install.sh` against a throwaway `$HOME` and asserts every expected symlink exists).
+- **`.github/workflows/ci.yml`** — five jobs: `shellcheck` (bash scripts, `-S warning`), `zsh-syntax` (`zsh -n` on the zsh files plus a `Brewfile` parse check), `install-smoke` (runs `zsh install.sh` against a throwaway `$HOME` and asserts every expected symlink exists), `secret-scan` (gitleaks on new commits), and `actionlint` (lints the workflow files themselves, including `run:` blocks via the bundled shellcheck).
 - **`.github/workflows/test-bootstrap.yml`** — installs bats-core and runs the full `scripts/tests/*.bats` suite (auto-discovered via `bats scripts/tests/`), plus `bash -n` syntax checks on the scripts under test and a `bats --count` parse-check of every `.bats` file, when the relevant scripts change.
 - **`.github/workflows/release.yml`** — release automation (see [Releasing](#releasing)).
+
+### Pre-commit hooks
+
+`.pre-commit-config.yaml` runs on `git commit` once `pre-commit` is installed (it's in the `Brewfile`, and `install.sh` wires the global hook). Hooks: `gitleaks` (secret scanning), `validate-templates` (no real secrets in `*.template`), `actionlint` (workflow lint), and `shellcheck` (bash static analysis, mirroring the CI job). Run every hook on demand with `pre-commit run --all-files`, and bump pinned versions with `pre-commit autoupdate`.
 
 ## Releasing
 
@@ -110,6 +115,7 @@ Add a side-effect-free `check_*` function to `scripts/lib/verify_helpers.sh` tha
 
 - Run `shellcheck -S warning <script>` on any bash you touched, and `zsh -n <file>` on zsh files (`install.sh`, `scripts/setup_gpg_signing.sh`, `home/zshrc`, `home/zprofile`).
 - Run the bats suite with `bats scripts/tests/` (install via `brew install bats-core` if needed).
+- Run `pre-commit run --all-files` to apply every hook at once (gitleaks, template check, actionlint, shellcheck); after editing any `.github/workflows/*.yml`, run `actionlint` to lint the workflow.
 - For changes to install/verify behavior, exercise them against an isolated `HOME=$(mktemp -d)`.
 - New bash scripts start with `#!/usr/bin/env bash` and `set -euo pipefail`, and reuse `scripts/lib/bootstrap_helpers.sh` for output.
 - A repo-local pre-commit hook runs when `pre-commit` is installed and a `.pre-commit-config.yaml` is present.

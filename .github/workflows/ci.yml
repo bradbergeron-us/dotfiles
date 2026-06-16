@@ -109,7 +109,8 @@ jobs:
           }
 
           # --- Default profile (personal): full set, same as before profiles ---
-          export HOME=$(mktemp -d)
+          HOME="$(mktemp -d)"
+          export HOME
           echo "Isolated HOME: $HOME"
           zsh install.sh
           echo ""
@@ -181,3 +182,20 @@ jobs:
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ------------------------------------------------------------------
+  # 5. actionlint — lint the workflow files themselves. Catches invalid
+  #    workflow syntax / bad expressions, and (via the bundled shellcheck)
+  #    issues in `run:` blocks the shellcheck job above does not cover.
+  #    Pinned to match the pre-commit hook and `brew install actionlint`.
+  # ------------------------------------------------------------------
+  actionlint:
+    name: Lint GitHub Actions workflows (actionlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run actionlint
+        uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color

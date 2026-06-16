@@ -220,7 +220,7 @@ code --list-extensions
 
 ## Tests (`tests/`)
 
-[bats-core](https://github.com/bats-core/bats-core) unit tests (`test_*.bats`), auto-discovered and run by `.github/workflows/test-bootstrap.yml`. Current files: `test_bootstrap_helpers.bats`, `test_verify_helpers.bats`, `test_dryrun_helpers.bats`, `test_update_helpers.bats`, `test_status_helpers.bats`, `test_profile_helpers.bats`, and `test_validate_templates.bats`.
+[bats-core](https://github.com/bats-core/bats-core) tests (`test_*.bats`), auto-discovered and run by `.github/workflows/test-bootstrap.yml`. Helper unit tests: `test_bootstrap_helpers.bats`, `test_verify_helpers.bats`, `test_dryrun_helpers.bats`, `test_update_helpers.bats`, `test_status_helpers.bats`, `test_profile_helpers.bats`, and `test_validate_templates.bats`. Plus `test_install.bats`, an integration test that runs the real `install.sh` against an isolated `$HOME`.
 
 **Install bats** (already in the `Brewfile`):
 ```bash
