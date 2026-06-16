@@ -1,0 +1,57 @@
+# Ghostty — terminal emulator config
+# Symlinked to ~/.config/ghostty/config by install.sh (see config/symlinks.map).
+# Validate after editing:  ghostty +validate-config
+# Mirrors the Tokyo Night + JetBrains Mono Nerd Font setup from home/hyper.js so
+# the look stays consistent while Ghostty is the preferred terminal.
+
+# ── Font ──────────────────────────────────────────────────────────────────────
+font-family = JetBrainsMono Nerd Font
+font-size = 14
+# Keep programming ligatures (Hyper had disableLigatures = false)
+font-feature = +calt
+font-feature = +liga
+
+# ── Theme (Tokyo Night — matches home/hyper.js) ─────────────────────────────────
+background = 1a1b26
+foreground = c0caf5
+
+selection-background = 33467c
+selection-foreground = c0caf5
+
+# Standard Tokyo Night 16-color ANSI palette
+palette = 0=#15161e
+palette = 1=#f7768e
+palette = 2=#9ece6a
+palette = 3=#e0af68
+palette = 4=#7aa2f7
+palette = 5=#bb9af7
+palette = 6=#7dcfff
+palette = 7=#a9b1d6
+palette = 8=#414868
+palette = 9=#f7768e
+palette = 10=#9ece6a
+palette = 11=#e0af68
+palette = 12=#7aa2f7
+palette = 13=#bb9af7
+palette = 14=#7dcfff
+palette = 15=#c0caf5
+
+# ── Cursor ──────────────────────────────────────────────────────────────────────
+cursor-style = block
+cursor-style-blink = true
+cursor-color = c0caf5
+
+# ── Window ──────────────────────────────────────────────────────────────────────
+# Hyper used padding: '10px 14px' (vertical horizontal)
+window-padding-x = 14
+window-padding-y = 10
+window-padding-balance = true
+mouse-hide-while-typing = true
+
+# ── macOS ──────────────────────────────────────────────────────────────────────
+# Treat the left Option key as Alt so meta keybindings (e.g. word motions) work.
+macos-option-as-alt = left
+
+# ── Shell ──────────────────────────────────────────────────────────────────────
+# Default shell is zsh on this machine; Ghostty auto-detects shell integration.
+shell-integration = zsh

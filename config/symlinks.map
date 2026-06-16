@@ -32,3 +32,4 @@ home/ssh_config        .ssh/config
 config/starship.toml   .config/starship.toml
 config/direnvrc        .config/direnv/direnvrc
 config/mise.toml       .config/mise/config.toml
+config/ghostty/config  .config/ghostty/config
