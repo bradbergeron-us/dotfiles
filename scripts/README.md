@@ -6,7 +6,7 @@ Automation scripts for system setup, configuration, and maintenance.
 
 - **`scripts/`** — runnable scripts (work setup, installers, `macos.sh`, `uninstall.sh`, `validate_templates.sh`, …).
 - **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`, `status_helpers.sh`, `profile_helpers.sh`.
-- **`scripts/tests/`** — hand-rolled unit tests (`test_*.sh`) for the helpers and validators.
+- **`scripts/tests/`** — [bats-core](https://github.com/bats-core/bats-core) unit tests (`test_*.bats`) for the helpers and validators, plus the shared `test_helper.bash`.
 
 ---
 
@@ -45,13 +45,13 @@ bash ~/dotfiles/scripts/status.sh --verify    # also run the full verify.sh
 bash ~/dotfiles/scripts/status.sh --exit-code # exit non-zero if unhealthy (for scripts/CI)
 ```
 
-Aliased as `dotstatus` in `home/zshrc`. Parsing and git-state helpers live in `lib/status_helpers.sh` (unit-tested by `tests/test_status_helpers.sh`).
+Aliased as `dotstatus` in `home/zshrc`. Parsing and git-state helpers live in `lib/status_helpers.sh` (unit-tested by `tests/test_status_helpers.bats`).
 
 ### `profile.sh`
 
 **Show or set this machine's profile.**
 
-`bash scripts/profile.sh [show | list | set <name>]` reads/writes `~/.config/dotfiles/profile` so an existing machine can adopt a profile (`personal` | `work` | `minimal` | `server`) without re-running bootstrap. Resolution logic lives in `lib/profile_helpers.sh` (unit-tested by `tests/test_profile_helpers.sh`); aliased `dotprofile`.
+`bash scripts/profile.sh [show | list | set <name>]` reads/writes `~/.config/dotfiles/profile` so an existing machine can adopt a profile (`personal` | `work` | `minimal` | `server`) without re-running bootstrap. Resolution logic lives in `lib/profile_helpers.sh` (unit-tested by `tests/test_profile_helpers.bats`); aliased `dotprofile`.
 
 ---
 
@@ -220,9 +220,25 @@ code --list-extensions
 
 ## Tests (`tests/`)
 
-Hand-rolled unit tests (no framework), auto-discovered and run by `.github/workflows/test-bootstrap.yml`: `test_bootstrap_helpers.sh`, `test_verify_helpers.sh`, `test_dryrun_helpers.sh`, `test_update_helpers.sh`, `test_status_helpers.sh`, and `test_validate_templates.sh`. Run one directly with `bash scripts/tests/<file>`.
+[bats-core](https://github.com/bats-core/bats-core) unit tests (`test_*.bats`), auto-discovered and run by `.github/workflows/test-bootstrap.yml`. Current files: `test_bootstrap_helpers.bats`, `test_verify_helpers.bats`, `test_dryrun_helpers.bats`, `test_update_helpers.bats`, `test_status_helpers.bats`, `test_profile_helpers.bats`, and `test_validate_templates.bats`.
 
-### `tests/test_bootstrap_helpers.sh`
+**Install bats** (already in the `Brewfile`):
+```bash
+brew install bats-core
+```
+
+**Run the suite** (from the repo root):
+```bash
+bats scripts/tests/           # whole suite
+bats scripts/tests/test_bootstrap_helpers.bats   # a single file
+```
+
+**Conventions:**
+- Each file is `#!/usr/bin/env bats` and starts with `load 'test_helper'`, sourcing `tests/test_helper.bash` for the `$LIB_DIR` / `$SCRIPTS_DIR` / `$REPO_ROOT` paths.
+- Write cases as `@test "description" { ... }` blocks; use the auto-managed scratch dir `$BATS_TEST_TMPDIR` for fixtures.
+- Add new tests as `@test` blocks in the `*.bats` file next to the helper they cover — CI and `bats scripts/tests/` discover them automatically.
+
+### `tests/test_bootstrap_helpers.bats`
 
 **Unit tests for bootstrap helper functions**
 
@@ -234,14 +250,7 @@ Tests the shell functions in `lib/bootstrap_helpers.sh`:
 
 **Usage:**
 ```bash
-bash ~/dotfiles/scripts/tests/test_bootstrap_helpers.sh
-```
-
-**Run in CI:**
-```yaml
-# .github/workflows/test-bootstrap.yml
-- name: Test bootstrap helpers
-  run: bash scripts/tests/test_bootstrap_helpers.sh
+bats scripts/tests/test_bootstrap_helpers.bats
 ```
 
 ---
@@ -267,7 +276,7 @@ echo "$SYMLINK_BROKEN_COUNT broken"
 
 ---
 
-### `tests/test_verify_helpers.sh`
+### `tests/test_verify_helpers.bats`
 
 **Unit tests for verify helper functions**
 
@@ -275,7 +284,7 @@ Tests the verification utility functions.
 
 **Usage:**
 ```bash
-bash ~/dotfiles/scripts/tests/test_verify_helpers.sh
+bats scripts/tests/test_verify_helpers.bats
 ```
 
 ---

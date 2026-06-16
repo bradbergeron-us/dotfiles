@@ -43,26 +43,28 @@ Two independent safety layers; full user-facing detail is in [docs/DRY_RUN_AND_P
 
 ## Tests
 
-Tests are plain bash scripts under `scripts/tests/test_*.sh` — there is no test framework. Run one directly:
+Unit tests use [bats-core](https://github.com/bats-core/bats-core) and live in `scripts/tests/test_*.bats`. Install bats with `brew install bats-core` (it's already in the `Brewfile`), then run the whole suite from the repo root:
 
 ```bash
-bash scripts/tests/test_verify_helpers.sh
-bash scripts/tests/test_bootstrap_helpers.sh
+bats scripts/tests/
 ```
 
-Convention (see `scripts/tests/test_verify_helpers.sh` for the reference implementation):
+You can also run a single file, e.g. `bats scripts/tests/test_verify_helpers.bats`.
 
-- `set -euo pipefail`; `pass` / `fail` helpers that increment run/pass/fail counters.
-- Build fixtures under a single `mktemp -d` directory and clean it up with `trap '...' EXIT`.
-- Source the helper under test inside a subshell `( ... )` so its globals don't leak between cases.
-- Assert on the result globals the helper sets, and `exit 1` at the end if any test failed.
+Convention (see `scripts/tests/test_verify_helpers.bats` for the reference implementation):
+
+- Every file is `#!/usr/bin/env bats` and starts with `load 'test_helper'`, which sources `scripts/tests/test_helper.bash` to expose `$LIB_DIR` / `$SCRIPTS_DIR` / `$REPO_ROOT`.
+- Write each case as a `@test "description" { ... }` block; a non-zero command inside the block fails the test.
+- Use the per-test scratch dir `$BATS_TEST_TMPDIR` for fixtures (bats creates and removes it automatically — no `mktemp -d` or `trap` cleanup needed).
+- Source the helper under test once at the file's top level (or in `setup()`), and assert on the result globals it sets.
+- Add new tests as `@test` blocks in the `*.bats` file next to the helper they cover; both CI and `bats scripts/tests/` auto-discover them, so no workflow edits are needed.
 
 Because the helpers are side-effect-free, tests exercise them directly against temporary `$HOME` / fixture directories.
 
 ## CI
 
 - **`.github/workflows/ci.yml`** — three jobs: `shellcheck` (bash scripts, `-S warning`), `zsh-syntax` (`zsh -n` on the zsh files plus a `Brewfile` parse check), and `install-smoke` (runs `zsh install.sh` against a throwaway `$HOME` and asserts every expected symlink exists).
-- **`.github/workflows/test-bootstrap.yml`** — runs the `scripts/tests/test_*.sh` unit tests (currently `test_bootstrap_helpers.sh`, `test_dryrun_helpers.sh`, `test_verify_helpers.sh`, `test_update_helpers.sh`, and `test_validate_templates.sh`) plus `bash -n` syntax checks when the relevant scripts change.
+- **`.github/workflows/test-bootstrap.yml`** — installs bats-core and runs the full `scripts/tests/*.bats` suite (auto-discovered via `bats scripts/tests/`), plus `bash -n` syntax checks on the scripts under test and a `bats --count` parse-check of every `.bats` file, when the relevant scripts change.
 
 ## Common tasks
 
@@ -87,12 +89,12 @@ Templates exist for configs that can't be committed verbatim because they carry 
 
 ### Add a verify check
 
-Add a side-effect-free `check_*` function to `scripts/lib/verify_helpers.sh` that sets result globals, add cases for it to `scripts/tests/test_verify_helpers.sh`, then wire a `step` + report block into `verify.sh`.
+Add a side-effect-free `check_*` function to `scripts/lib/verify_helpers.sh` that sets result globals, add `@test` cases for it to `scripts/tests/test_verify_helpers.bats`, then wire a `step` + report block into `verify.sh`.
 
 ## Before you commit
 
 - Run `shellcheck -S warning <script>` on any bash you touched, and `zsh -n <file>` on zsh files (`install.sh`, `scripts/setup_gpg_signing.sh`, `home/zshrc`, `home/zprofile`).
-- Run the relevant `scripts/tests/test_*.sh`.
+- Run the bats suite with `bats scripts/tests/` (install via `brew install bats-core` if needed).
 - For changes to install/verify behavior, exercise them against an isolated `HOME=$(mktemp -d)`.
 - New bash scripts start with `#!/usr/bin/env bash` and `set -euo pipefail`, and reuse `scripts/lib/bootstrap_helpers.sh` for output.
 - A repo-local pre-commit hook runs when `pre-commit` is installed and a `.pre-commit-config.yaml` is present.

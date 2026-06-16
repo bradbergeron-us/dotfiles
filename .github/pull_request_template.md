@@ -10,7 +10,7 @@
 ## Validation
 <!-- Tick what you ran — see CONTRIBUTING.md "Before you commit". -->
 - [ ] `shellcheck -S warning` on changed bash; `zsh -n` on changed zsh files (`install.sh`, `home/zshrc`, …)
-- [ ] Ran the relevant `scripts/tests/test_*.sh`
+- [ ] Ran the bats suite (`bats scripts/tests/`)
 - [ ] Exercised install/verify against an isolated `HOME=$(mktemp -d)` (if behavior changed)
 
 ## Checklist
