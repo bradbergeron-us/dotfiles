@@ -40,8 +40,9 @@ Prints the dotfiles repo's git state (branch, clean/dirty, ahead/behind upstream
 
 **Usage:**
 ```bash
-bash ~/dotfiles/scripts/status.sh            # repo + last-update summary
-bash ~/dotfiles/scripts/status.sh --verify   # also run the full verify.sh
+bash ~/dotfiles/scripts/status.sh             # repo + last-update summary
+bash ~/dotfiles/scripts/status.sh --verify    # also run the full verify.sh
+bash ~/dotfiles/scripts/status.sh --exit-code # exit non-zero if unhealthy (for scripts/CI)
 ```
 
 Aliased as `dotstatus` in `home/zshrc`. Parsing and git-state helpers live in `lib/status_helpers.sh` (unit-tested by `tests/test_status_helpers.sh`).

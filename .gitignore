@@ -5,7 +5,8 @@
 # runs from the dotfiles directory instead of the project root
 *.vscode-*
 ms-*.*
-logs/*.log
+logs/*
+!logs/.gitkeep
 
 # VS Code extension folders (publisher.extension-name format)
 *.*/

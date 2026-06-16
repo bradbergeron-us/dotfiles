@@ -8,6 +8,7 @@
 # Usage:
 #   bash ~/dotfiles/scripts/status.sh            # repo + last-update summary
 #   bash ~/dotfiles/scripts/status.sh --verify   # also run the full verify.sh
+#   bash ~/dotfiles/scripts/status.sh --exit-code  # non-zero exit if unhealthy
 #   bash ~/dotfiles/scripts/status.sh --help
 
 set -euo pipefail
@@ -18,9 +19,11 @@ STATUS_FILE="$LOG_DIR/update.status"
 LOG_FILE="$LOG_DIR/update.log"
 
 RUN_VERIFY=false
+EXIT_CODE_MODE=false
 for arg in "$@"; do
   case "$arg" in
     --verify) RUN_VERIFY=true ;;
+    --exit-code) EXIT_CODE_MODE=true ;;
     --help|-h)
       cat <<'USAGE'
 Usage: bash status.sh [OPTIONS]
@@ -28,8 +31,9 @@ Usage: bash status.sh [OPTIONS]
 Read-only snapshot of dotfiles health: repo git state + last update.sh result.
 
 Options:
-  --verify    also run verify.sh (the full health check; slower)
-  --help, -h  show this help
+  --verify     also run verify.sh (the full health check; slower)
+  --exit-code  exit non-zero if unhealthy (last update failed, or --verify failed)
+  --help, -h   show this help
 USAGE
       exit 0
       ;;
@@ -52,10 +56,17 @@ echo "  ────────────────────────
 
 # ── Repo ──────────────────────────────────────────────────────────────────────
 git_state "$DOTFILES_DIR"
+_unhealthy=false
 printf "  ${DIM}Repo${RESET}        %s\n" "${DOTFILES_DIR/#$HOME/~}"
 if [[ -n "$GIT_STATE_BRANCH" ]]; then
   if [[ "$GIT_STATE_DIRTY" == true ]]; then
-    printf "  ${DIM}Branch${RESET}      %s  (${YELLOW}uncommitted changes${RESET})\n" "$GIT_STATE_BRANCH"
+    if (( GIT_STATE_UNTRACKED > 0 )); then
+      printf "  ${DIM}Branch${RESET}      %s  (${YELLOW}uncommitted changes · %s untracked${RESET})\n" "$GIT_STATE_BRANCH" "$GIT_STATE_UNTRACKED"
+    else
+      printf "  ${DIM}Branch${RESET}      %s  (${YELLOW}uncommitted changes${RESET})\n" "$GIT_STATE_BRANCH"
+    fi
+  elif (( GIT_STATE_UNTRACKED > 0 )); then
+    printf "  ${DIM}Branch${RESET}      %s  (${GREEN}clean${RESET}, %s untracked)\n" "$GIT_STATE_BRANCH" "$GIT_STATE_UNTRACKED"
   else
     printf "  ${DIM}Branch${RESET}      %s  (${GREEN}clean${RESET})\n" "$GIT_STATE_BRANCH"
   fi
@@ -86,6 +97,7 @@ if [[ -f "$STATUS_FILE" ]]; then
     warn "result: ${_result:-unknown}  (${_dur:-?}s)"
     [[ -n "$_failed" ]] && warn "failed steps: $_failed"
     info "details: ${LOG_FILE/#$HOME/~}"
+    _unhealthy=true
   fi
 else
   info "No update.status yet — run:  bash ~/dotfiles/update.sh"
@@ -95,7 +107,16 @@ fi
 # ── Optional full health check ────────────────────────────────────────────────
 if [[ "$RUN_VERIFY" == true ]]; then
   echo "  ─────────────────────────────────────────────────"
-  bash "$DOTFILES_DIR/verify.sh" || true
+  if ! bash "$DOTFILES_DIR/verify.sh"; then
+    _unhealthy=true
+  fi
 fi
 
 echo ""
+
+# With --exit-code, propagate an unhealthy state (failed last update or, when
+# --verify is used, a failing verify.sh) as a non-zero exit for scripting/CI.
+# Without it, status.sh is a pure report and always exits 0.
+if [[ "$EXIT_CODE_MODE" == true && "$_unhealthy" == true ]]; then
+  exit 1
+fi

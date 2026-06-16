@@ -77,6 +77,13 @@ else
   fail "read_kv_value: last assignment" "expected failure"
 fi
 
+printf '# a full-line comment\nnote=a#b\n' > "$TMPDIR_BASE/hash.status"
+if [[ "$(read_kv_value "$TMPDIR_BASE/hash.status" note)" == "a#b" ]]; then
+  pass "read_kv_value: full-line comment skipped; '#' kept in value"
+else
+  fail "read_kv_value: inline #" "expected a#b"
+fi
+
 # ── git_state ─────────────────────────────────────────────────────────────────
 echo ""
 echo "=== git_state ==="
@@ -96,7 +103,7 @@ if command -v git &>/dev/null; then
   if (
     d="$TMPDIR_BASE/nogit"; mkdir -p "$d"
     git_state "$d"
-    [[ -z "$GIT_STATE_BRANCH" && "$GIT_STATE_DIRTY" == false && "$GIT_STATE_UPSTREAM" == false ]]
+    [[ -z "$GIT_STATE_BRANCH" && "$GIT_STATE_DIRTY" == false && "$GIT_STATE_UNTRACKED" == "0" && "$GIT_STATE_UPSTREAM" == false ]]
   ); then
     pass "git_state: non-git dir → defaults"
   else
@@ -108,7 +115,7 @@ if command -v git &>/dev/null; then
     r="$TMPDIR_BASE/clean"; _mkrepo "$r"
     echo hi > "$r/f"; git -C "$r" add f; git -C "$r" commit -q -m init --no-verify
     git_state "$r"
-    [[ -n "$GIT_STATE_BRANCH" && "$GIT_STATE_DIRTY" == false && "$GIT_STATE_UPSTREAM" == false ]]
+    [[ -n "$GIT_STATE_BRANCH" && "$GIT_STATE_DIRTY" == false && "$GIT_STATE_UNTRACKED" == "0" && "$GIT_STATE_UPSTREAM" == false ]]
   ); then
     pass "git_state: clean repo → branch set, not dirty"
   else
@@ -145,6 +152,55 @@ if command -v git &>/dev/null; then
     pass "git_state: ahead of upstream → ahead=1, behind=0"
   else
     fail "git_state: ahead of upstream" "expected ahead=1 behind=0"
+  fi
+
+  # untracked-only → not dirty, untracked counted
+  if (
+    r="$TMPDIR_BASE/untracked"; _mkrepo "$r"
+    echo hi > "$r/f"; git -C "$r" add f; git -C "$r" commit -q -m init --no-verify
+    echo new > "$r/extra.txt"
+    git_state "$r"
+    [[ "$GIT_STATE_DIRTY" == false && "$GIT_STATE_UNTRACKED" == "1" ]]
+  ); then
+    pass "git_state: untracked-only → dirty=false, untracked=1"
+  else
+    fail "git_state: untracked-only" "expected dirty=false untracked=1"
+  fi
+
+  # detached HEAD → branch shows detached@<sha>, no upstream
+  if (
+    r="$TMPDIR_BASE/detached"; _mkrepo "$r"
+    echo a > "$r/f"; git -C "$r" add f; git -C "$r" commit -q -m c1 --no-verify
+    echo b >> "$r/f"; git -C "$r" add f; git -C "$r" commit -q -m c2 --no-verify
+    git -C "$r" checkout -q HEAD~1
+    git_state "$r"
+    [[ "$GIT_STATE_BRANCH" == detached@* && "$GIT_STATE_UPSTREAM" == false ]]
+  ); then
+    pass "git_state: detached HEAD → detached@<sha>"
+  else
+    fail "git_state: detached HEAD" "expected detached@* and no upstream"
+  fi
+
+  # behind upstream → upstream=true, ahead=0, behind=1
+  if (
+    rem="$TMPDIR_BASE/brem.git"; git init -q --bare "$rem"
+    a="$TMPDIR_BASE/ba"; git clone -q "$rem" "$a"
+    git -C "$a" config user.email t@t; git -C "$a" config user.name t
+    git -C "$a" config commit.gpgsign false; git -C "$a" config core.hooksPath /dev/null
+    echo a > "$a/f"; git -C "$a" add f; git -C "$a" commit -q -m c1 --no-verify
+    git -C "$a" push -qu origin HEAD
+    b="$TMPDIR_BASE/bb"; git clone -q "$rem" "$b"
+    git -C "$b" config user.email t@t; git -C "$b" config user.name t
+    git -C "$b" config commit.gpgsign false; git -C "$b" config core.hooksPath /dev/null
+    echo b >> "$b/f"; git -C "$b" add f; git -C "$b" commit -q -m c2 --no-verify
+    git -C "$b" push -q origin HEAD
+    git -C "$a" fetch -q
+    git_state "$a"
+    [[ "$GIT_STATE_UPSTREAM" == true && "$GIT_STATE_AHEAD" == "0" && "$GIT_STATE_BEHIND" == "1" ]]
+  ); then
+    pass "git_state: behind upstream → ahead=0, behind=1"
+  else
+    fail "git_state: behind upstream" "expected ahead=0 behind=1"
   fi
 else
   printf "  SKIP  git_state (git not available)\n"
