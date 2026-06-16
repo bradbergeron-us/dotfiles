@@ -7,8 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-16
+
+First release since `v1.0.0`. Adds machine profiles, encrypted secrets, a live
+MkDocs documentation site, sheldon-managed zsh plugins, a Neovim baseline, and
+expanded CI/testing — plus a guided first-run experience.
+
 ### Added
-- Neovim baseline: `config/nvim/init.lua` (symlinked to `~/.config/nvim/init.lua`) plus `neovim` in the `Brewfile`. Dependency-free defaults — Space leader, line numbers, 2-space indent, smart-case search, system clipboard, readable diagnostics, and highlight-on-yank.
+- **Machine profiles** — every machine now resolves a profile (`personal`, `work`, `minimal`, `server`) that drives which packages, dotfiles, and bootstrap steps apply.
+  - Profile resolution and persistence with precedence `--profile` flag > `DOTFILES_PROFILE` env > `~/.config/dotfiles/profile` > `personal`, managed via `scripts/profile.sh` (aliased `dotprofile`).
+  - Profile-aware symlinking — `config/symlinks.map` entries can be tagged so only the active profile's dotfiles install.
+  - Per-profile Homebrew overlays — `Brewfile.personal` (GUI casks/fonts/apps on `personal`/`work`) and `Brewfile.work` (work-only additions) layered over the core `Brewfile`.
+  - Profile-gated bootstrap steps — work configs run only on `work`; macOS defaults only on `personal`/`work` (skipped on `minimal`/`server`).
+  - Guided first-run profile picker — `bootstrap.sh` prompts for a profile on a fresh machine and persists the choice.
+- **Encrypted secrets** — sops + age workflow via `scripts/secrets.sh` and `.sops.yaml`, documented in `docs/secrets.md`.
+- **Neovim baseline** — `config/nvim/init.lua` (symlinked to `~/.config/nvim/init.lua`) plus `neovim` in the `Brewfile`. Dependency-free defaults — Space leader, line numbers, 2-space indent, smart-case search, system clipboard, readable diagnostics, and highlight-on-yank.
+- **Zsh plugins via [sheldon](https://sheldon.cli.rs)** — `config/sheldon/plugins.toml` (symlinked to `~/.config/sheldon/plugins.toml`) managing fast-syntax-highlighting and zsh-autosuggestions.
+- **Documentation site** — MkDocs Material site deployed to GitHub Pages at <https://bradbergeron-us.github.io/dotfiles/> (`mkdocs.yml`, `.github/workflows/docs.yml`, `site_url`, pinned `docs/requirements.txt`).
+- **GitHub templates** — issue and pull request templates under `.github/`.
+- **Bootstrap dry-run CI** — `.github/workflows` job exercising `bootstrap.sh --dry-run` so the no-op path stays green.
+
+### Changed
+- **Test suite migrated to bats-core** — hand-rolled `scripts/lib/` unit tests replaced with bats-core tests, with `.github/workflows/test-bootstrap.yml` updated to run them. CONTRIBUTING now documents the bats workflow.
+
+### Fixed
+- Silenced dry-run stderr noise so `bootstrap.sh --dry-run` output stays clean.
 
 ## [1.0.0] - 2026-06-16
 
@@ -54,5 +77,6 @@ toolchain, work-machine support, and CI.
 #### Documentation
 - `README.md`, `CONTRIBUTING.md`, and `docs/` (tools, work-machine setup, GPG signing, dry-run/preflight, performance).
 
-[Unreleased]: https://github.com/bradbergeron-us/dotfiles/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/bradbergeron-us/dotfiles/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/bradbergeron-us/dotfiles/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/bradbergeron-us/dotfiles/releases/tag/v1.0.0

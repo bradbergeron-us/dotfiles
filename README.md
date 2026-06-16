@@ -3,6 +3,9 @@
 Personal macOS dotfiles — zsh, tmux, git, and a full developer toolchain.
 
 ![CI](https://github.com/bradbergeron-us/dotfiles/actions/workflows/test-bootstrap.yml/badge.svg)
+![Docs](https://github.com/bradbergeron-us/dotfiles/actions/workflows/docs.yml/badge.svg)
+
+📖 **[Read the docs →](https://bradbergeron-us.github.io/dotfiles/)** — full documentation site (MkDocs Material, deployed to GitHub Pages).
 
 > **Security Note:** This repository contains safe-to-share configuration templates. Machine-specific configs with actual GPG keys, work emails, and infrastructure URLs are stored in `~/.config/git/*.gitconfig` and are never committed. See [Git Commit Signing](#git-commit-signing) for details.
 
@@ -398,9 +401,19 @@ git push
 
 ## 📚 Documentation
 
+The full documentation site is published at **<https://bradbergeron-us.github.io/dotfiles/>**. Every page is also browsable in [`docs/`](docs/):
+
 | Doc | Contents |
 |-----|---------|
-| [docs/tools.md](docs/tools.md) | Full descriptions, rationale, and commands for every tool |
-| [docs/work-setup-complete.md](docs/work-setup-complete.md) | **Complete work machine setup guide** — end-to-end from fresh macOS to production-ready |
-| [docs/work-machine.md](docs/work-machine.md) | Additional work topics — Brewfile.work, zshrc.local, direnv, NVM migration |
-| [docs/performance.md](docs/performance.md) | Shell startup optimization history and benchmarks |
+| [Home](docs/index.md) | Documentation landing page and site overview |
+| [Dry-Run & Pre-flight](docs/DRY_RUN_AND_PREFLIGHT.md) | Previewing changes and read-only system checks before bootstrap |
+| [GPG Commit Signing](docs/GPG_SIGNING.md) | SSH/GPG signing, per-organization configs, uploading keys, troubleshooting |
+| [Encrypted Secrets](docs/secrets.md) | sops + age workflow for encrypting and managing secrets |
+| [Machine Profiles](docs/profiles.md) | `personal`/`work`/`minimal`/`server` profiles, selection precedence, and how they drive packages, symlinks, and bootstrap steps |
+| [Usage & Lifecycle](docs/usage.md) | Day-to-day lifecycle — bootstrap, dry-run, update, verify, status, and scheduling |
+| [Work Machine](docs/work-machine.md) | Additional work topics — Brewfile.work, zshrc.local, direnv, NVM migration |
+| [Complete Work Setup Guide](docs/work-setup-complete.md) | **End-to-end work machine setup** — from fresh macOS to production-ready |
+| [Claude Code SSL Fix](docs/claude-code-ssl-fix.md) | Resolving Claude Code SSL/certificate issues behind a corporate proxy |
+| [Tool Reference](docs/tools.md) | Full descriptions, rationale, and commands for every tool |
+| [Shell Performance](docs/performance.md) | Shell startup optimization history and benchmarks |
+| [Contributing](docs/contributing.md) | Contribution workflow — bats-core tests, shellcheck, CI jobs, and conventional commits |
