@@ -14,6 +14,7 @@
 brew "starship"       # cross-shell prompt
 brew "zoxide"         # smart cd with frecency ranking
 brew "fzf"            # fuzzy finder (Ctrl+R history, Ctrl+T file picker)
+brew "sheldon"        # fast, declarative zsh plugin manager (config: config/sheldon/plugins.toml)
 
 # ------------------
 # File & search

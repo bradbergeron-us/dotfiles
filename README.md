@@ -183,6 +183,7 @@ Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFIL
 | `home/psqlrc` | `~/.psqlrc` | psql defaults — `\x auto`, `\timing`, per-DB history |
 | `home/editorconfig` | `~/.editorconfig` | Global EditorConfig fallback |
 | `config/nvim/init.lua` | `~/.config/nvim/init.lua` | Neovim — dependency-free baseline (Space leader, 2-space indent, diagnostics) |
+| `config/sheldon/plugins.toml` | `~/.config/sheldon/plugins.toml` | Zsh plugins via [sheldon](https://sheldon.cli.rs) — fast-syntax-highlighting, zsh-autosuggestions |
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code settings |
 | `vscode/extensions.txt` | _(auto-installed)_ | Core VS Code extensions |
 | `Brewfile` · `Brewfile.personal` · `Brewfile.work` | _(used by bootstrap)_ | Core CLI formulae + per-profile overlays (GUI casks/fonts/apps; work additions) |

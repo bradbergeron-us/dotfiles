@@ -38,3 +38,4 @@ config/direnvrc        .config/direnv/direnvrc
 config/mise.toml       .config/mise/config.toml
 config/ghostty/config  .config/ghostty/config  gui
 config/nvim/init.lua   .config/nvim/init.lua
+config/sheldon/plugins.toml  .config/sheldon/plugins.toml
