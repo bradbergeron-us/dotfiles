@@ -8,30 +8,52 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
+  icon:
+    logo: material/console
+    repo: fontawesome/brands/github
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: indigo
+    # Tokyo Night (dark) — shown by default
+    - scheme: slate
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: indigo
+        name: Switch to light mode
+    # Tokyo Night Day (light)
+    - scheme: default
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
-        name: Switch to light mode
+        name: Switch to dark mode
   features:
     - navigation.instant
     - navigation.tracking
     - navigation.sections
     - navigation.top
+    - navigation.footer
+    - toc.follow
     - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - content.action.view
     - search.suggest
     - search.highlight
-    - toc.follow
+    - search.share
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bradbergeron-us/dotfiles
+      name: dotfiles on GitHub
+
+copyright: Copyright &copy; Brad Bergeron
 
 markdown_extensions:
   - admonition
