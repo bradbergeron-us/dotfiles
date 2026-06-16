@@ -5,6 +5,14 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.2.0...v1.3.0) (2026-06-16)
+
+
+### Features
+
+* revive uninstaller (mirror of install.sh, profile-aware) ([8e847fb](https://github.com/bradbergeron-us/dotfiles/commit/8e847fb3c18d7bd80fbdf79ca1fe0d0298da34f5))
+* revive uninstaller as the mirror of install.sh ([477f91c](https://github.com/bradbergeron-us/dotfiles/commit/477f91c04d8d198a2553f1c42c064f35d8c19237))
+
 ## [1.2.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.1.0...v1.2.0) (2026-06-16)
 
 
