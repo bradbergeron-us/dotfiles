@@ -117,6 +117,34 @@ else
   fail "profile_includes: multi-tag" "unexpected matching"
 fi
 
+# ── profile_brewfiles ─────────────────────────────────────────────────────────
+echo ""
+echo "=== profile_brewfiles ==="
+BFD="$TMPDIR_BASE/bf"; mkdir -p "$BFD"
+: > "$BFD/Brewfile"; : > "$BFD/Brewfile.personal"; : > "$BFD/Brewfile.work"
+count_bf() { profile_brewfiles "$1" "$BFD" | wc -l | tr -d '[:space:]'; }
+if [[ "$(count_bf minimal)" == "1" && "$(count_bf server)" == "1" ]]; then
+  pass "profile_brewfiles: minimal/server -> core only"
+else
+  fail "profile_brewfiles: minimal/server" "expected 1 file"
+fi
+if [[ "$(count_bf personal)" == "2" ]]; then
+  pass "profile_brewfiles: personal -> core + personal"
+else
+  fail "profile_brewfiles: personal" "expected 2 files"
+fi
+if [[ "$(count_bf work)" == "3" ]]; then
+  pass "profile_brewfiles: work -> core + personal + work"
+else
+  fail "profile_brewfiles: work" "expected 3 files"
+fi
+rm -f "$BFD/Brewfile.personal" "$BFD/Brewfile.work"
+if [[ "$(count_bf work)" == "1" ]]; then
+  pass "profile_brewfiles: missing overlay files are omitted"
+else
+  fail "profile_brewfiles: missing overlays" "expected 1 file"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"

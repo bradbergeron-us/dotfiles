@@ -69,10 +69,15 @@ jobs:
           done
           echo "All shell files pass zsh syntax check."
 
-      - name: Validate Brewfile parses cleanly
+      - name: Validate Brewfiles parse cleanly
         # brew bundle list reads the Brewfile DSL without installing anything.
-        # A malformed entry (bad tap, typo in formula name format) will exit non-zero.
-        run: brew bundle list --all --file=Brewfile
+        # A malformed entry (bad tap, typo in formula name format) exits non-zero.
+        # Covers the core Brewfile and every profile overlay.
+        run: |
+          for bf in Brewfile Brewfile.personal Brewfile.work; do
+            echo "==> $bf"
+            brew bundle list --all --file="$bf"
+          done
 
   # ------------------------------------------------------------------
   # 3. install-smoke — run install.sh against an isolated temp $HOME

@@ -6,14 +6,22 @@ Work machines need extra tools (API clients, database CLIs, Kubernetes, Java bui
 
 ## 1. Install work-specific packages
 
-Run the base Brewfile first, then the work overlay:
+Mark the machine's profile as `work` and `bootstrap.sh` (or `update.sh`) installs the core `Brewfile` plus the `Brewfile.personal` (GUI) and `Brewfile.work` overlays automatically:
 
 ```sh
-brew bundle --file=~/dotfiles/Brewfile        # shared base (all machines)
-brew bundle --file=~/dotfiles/Brewfile.work   # work additions
+bash ~/dotfiles/scripts/profile.sh set work   # mark this machine as a work device
+# then run bootstrap, or on an existing machine bundle the files below
 ```
 
-`Brewfile.work` adds: Gradle, kubectl, and Helm. Everything else you might expect here — Insomnia, newman, Redis, and Maven — is already in the base `Brewfile` since it's useful on every machine. PostgreSQL CLI tools are intentionally excluded: Postgres.app (installed by the base Brewfile) provides them and installing `postgresql@xx` via Homebrew can cause conflicts.
+To run the bundles manually:
+
+```sh
+brew bundle --file=~/dotfiles/Brewfile           # core CLI (all profiles)
+brew bundle --file=~/dotfiles/Brewfile.personal  # GUI casks/fonts/apps
+brew bundle --file=~/dotfiles/Brewfile.work      # work additions
+```
+
+`Brewfile.work` adds: Gradle, kubectl, and Helm. Insomnia is a GUI app in `Brewfile.personal`; newman, Redis, and Maven are core CLI tools in `Brewfile`. PostgreSQL CLI tools are intentionally excluded: Postgres.app (from `Brewfile.personal`) provides them and installing `postgresql@xx` via Homebrew can cause conflicts.
 
 ---
 

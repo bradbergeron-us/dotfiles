@@ -145,30 +145,25 @@ fi
 
 if [[ "$DRY_RUN" == true ]]; then
   dry_run_step "📦  Packages (brew bundle)"
-  check_brew_bundle "$DOTFILES_DIR/Brewfile"
+  while IFS= read -r _bf; do
+    check_brew_bundle "$_bf"
+  done < <(profile_brewfiles "$DOTFILES_PROFILE" "$DOTFILES_DIR")
 else
   step "📦  Packages (brew bundle)"
-  # Clean up any stale lock files
-  info "Preparing package installation..."
+  info "Preparing package installation for profile '$DOTFILES_PROFILE'..."
   rm -f "$DOTFILES_DIR/Brewfile.lock.json" 2>/dev/null || true
 
-  # Temporarily disable ALL error handling for brew bundle
-  # This ensures the script ALWAYS continues to the next step
-  info "Installing Homebrew packages (will adopt any existing GUI apps)..."
-  (
-    set +e
-    HOMEBREW_CASK_OPTS="--adopt" brew bundle --verbose --no-upgrade --file="$DOTFILES_DIR/Brewfile"
-    exit 0  # Force success exit code
-  ) || true
-  _brew_exit_code=$?
-
-  # Always report success and continue
-  if [[ $_brew_exit_code -eq 0 ]]; then
-    success "Brew packages installed"
-  else
-    warn "Some Brew packages may have failed — continuing with setup anyway"
-    warn "Run 'brew bundle --verbose' manually later to retry any failed packages"
-  fi
+  # Install the core Brewfile plus the active profile's overlays. Each file runs
+  # in a forced-continue subshell so a single failure never aborts bootstrap.
+  while IFS= read -r _bf; do
+    info "Installing from ${_bf##*/} (will adopt existing GUI apps)..."
+    (
+      set +e
+      HOMEBREW_CASK_OPTS="--adopt" brew bundle --verbose --no-upgrade --file="$_bf"
+      exit 0  # Force success exit code
+    ) || true
+  done < <(profile_brewfiles "$DOTFILES_PROFILE" "$DOTFILES_DIR")
+  success "Brew packages installed (profile: $DOTFILES_PROFILE)"
 fi
 
 if [[ "$DRY_RUN" == true ]]; then

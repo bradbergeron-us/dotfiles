@@ -86,3 +86,18 @@ profile_includes() {
   done
   return 1
 }
+
+# profile_brewfiles PROFILE DOTFILES_DIR — echo the Brewfile paths to install for
+# PROFILE, one per line: the core Brewfile always, plus Brewfile.personal for GUI
+# profiles (personal/work) and Brewfile.work for work. minimal/server get core
+# only. Only files that exist are emitted.
+profile_brewfiles() {
+  local profile="$1" dir="$2"
+  printf '%s\n' "$dir/Brewfile"
+  if profile_includes "$profile" gui && [[ -f "$dir/Brewfile.personal" ]]; then
+    printf '%s\n' "$dir/Brewfile.personal"
+  fi
+  if profile_includes "$profile" work && [[ -f "$dir/Brewfile.work" ]]; then
+    printf '%s\n' "$dir/Brewfile.work"
+  fi
+}
