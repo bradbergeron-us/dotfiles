@@ -1,0 +1,16 @@
+# plugins.toml — declarative zsh plugin manifest for sheldon.
+#
+# Symlinked to ~/.config/sheldon/plugins.toml (see config/symlinks.map) and
+# sourced from home/zshrc via `eval "$(sheldon source)"`. sheldon downloads each
+# plugin on first source and generates the source lines; refresh pinned commits
+# with `sheldon lock --update`.
+#
+# These two plugins were previously hand-cloned into ~/.zsh and sourced manually;
+# sheldon now manages them declaratively so every machine gets the same set.
+shell = "zsh"
+
+[plugins.fast-syntax-highlighting]
+github = "zdharma-continuum/fast-syntax-highlighting"
+
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"

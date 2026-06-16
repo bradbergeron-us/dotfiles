@@ -179,13 +179,16 @@ command -v bat &>/dev/null && alias cat='bat --paging=never'
 eval "$(starship init zsh)"
 test -f ~/afs_localprops.sh && source ~/afs_localprops.sh
 
-# Optional plugins if installed
-if [ -f "$HOME/.zsh/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ]; then
-  source "$HOME/.zsh/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-fi
-
-if [ -f "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ]; then
-  source "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# Zsh plugins — managed declaratively by sheldon (config: ~/.config/sheldon/plugins.toml).
+# Falls back to manually-cloned plugins under ~/.zsh so a machine without sheldon
+# (e.g. before bootstrap installs it) still gets highlighting + autosuggestions.
+if command -v sheldon &>/dev/null; then
+  eval "$(sheldon source)"
+else
+  [ -f "$HOME/.zsh/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ] && \
+    source "$HOME/.zsh/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
+  [ -f "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && \
+    source "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
 fi
 
 # Enable enhanced menu selection in completions
