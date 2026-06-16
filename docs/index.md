@@ -61,9 +61,14 @@ Other handy commands:
 
 ## Documentation
 
+- **Guides**
+    - [Profiles](profiles.md) — `minimal` / `personal` / `work` / `server` and how each is applied.
+    - [Usage & Lifecycle](usage.md) — clone, bootstrap, update, verify, status, and scheduling.
+    - [Contributing](contributing.md) — conventions, the bats-core test workflow, and CI.
 - **Setup**
     - [Dry-Run & Pre-flight](DRY_RUN_AND_PREFLIGHT.md) — preview and validate before installing.
     - [GPG Commit Signing](GPG_SIGNING.md) — set up signed Git commits.
+    - [Encrypted Secrets](secrets.md) — commit secrets safely with sops + age.
 - **Work machine**
     - [Work Machine Setup](work-machine.md) — the layered work overlay approach.
     - [Complete Work Setup Guide](work-setup-complete.md) — full corporate-environment walkthrough.
