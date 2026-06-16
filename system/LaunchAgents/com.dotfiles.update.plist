@@ -5,10 +5,14 @@
     <key>Label</key>
     <string>com.dotfiles.update</string>
 
+    <!-- ProgramArguments are templated by setup-scheduler.sh: the dotfiles
+         path is substituted in, and any extra update.sh arguments (such as a
+         no-upgrade flag) are spliced in below, or omitted entirely. -->
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
         <string>__DOTFILES_DIR__/update.sh</string>
+__UPDATE_ARGS__
     </array>
 
     <!-- Run daily at 9 AM — edit Hour/Minute to change the schedule -->

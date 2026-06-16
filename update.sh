@@ -7,9 +7,12 @@
 #                   upgrades) — ideal for work machines with pinned tooling
 #   --no-pull       skip the git pull;  --force-pull  pull even if repo is dirty
 #   --help          full usage
+# Per-machine defaults (also honored by the launchd job, which does NOT source
+# your shell rc): ~/.config/dotfiles/update.conf   e.g.  NO_UPGRADE=true
 # Schedule daily with launchd (one command):
-#   bash ~/dotfiles/scripts/setup-scheduler.sh             # install
-#   bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall # remove
+#   bash ~/dotfiles/scripts/setup-scheduler.sh               # install
+#   bash ~/dotfiles/scripts/setup-scheduler.sh --no-upgrade  # install (no upgrades)
+#   bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall   # remove
 #
 # What it does:
 #   1. Pulls latest dotfiles from GitHub
@@ -43,15 +46,33 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Sourced early (no side effects) so the flag/config parsing below can use
+# read_config_bool. bootstrap_helpers + setup_colors load further down.
+# shellcheck source=scripts/lib/update_helpers.sh
+source "$(dirname "$0")/scripts/lib/update_helpers.sh"
+
 # ── Flags ─────────────────────────────────────────────────────────────────────
-# Determinism / safety controls. Env defaults are handy for the launchd job:
-# a truthy DOTFILES_UPDATE_NO_UPGRADE / DOTFILES_UPDATE_NO_PULL enables that mode.
+# Determinism / safety controls, resolved in increasing order of precedence:
+#   1. per-machine config file  (~/.config/dotfiles/update.conf)
+#   2. environment variables    (DOTFILES_UPDATE_NO_UPGRADE / _NO_PULL)
+#   3. command-line flags       (--no-upgrade / --no-pull / ...)
+# The config file is what makes the launchd job safe: launchd does NOT source
+# ~/.zshrc/.zshrc.local, so an env var set there never reaches the scheduled run,
+# but update.sh reads the config file directly on every invocation.
 DRY_RUN=false
 NO_UPGRADE=false
 NO_PULL=false
 FORCE_PULL=false
-case "${DOTFILES_UPDATE_NO_UPGRADE:-}" in 1|true|yes|on) NO_UPGRADE=true ;; esac
-case "${DOTFILES_UPDATE_NO_PULL:-}"    in 1|true|yes|on) NO_PULL=true ;; esac
+
+# 1. config file (override the path with DOTFILES_UPDATE_CONFIG, mainly for tests)
+UPDATE_CONFIG="${DOTFILES_UPDATE_CONFIG:-$HOME/.config/dotfiles/update.conf}"
+_v=$(read_config_bool "$UPDATE_CONFIG" NO_UPGRADE); [[ -n "$_v" ]] && NO_UPGRADE=$_v
+_v=$(read_config_bool "$UPDATE_CONFIG" NO_PULL);    [[ -n "$_v" ]] && NO_PULL=$_v
+unset _v
+
+# 2. environment variables override the config file (accept true and false)
+case "${DOTFILES_UPDATE_NO_UPGRADE:-}" in 1|true|yes|on) NO_UPGRADE=true ;; 0|false|no|off) NO_UPGRADE=false ;; esac
+case "${DOTFILES_UPDATE_NO_PULL:-}"    in 1|true|yes|on) NO_PULL=true ;;    0|false|no|off) NO_PULL=false ;; esac
 
 for arg in "$@"; do
   case "$arg" in
@@ -75,8 +96,13 @@ Options:
   --help, -h     Show this help
 
 Environment:
-  DOTFILES_UPDATE_NO_UPGRADE=1   same as --no-upgrade
-  DOTFILES_UPDATE_NO_PULL=1      same as --no-pull
+  DOTFILES_UPDATE_NO_UPGRADE=1   same as --no-upgrade (accepts true/false)
+  DOTFILES_UPDATE_NO_PULL=1      same as --no-pull   (accepts true/false)
+
+Config file (read directly, so the scheduled launchd job honors it too):
+  ~/.config/dotfiles/update.conf   NO_UPGRADE=true
+                                   NO_PULL=false
+Precedence: config file < environment < command-line flags.
 USAGE
       exit 0
       ;;
@@ -108,8 +134,7 @@ FAILED_STEPS=()
 
 # shellcheck source=scripts/lib/bootstrap_helpers.sh
 source "$(dirname "$0")/scripts/lib/bootstrap_helpers.sh"
-# shellcheck source=scripts/lib/update_helpers.sh
-source "$(dirname "$0")/scripts/lib/update_helpers.sh"
+# update_helpers.sh is already sourced near the top (for read_config_bool).
 setup_colors
 
 # ── Observability helpers ─────────────────────────────────────────────────────

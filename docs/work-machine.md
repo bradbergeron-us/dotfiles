@@ -69,7 +69,7 @@ Then run `direnv allow` once to approve the file. After that, variables activate
 `update.sh` is built not to disturb a working machine:
 
 - **Preview first** — `bash ~/dotfiles/update.sh --dry-run` prints every action it *would* take and changes nothing (no pull, no upgrades, no status-file write, no log rotation).
-- **No package upgrades** — `bash ~/dotfiles/update.sh --no-upgrade` (or `export DOTFILES_UPDATE_NO_UPGRADE=1`, e.g. in `~/.zshrc.local`) pulls the latest dotfiles, re-creates symlinks, and runs the health check, but skips `brew upgrade`, `mise upgrade`, `rustup update`, and `gem update`. Use this when work tooling depends on specific package versions.
+- **No package upgrades** — `bash ~/dotfiles/update.sh --no-upgrade` pulls the latest dotfiles, re-creates symlinks, and runs the health check, but skips `brew upgrade`, `mise upgrade`, `rustup update`, and `gem update`. Use this when work tooling depends on specific package versions. (For manual runs you can also `export DOTFILES_UPDATE_NO_UPGRADE=1` in `~/.zshrc.local`; to cover the *scheduled* job, see "Make the scheduled job safe too" below, since launchd does not source your shell rc.)
 - **Dirty-tree guard** — if `~/dotfiles` has uncommitted changes to tracked files, `update.sh` skips the `git pull` instead of risking a `--rebase --autostash` conflict. Commit or stash first, or pass `--force-pull` to override.
 - **Abort-safe pull** — if a `pull --rebase` fails, the in-progress rebase is aborted so the repo is left exactly as it was.
 - **Skip the pull entirely** — `--no-pull` (or `DOTFILES_UPDATE_NO_PULL=1`) re-symlinks and verifies against whatever is already checked out.
@@ -80,6 +80,26 @@ A conservative work-machine update is therefore:
 bash ~/dotfiles/update.sh --dry-run --no-upgrade   # see exactly what will happen
 bash ~/dotfiles/update.sh --no-upgrade             # apply: pull + re-symlink + verify only
 ```
+
+### Make the scheduled job safe too
+
+The launchd job does **not** source `~/.zshrc`/`~/.zshrc.local`, so an exported `DOTFILES_UPDATE_NO_UPGRADE` never reaches it. Two ways to make the scheduled run safe:
+
+1. **Machine-wide default (recommended)** — set it once in `~/.config/dotfiles/update.conf`; `update.sh` reads this file directly on every run, manual or scheduled:
+
+   ```sh
+   mkdir -p ~/.config/dotfiles
+   cp ~/dotfiles/home/examples/update.conf.example ~/.config/dotfiles/update.conf
+   # then set NO_UPGRADE=true (and/or NO_PULL=true)
+   ```
+
+2. **Scheduled-only** — bake the flag into the launchd plist when installing the scheduler:
+
+   ```sh
+   bash ~/dotfiles/scripts/setup-scheduler.sh --no-upgrade
+   ```
+
+   The scheduled job then runs `update.sh --no-upgrade` while manual runs stay full. Precedence is config file < environment < flags, so a command-line flag always wins for one-off runs.
 
 ### One-time migration: `~/.gitconfig` became a thin include
 

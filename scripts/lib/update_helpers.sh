@@ -86,3 +86,27 @@ rebase_in_progress() {
   [[ "$gitdir" = /* ]] || gitdir="$dir/$gitdir"  # --git-dir may be relative to DIR
   [[ -d "$gitdir/rebase-merge" || -d "$gitdir/rebase-apply" ]]
 }
+
+# read_config_bool FILE KEY — echo "true" or "false" if FILE sets KEY to a
+# recognized boolean (`KEY=value`; surrounding whitespace and `# comments`
+# ignored; surrounding quotes stripped; the last assignment wins). Echoes nothing
+# when the key is absent/unrecognized or the file is missing, so a caller can tell
+# "unset" apart from an explicit value:
+#   v=$(read_config_bool "$f" NO_UPGRADE); [[ -n "$v" ]] && NO_UPGRADE=$v
+# update.sh reads ~/.config/dotfiles/update.conf this way so the launchd job
+# (which never sources ~/.zshrc/.zshrc.local) still honors per-machine settings.
+read_config_bool() {
+  local file="$1" key="$2" line val=""
+  [[ -f "$file" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"  # strip trailing comment
+    if [[ "$line" =~ ^[[:space:]]*"$key"[[:space:]]*=[[:space:]]*([^[:space:]]+)[[:space:]]*$ ]]; then
+      val="${BASH_REMATCH[1]}"
+      val="${val%\"}"; val="${val#\"}"  # strip optional surrounding double quotes
+    fi
+  done < "$file"
+  case "$val" in
+    1|true|TRUE|yes|YES|on|ON)    echo "true" ;;
+    0|false|FALSE|no|NO|off|OFF)  echo "false" ;;
+  esac
+}

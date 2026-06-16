@@ -240,6 +240,55 @@ else
   printf "  SKIP  working_tree_dirty/rebase_in_progress (git not available)\n"
 fi
 
+# ── read_config_bool ────────────────────────────────────────────────
+echo ""
+echo "=== read_config_bool ==="
+
+CFG="$TMPDIR_BASE/update.conf"
+cat > "$CFG" <<'EOF'
+# sample update config
+NO_UPGRADE=true
+NO_PULL = false
+QUOTED="true"
+EOF
+
+if [[ "$(read_config_bool "$CFG" NO_UPGRADE)" == "true" ]]; then
+  pass "read_config_bool: NO_UPGRADE=true → true"
+else
+  fail "read_config_bool: NO_UPGRADE" "expected true"
+fi
+
+if [[ "$(read_config_bool "$CFG" NO_PULL)" == "false" ]]; then
+  pass "read_config_bool: 'NO_PULL = false' (spaces) → false"
+else
+  fail "read_config_bool: NO_PULL spaces" "expected false"
+fi
+
+if [[ "$(read_config_bool "$CFG" QUOTED)" == "true" ]]; then
+  pass "read_config_bool: quoted value → true"
+else
+  fail "read_config_bool: quoted value" "expected true"
+fi
+
+if [[ -z "$(read_config_bool "$CFG" MISSING_KEY)" ]]; then
+  pass "read_config_bool: absent key → empty"
+else
+  fail "read_config_bool: absent key" "expected empty"
+fi
+
+if [[ -z "$(read_config_bool "$TMPDIR_BASE/does-not-exist.conf" NO_UPGRADE)" ]]; then
+  pass "read_config_bool: missing file → empty"
+else
+  fail "read_config_bool: missing file" "expected empty"
+fi
+
+printf 'NO_UPGRADE=false\nNO_UPGRADE=true\n' > "$TMPDIR_BASE/last.conf"
+if [[ "$(read_config_bool "$TMPDIR_BASE/last.conf" NO_UPGRADE)" == "true" ]]; then
+  pass "read_config_bool: last assignment wins"
+else
+  fail "read_config_bool: last assignment" "expected true"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"

@@ -59,7 +59,7 @@ bash ~/dotfiles/update.sh --no-upgrade   # pull + re-symlink + verify only (no b
 
 `--no-upgrade` is handy on a work laptop where tooling is version-sensitive. If the dotfiles repo has uncommitted local changes, `update.sh` skips the `git pull` to avoid a rebase conflict (override with `--force-pull`); a failed rebase is aborted automatically so the repo is left untouched. See [docs/work-machine.md](docs/work-machine.md#safe-updates-on-a-work-machine) for the work-machine workflow.
 
-To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/scripts/setup-scheduler.sh`
+To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/scripts/setup-scheduler.sh` (add `--no-upgrade` so the scheduled run skips upgrades too). For a machine-wide default honored by **both** manual and scheduled runs, set `NO_UPGRADE=true` in `~/.config/dotfiles/update.conf` (see `home/examples/update.conf.example`) — the launchd job reads it directly since it can't see your shell rc.
 
 To run the health check standalone: `bash ~/dotfiles/verify.sh`
 
