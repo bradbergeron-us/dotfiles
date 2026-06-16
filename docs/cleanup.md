@@ -202,7 +202,6 @@ Then commit the change to your dotfiles repo so it runs on all your machines.
 
 ## See also
 
-- [`install.sh`](../install.sh) — Symlink dotfiles
-- [`uninstall.sh`](uninstall.md) — Remove dotfile symlinks
-- [`verify.sh`](../verify.sh) — Health check for dotfiles
-- [`bootstrap.sh`](../bootstrap.sh) — Full machine setup
+- [Usage Guide](usage.md) — Overview of all dotfiles commands
+- [Troubleshooting](troubleshooting.md) — Common issues and solutions
+- [Architecture](architecture.md) — How the dotfiles system works

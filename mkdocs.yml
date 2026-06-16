@@ -93,6 +93,7 @@ nav:
       - Write a test: how-to/write-a-test.md
       - Schedule updates: how-to/schedule-updates.md
       - Recover from a failed update: how-to/recover-from-a-failed-update.md
+      - Clean up dotfiles: cleanup.md
   - Profiles: profiles.md
   - Usage: usage.md
   - Setup:
