@@ -4,6 +4,12 @@ This repo can store secrets (API tokens, `.env` files, credentials) **encrypted 
 
 The encryption policy lives in [`.sops.yaml`](https://github.com/bradbergeron-us/dotfiles/blob/main/.sops.yaml). A small wrapper, [`scripts/secrets.sh`](https://github.com/bradbergeron-us/dotfiles/blob/main/scripts/secrets.sh), provides `edit` / `encrypt` / `decrypt` helpers.
 
+!!! tip "Looking for the quick recipe?"
+    This page is the reference and safety model. For a step-by-step task
+    walkthrough (encrypt → edit → rotate a secret), see the
+    **"Encrypt, edit & rotate a secret"** guide in the **How-to guides**
+    section.
+
 ---
 
 ## How it works
@@ -69,3 +75,40 @@ sops --decrypt secrets/aws.yaml  # print plaintext to stdout
 - **Only commit sops-encrypted files.** Inspect a file before committing — an encrypted sops file contains `sops:` metadata and `ENC[...]` values. If you see raw plaintext secrets, stop and encrypt first.
 - **Defense in depth.** The repo's `gitleaks` pre-commit hook and CI job scan for accidentally committed secrets, but the encryption boundary above is the primary protection.
 - **Rotate on exposure.** If a private key or plaintext secret is ever exposed, rotate the affected credentials and generate a new age key, then `sops updatekeys` all files.
+
+### Why values, not whole files
+
+sops encrypts only the *values* in a structured file, leaving keys (and the
+`sops:` metadata block) in cleartext. This is deliberate: `git diff` still shows
+*which* keys changed without revealing secrets, code review stays meaningful, and
+merge conflicts are tractable. The trade-off — key *names* are visible — is
+acceptable because the sensitive material is the values. Avoid putting secrets in
+key names.
+
+## Rotating and re-keying
+
+Two distinct operations are often conflated:
+
+- **Rotating a secret value** (e.g. a leaked API token): change the secret at the
+  source (revoke + reissue the credential), then update its encrypted value:
+  ```sh
+  bash ~/dotfiles/scripts/secrets.sh edit secrets/aws.yaml   # paste the new value, save
+  ```
+- **Re-keying recipients** (adding/removing a machine or teammate): edit the
+  `age:` recipients under the matching `creation_rules` entry in `.sops.yaml`,
+  commit it, then re-encrypt every existing file to the new recipient set:
+  ```sh
+  sops updatekeys secrets/aws.yaml   # repeat per file, or script across them
+  ```
+  Only recipients listed *before* a file was last re-keyed can decrypt it —
+  removing a recipient from `.sops.yaml` does **not** retroactively lock them out
+  of copies they already pulled, so rotate the underlying secret values too when
+  revoking access.
+
+## Related
+
+- [Architecture](architecture.md#sopsyaml) — where `.sops.yaml` sits in the SSOT model.
+- [Troubleshooting](troubleshooting.md#encrypted-secrets-sops-age) — fixes for
+  missing keys and decryption failures.
+- [Glossary](glossary.md#sops-age) — quick definitions of sops and age.
+- The **How-to guides** section — the task-oriented encrypt/edit/rotate recipe.
