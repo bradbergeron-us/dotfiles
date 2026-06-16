@@ -161,7 +161,8 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `home/gitconfig` | `~/.gitconfig` _(include)_ | Git defaults, delta pager, SSH signing — loaded via a thin `~/.gitconfig` (not a symlink) so `git config --global` / tool writes stay out of the repo |
 | `home/gitignore_global` | `~/.gitignore_global` | Global ignores — macOS, editors, Java, Go |
 | `home/tmux.conf` | `~/.tmux.conf` | tmux — `C-a` prefix, vim keys, TPM plugins |
-| `home/hyper.js` | `~/.hyper.js` | Hyper — Tokyo Night theme, JetBrains Mono |
+| `config/ghostty/config` | `~/.config/ghostty/config` | **Ghostty (preferred terminal)** — Tokyo Night, JetBrains Mono Nerd Font |
+| `home/hyper.js` | `~/.hyper.js` | Hyper _(fallback terminal)_ — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt config |
 | `config/mise.toml` | `~/.config/mise/config.toml` | Global runtime versions (Ruby, Node, Java, Python, Go) |
 | `config/direnvrc` | `~/.config/direnv/direnvrc` | Shared `layout python` / `layout node` helpers |
@@ -245,6 +246,8 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 
 | App | What it does |
 |-----|-------------|
+| [Ghostty](https://ghostty.org) | Preferred terminal — GPU-accelerated, native macOS; Tokyo Night + JetBrains Mono Nerd Font (`config/ghostty/config`) |
+| [Hyper](https://hyper.is) | Fallback terminal — kept installed during the Ghostty transition (`home/hyper.js`) |
 | [Raycast](https://raycast.com) | Launcher, clipboard history, window management — replaces Spotlight |
 | [Insomnia](https://insomnia.rest) | GUI REST/GraphQL client — API design, collections, team sharing |
 | [OrbStack](https://orbstack.dev) | Docker Desktop replacement — starts in <1s, lower RAM/CPU |
