@@ -8,7 +8,7 @@ DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_DIR="$HOME/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
 
 # Counters
-typeset -i _linked=0 _current=0 _backed=0
+typeset -i _linked=0 _current=0 _backed=0 _skipped=0
 
 info()    { print -P "%F{cyan}  → %f$*"; }
 success() { print -P "%F{green}  ✓ %f$*"; }
@@ -45,9 +45,24 @@ echo "  ────────────────────────
 # (install.sh creates them; verify.sh, bootstrap --dry-run, and CI read the
 # same file, so the mapping lives in exactly one place.)
 SYMLINK_MAP="$DOTFILES_DIR/config/symlinks.map"
+
+# Resolve the active profile so only records that apply to it are linked. Sourcing
+# is side-effect-free. With nothing set this resolves to `personal`, which
+# includes every tag in use today (gui + core) — i.e. the same set as before
+# profiles existed (plain `zsh install.sh` still links everything).
+# shellcheck source=scripts/lib/profile_helpers.sh
+source "$DOTFILES_DIR/scripts/lib/profile_helpers.sh"
+_PROFILE="$(current_profile)"
+info "profile   $_PROFILE"
+
 if [[ -r "$SYMLINK_MAP" ]]; then
-  while read -r src_rel dest_rel; do
+  while read -r src_rel dest_rel tags_rel; do
     [[ -z "$src_rel" || "$src_rel" == \#* ]] && continue
+    if ! profile_includes "$_PROFILE" "${tags_rel:-}"; then
+      info "skip      $dest_rel  (not in profile $_PROFILE)"
+      (( _skipped++ )) || true
+      continue
+    fi
     dest="$HOME/$dest_rel"
     mkdir -p "$(dirname "$dest")"
     symlink "$DOTFILES_DIR/$src_rel" "$dest"
@@ -134,7 +149,7 @@ fi
 
 echo ""
 echo "  ─────────────────────────────────────────────────"
-success "${_linked} linked  ·  ${_current} current  ·  ${_backed} backed up"
+success "${_linked} linked  ·  ${_current} current  ·  ${_backed} backed up  ·  ${_skipped} skipped"
 if (( _backed > 0 )); then
   backup "backups saved to ${BACKUP_DIR/$HOME/\~}"
 fi

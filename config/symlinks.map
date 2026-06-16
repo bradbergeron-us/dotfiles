@@ -1,8 +1,12 @@
 # symlinks.map — single source of truth for tracked dotfile symlinks.
 #
-# One record per line:  <src>  <dest>
+# One record per line:  <src>  <dest>  [tags]
 #   src   path relative to the dotfiles repo root (DOTFILES_DIR)
 #   dest  path relative to $HOME
+#   tags  optional, comma-separated profile tags controlling which profiles get
+#         the link (see scripts/lib/profile_helpers.sh: profile_includes).
+#         Omit/blank = all profiles. `gui` = personal+work (skipped on
+#         minimal/server); `work` = work only; a profile name = that profile.
 # Columns are whitespace-separated; blank lines and # comments are ignored.
 #
 # Consumed by install.sh (creates the links), verify.sh (checks them),
@@ -18,7 +22,7 @@
 home/zshrc             .zshrc
 home/zprofile          .zprofile
 home/tmux.conf          .tmux.conf
-home/hyper.js          .hyper.js
+home/hyper.js          .hyper.js              gui
 home/gitignore_global  .gitignore_global
 home/gemrc             .gemrc
 home/irbrc             .irbrc
@@ -32,5 +36,5 @@ home/ssh_config        .ssh/config
 config/starship.toml   .config/starship.toml
 config/direnvrc        .config/direnv/direnvrc
 config/mise.toml       .config/mise/config.toml
-config/ghostty/config  .config/ghostty/config
+config/ghostty/config  .config/ghostty/config  gui
 config/nvim/init.lua   .config/nvim/init.lua

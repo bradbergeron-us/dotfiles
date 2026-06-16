@@ -216,14 +216,18 @@ check_dotfile_symlinks() {
   dry_run_log "Run: install.sh (symlink dotfiles)"
 
   # Read tracked symlinks from config/symlinks.map (single source of truth) as
-  # "dest_abs:src_rel" entries so the comparison loop below is unchanged. Using
-  # the same manifest install.sh and verify.sh read means this preview can never
-  # drift from what is actually linked.
+  # "dest_abs:src_rel" entries so the comparison loop below is unchanged. Honor
+  # the active profile's tag filter (3rd column) exactly like install.sh so the
+  # preview matches what would actually be linked.
+  local _profile
+  _profile="$(current_profile)"
+  info "Profile: $_profile (gui-tagged links are skipped on minimal/server)"
   local -a files=()
-  local manifest="$DOTFILES_DIR/config/symlinks.map" _src _dest
+  local manifest="$DOTFILES_DIR/config/symlinks.map" _src _dest _tags
   if [[ -r "$manifest" ]]; then
-    while read -r _src _dest; do
+    while read -r _src _dest _tags; do
       [[ -z "$_src" || "$_src" == \#* ]] && continue
+      profile_includes "$_profile" "${_tags:-}" || continue
       files+=("$HOME/$_dest:$_src")
     done < "$manifest"
   fi
