@@ -56,6 +56,7 @@ plugins:
 nav:
   - Home: index.md
   - Profiles: profiles.md
+  - Usage: usage.md
   - Setup:
       - Dry-Run & Pre-flight: DRY_RUN_AND_PREFLIGHT.md
       - GPG Commit Signing: GPG_SIGNING.md
