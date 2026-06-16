@@ -111,4 +111,7 @@ nav:
   - Explanation:
       - Architecture: architecture.md
       - Glossary: glossary.md
+  - Roadmap:
+      - Quick Reference: roadmap-quick-reference.md
+      - Work Laptop Management: roadmap-work-laptop-management.md
   - Contributing: contributing.md
