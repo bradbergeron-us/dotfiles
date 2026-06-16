@@ -66,3 +66,8 @@ git -C ~/dotfiles commit -m "test: cover my_helpers.sh"
 
 !!! tip
     Keep library helpers side-effect-free (no `exit`, no traps, configuration via globals/arguments) — that's what makes them unit-testable. Mirror the patterns in the existing `scripts/lib/*.sh` files.
+
+## See also
+
+- [Contributing](../contributing.md) — the full test, lint, and CI workflow.
+- [Architecture](../architecture.md) — where the helper libraries fit.

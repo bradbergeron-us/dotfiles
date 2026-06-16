@@ -47,3 +47,8 @@ Because the file is tracked and symlinked, every machine picks up the same plugi
 
 !!! tip
     `home/zshrc` only calls sheldon when it's installed (`command -v sheldon`), falling back to manually-cloned plugins under `~/.zsh`. Ensure `sheldon` is present (it's in the core `Brewfile`) so your new entry is picked up.
+
+## See also
+
+- [Shell Performance](../performance.md) — how plugin loading affects shell startup.
+- [Add a tracked dotfile](add-a-dotfile.md) — track other config files.

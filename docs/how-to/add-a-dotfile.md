@@ -64,3 +64,8 @@ git -C ~/dotfiles commit -m "feat: track ~/.ackrc"
 
 !!! tip
     `~/.gitconfig` is intentionally **not** in `symlinks.map`. It's a real file with a thin `[include]` of the tracked `home/gitconfig`, so `git config --global` and tools never write into the repo. That bespoke setup stays in `install.sh`.
+
+## See also
+
+- [Machine Profiles](../profiles.md) — gate a dotfile to specific profiles with the tag column.
+- [Add a zsh plugin](add-a-zsh-plugin.md) · [Manage packages](manage-packages.md) — other common additions.

@@ -5,7 +5,10 @@ If Claude Code fails with:
 Unable to connect to API: SSL certificate verification failed
 ```
 
-This happens when behind corporate SSL inspection (Zscaler, BlueCoat, etc.).
+This happens when behind corporate SSL inspection (Zscaler, BlueCoat, etc.). The
+fixes below go in `~/.zshrc.local` — your machine-local, un-committed shell
+config — so they never leak into the tracked dotfiles. On a `work` machine the
+certificate is usually set up as part of the [work setup](work-setup-complete.md).
 
 ## Quick Fix
 
@@ -62,3 +65,9 @@ security find-certificate -a -p /Library/Keychains/System.keychain | grep -B 5 Z
 ```
 
 Contact your IT department if you cannot locate the certificate.
+
+## See also
+
+- [Set up a work laptop](tutorials/work-laptop.md) — the full `work`-profile setup flow.
+- [Complete Work Machine Setup Guide](work-setup-complete.md) — corporate certificates and proxy setup in depth.
+- [Troubleshooting](troubleshooting.md) — other common failures and fixes.
