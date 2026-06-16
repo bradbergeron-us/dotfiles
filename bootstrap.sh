@@ -61,7 +61,41 @@ setup_colors
 # ── Profile (durable per-machine identity) ────────────────────────────────────
 # shellcheck source=scripts/lib/profile_helpers.sh
 source "$(dirname "$0")/scripts/lib/profile_helpers.sh"
-DOTFILES_PROFILE="$(resolve_profile "$PROFILE_FLAG")"
+
+# pick_profile — interactive first-run picker. Prints a menu to stderr and echoes
+# the chosen profile to stdout (so it is safe inside $()). Accepts a number or a
+# profile name; empty input or EOF defaults to personal.
+pick_profile() {
+  local choice profile
+  while true; do
+    {
+      printf '\n  This machine has no saved profile yet — pick one:\n\n'
+      printf '    1) personal  (default) — full GUI Mac: core + GUI apps/casks + macOS defaults\n'
+      printf '    2) work                — personal plus the work overlay & work configs\n'
+      printf '    3) minimal             — core CLI + runtimes + core dotfiles only\n'
+      printf '    4) server              — headless macOS: core CLI + runtimes, no GUI\n\n'
+    } >&2
+    read -rp "  Profile [1-4 or name, Enter = personal]: " choice || choice=""
+    case "$choice" in
+      ""|1|personal) profile="personal"; break ;;
+      2|work)        profile="work";     break ;;
+      3|minimal)     profile="minimal";  break ;;
+      4|server)      profile="server";   break ;;
+      *) printf '  Not a valid choice: %s\n' "$choice" >&2 ;;
+    esac
+  done
+  printf '%s\n' "$profile"
+}
+
+# Resolve the active profile. On a genuine first run — no --profile flag, no
+# DOTFILES_PROFILE env, no persisted file — with an interactive TTY (and not a
+# dry-run), prompt the user. Otherwise use the normal precedence so
+# non-interactive/CI runs and explicit choices behave exactly as before.
+if [[ -z "$PROFILE_FLAG" && -z "${DOTFILES_PROFILE:-}" && ! -f "$DOTFILES_PROFILE_FILE" && "$DRY_RUN" != true && -t 0 ]]; then
+  DOTFILES_PROFILE="$(pick_profile)"
+else
+  DOTFILES_PROFILE="$(resolve_profile "$PROFILE_FLAG")"
+fi
 export DOTFILES_PROFILE
 # Persist so update/verify/status agree on this machine's profile (not in dry-run).
 if [[ "$DRY_RUN" != true ]]; then
@@ -86,6 +120,15 @@ printf "  ${DIM}Machine${RESET}  %s\n" "$(scutil --get ComputerName 2>/dev/null 
 printf "  ${DIM}Date${RESET}     %s\n" "$(date '+%a %b %d %Y  %H:%M')"
 printf "  ${DIM}Profile${RESET}  %s\n" "$DOTFILES_PROFILE"
 echo "  ─────────────────────────────────────────────────"
+
+# Component summary for the resolved profile — shown before any steps run.
+if [[ "$DRY_RUN" == true ]]; then
+  preview_profile "$DOTFILES_PROFILE"
+else
+  printf "  ${DIM}This profile sets up${RESET}\n"
+  profile_component_summary "$DOTFILES_PROFILE"
+  echo "  ─────────────────────────────────────────────────"
+fi
 
 # ── Pre-flight check ─────────────────────────────────────────────────────────
 if [[ "$SKIP_PREFLIGHT" == false ]] && [[ "$DRY_RUN" == false ]]; then

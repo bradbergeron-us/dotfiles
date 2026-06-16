@@ -101,3 +101,21 @@ profile_brewfiles() {
     printf '%s\n' "$dir/Brewfile.work"
   fi
 }
+
+# profile_component_summary PROFILE — echo a short, human-readable summary of the
+# components a profile enables (runtimes, dotfiles, package overlay, GUI apps,
+# work configs, macOS defaults). Pure (echo only, no UI/prompt/exit), so it is
+# shared by the bootstrap first-run picker and the dry-run preview and is unit-
+# testable. Everything derives from profile_includes, so it stays in sync with
+# how install.sh / bootstrap.sh actually gate each component.
+profile_component_summary() {
+  local profile="$1" gui=no work=no overlay="core only"
+  if profile_includes "$profile" gui;  then gui=yes;  overlay="core + GUI (Brewfile.personal)"; fi
+  if profile_includes "$profile" work; then work=yes; overlay="$overlay + work (Brewfile.work)"; fi
+  printf '  Runtimes (mise)      yes\n'
+  printf '  Core CLI + dotfiles  yes\n'
+  printf '  Package overlay      %s\n' "$overlay"
+  printf '  GUI apps + dotfiles  %s\n' "$gui"
+  printf '  Work configs         %s\n' "$work"
+  printf '  macOS defaults       %s\n' "$gui"
+}
