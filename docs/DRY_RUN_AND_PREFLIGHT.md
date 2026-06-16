@@ -211,6 +211,6 @@ Potential improvements:
 
 ## Related
 
-- [Bootstrap guide](../README.md#quick-start)
-- [Update script](../update.sh) — Keep everything current
-- [Verify script](../verify.sh) — Health check
+- [Bootstrap guide](https://github.com/bradbergeron-us/dotfiles#quick-start)
+- [Update script](https://github.com/bradbergeron-us/dotfiles/blob/main/update.sh) — Keep everything current
+- [Verify script](https://github.com/bradbergeron-us/dotfiles/blob/main/verify.sh) — Health check

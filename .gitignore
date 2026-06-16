@@ -54,3 +54,6 @@ config/git/*.gitconfig
 age-key.txt
 keys.txt
 *.dec
+
+# MkDocs build output (docs site is built in CI, never committed)
+site/

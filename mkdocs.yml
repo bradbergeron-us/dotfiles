@@ -1,0 +1,67 @@
+site_name: dotfiles
+site_description: Personal macOS dotfiles — zsh, tmux, git, and a full developer toolchain.
+site_author: Brad Bergeron
+repo_name: bradbergeron-us/dotfiles
+repo_url: https://github.com/bradbergeron-us/dotfiles
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Setup:
+      - Dry-Run & Pre-flight: DRY_RUN_AND_PREFLIGHT.md
+      - GPG Commit Signing: GPG_SIGNING.md
+      - Encrypted Secrets: secrets.md
+  - Work Machine:
+      - Overview: work-machine.md
+      - Complete Setup Guide: work-setup-complete.md
+      - Claude Code SSL Fix: claude-code-ssl-fix.md
+  - Reference:
+      - Tool Reference: tools.md
+      - Shell Performance: performance.md
