@@ -71,7 +71,7 @@ Because the helpers are side-effect-free, tests exercise them directly against t
 The dotfile→destination mapping is a single source of truth in `config/symlinks.map`; `install.sh`, `verify.sh`, `bootstrap.sh --dry-run`, and the CI install-smoke job all read it. To track a new dotfile:
 
 1. Add the file to the repo (`home/`, or `config/` for XDG configs).
-2. **`config/symlinks.map`** — add one `src  dest` line (src relative to the repo root, dest relative to `$HOME`). Every consumer picks it up automatically — no other script or workflow needs editing.
+2. **`config/symlinks.map`** — add one `src  dest [tags]` line (src relative to the repo root, dest relative to `$HOME`; an optional comma-separated profile-tag column — e.g. `gui` for GUI-only configs — controls which profiles get the link, see `scripts/lib/profile_helpers.sh`). Every consumer picks it up automatically — no other script or workflow needs editing.
 3. **`README.md`** — add a row to the Dotfiles table (human-readable reference).
 
 Non-symlink setup (the thin `~/.gitconfig` include, the `~/.config/git/local.gitconfig` seed, the global pre-commit hook, and VS Code settings/extensions) is intentionally bespoke in `install.sh` and is deliberately not part of the manifest.

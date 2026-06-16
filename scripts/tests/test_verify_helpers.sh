@@ -192,6 +192,43 @@ else
   fail "load_symlink_map + check_symlinks end-to-end" "subshell exited non-zero"
 fi
 
+# Case 4: optional tag column + profile filtering (uses profile_helpers.sh)
+MAP_TAGGED="$TMPDIR_BASE/symlinks_tagged.map"
+cat > "$MAP_TAGGED" << 'EOF'
+home/zshrc     .zshrc
+home/hyper.js  .hyper.js   gui
+EOF
+if (
+  source "$SCRIPT_DIR/../lib/profile_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  load_symlink_map "$MAP_TAGGED" minimal
+  [[ "${#DOTFILES_SYMLINKS[@]}" -eq 1 ]] || { printf "  FAIL  minimal count: expected 1, got %s\n" "${#DOTFILES_SYMLINKS[@]}"; exit 1; }
+  [[ "${DOTFILES_SYMLINKS[0]}" == "home/zshrc:.zshrc" ]] || { printf "  FAIL  minimal kept wrong entry: %s\n" "${DOTFILES_SYMLINKS[0]}"; exit 1; }
+); then
+  pass "load_symlink_map: profile=minimal skips gui-tagged record"
+else
+  fail "load_symlink_map: profile filter (minimal)" "subshell exited non-zero"
+fi
+if (
+  source "$SCRIPT_DIR/../lib/profile_helpers.sh"
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  load_symlink_map "$MAP_TAGGED" personal
+  [[ "${#DOTFILES_SYMLINKS[@]}" -eq 2 ]] || { printf "  FAIL  personal count: expected 2, got %s\n" "${#DOTFILES_SYMLINKS[@]}"; exit 1; }
+); then
+  pass "load_symlink_map: profile=personal keeps gui-tagged record"
+else
+  fail "load_symlink_map: profile filter (personal)" "subshell exited non-zero"
+fi
+if (
+  source "$SCRIPT_DIR/../lib/verify_helpers.sh"
+  load_symlink_map "$MAP_TAGGED"
+  [[ "${#DOTFILES_SYMLINKS[@]}" -eq 2 ]] || { printf "  FAIL  no-profile count: expected 2, got %s\n" "${#DOTFILES_SYMLINKS[@]}"; exit 1; }
+); then
+  pass "load_symlink_map: no profile arg keeps all records (back-compat)"
+else
+  fail "load_symlink_map: no-profile back-compat" "subshell exited non-zero"
+fi
+
 # ── check_required_tools ────────────────────────────────────────────────────────
 echo ""
 echo "=== check_required_tools ==="

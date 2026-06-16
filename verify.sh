@@ -30,6 +30,8 @@ TOTAL_STEPS=9
 source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 # shellcheck source=scripts/lib/verify_helpers.sh
 source "$DOTFILES_DIR/scripts/lib/verify_helpers.sh"
+# shellcheck source=scripts/lib/profile_helpers.sh
+source "$DOTFILES_DIR/scripts/lib/profile_helpers.sh"
 setup_colors
 
 REQUIRED_TOOLS=(
@@ -51,11 +53,12 @@ echo "  ────────────────────────
 
 # ── 1. Symlinks ───────────────────────────────────────────────────────────
 step "🔗  Symlinks"
-load_symlink_map "$DOTFILES_DIR/config/symlinks.map"
+_profile="$(current_profile)"
+load_symlink_map "$DOTFILES_DIR/config/symlinks.map" "$_profile"
 check_symlinks "$DOTFILES_DIR" "$HOME"
 
 if [[ "$SYMLINK_BROKEN_COUNT" -eq 0 ]]; then
-  success "$SYMLINK_OK_COUNT symlinks OK"
+  success "$SYMLINK_OK_COUNT symlinks OK (profile: $_profile)"
 else
   for broken in "${SYMLINK_BROKEN_LIST[@]}"; do
     warn "$broken"

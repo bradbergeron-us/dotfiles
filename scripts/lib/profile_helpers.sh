@@ -17,11 +17,12 @@ DOTFILES_PROFILE_FILE="${DOTFILES_PROFILE_FILE:-$HOME/.config/dotfiles/profile}"
 
 # valid_profile NAME — return 0 if NAME is a known profile.
 valid_profile() {
-  local name="$1" known
-  for known in $DOTFILES_PROFILES; do
-    [[ "$name" == "$known" ]] && return 0
-  done
-  return 1
+  # `case` membership avoids splitting $DOTFILES_PROFILES, which bash splits but
+  # zsh does not — important because install.sh (zsh) sources this file.
+  case " $DOTFILES_PROFILES " in
+    *" $1 "*) return 0 ;;
+    *)        return 1 ;;
+  esac
 }
 
 # resolve_profile [FLAG] — echo the active profile, in increasing precedence:
@@ -33,14 +34,16 @@ valid_profile() {
 # through) so a typo can never select an invalid profile. Always echoes a valid
 # profile.
 resolve_profile() {
+  # if-based control flow (no bare `A && B`) so this is safe under both bash and
+  # zsh errexit — install.sh (zsh) resolves the profile via current_profile.
   local flag="${1:-}" result="$DOTFILES_DEFAULT_PROFILE" v
   if [[ -f "$DOTFILES_PROFILE_FILE" ]]; then
     v="$(tr -d '[:space:]' < "$DOTFILES_PROFILE_FILE" 2>/dev/null || true)"
-    valid_profile "$v" && result="$v"
+    if valid_profile "$v"; then result="$v"; fi
   fi
   v="${DOTFILES_PROFILE:-}"
-  [[ -n "$v" ]] && valid_profile "$v" && result="$v"
-  [[ -n "$flag" ]] && valid_profile "$flag" && result="$flag"
+  if [[ -n "$v" ]] && valid_profile "$v"; then result="$v"; fi
+  if [[ -n "$flag" ]] && valid_profile "$flag"; then result="$flag"; fi
   echo "$result"
 }
 
@@ -65,15 +68,20 @@ persist_profile() {
 #   work           -> work
 #   <profile-name> -> that profile exactly (minimal | personal | work | server)
 profile_includes() {
-  local profile="$1" tags="${2:-}" tag
+  local profile="$1" tags="${2:-}" tag rest
   [[ -z "$tags" ]] && return 0
-  tags="${tags//,/ }"  # normalize commas to spaces
-  for tag in $tags; do
+  rest="${tags//,/ }"  # normalize commas to spaces
+  # Walk tokens with parameter expansion only (no word-splitting, so this works
+  # the same in bash and zsh).
+  while [[ -n "$rest" ]]; do
+    tag="${rest%% *}"            # first token (whole string if no space)
+    if [[ "$rest" == *" "* ]]; then rest="${rest#* }"; else rest=""; fi
+    [[ -z "$tag" ]] && continue  # skip empties from repeated separators
     case "$tag" in
       core) return 0 ;;
-      gui)  [[ "$profile" == "personal" || "$profile" == "work" ]] && return 0 ;;
-      work) [[ "$profile" == "work" ]] && return 0 ;;
-      *)    [[ "$profile" == "$tag" ]] && return 0 ;;
+      gui)  if [[ "$profile" == "personal" || "$profile" == "work" ]]; then return 0; fi ;;
+      work) if [[ "$profile" == "work" ]]; then return 0; fi ;;
+      *)    if [[ "$profile" == "$tag" ]]; then return 0; fi ;;
     esac
   done
   return 1

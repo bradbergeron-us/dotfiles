@@ -11,16 +11,21 @@
 # check_symlinks consumes. Defaults to empty so the array is always set.
 DOTFILES_SYMLINKS=()
 
-# load_symlink_map MANIFEST
-# Populates DOTFILES_SYMLINKS from a symlinks.map manifest of "src dest" records
-# (whitespace-separated; blank lines and # comments ignored). A missing manifest
-# leaves the array empty.
+# load_symlink_map MANIFEST [PROFILE]
+# Populates DOTFILES_SYMLINKS from a symlinks.map manifest of "src dest [tags]"
+# records (whitespace-separated; blank lines and # comments ignored). When
+# PROFILE is given and profile_includes is available (profile_helpers.sh
+# sourced), records whose optional tag column excludes PROFILE are skipped.
+# A missing manifest leaves the array empty.
 load_symlink_map() {
-  local manifest="$1" src dest
+  local manifest="$1" profile="${2:-}" src dest tags
   DOTFILES_SYMLINKS=()
   [[ -f "$manifest" ]] || return 0
-  while read -r src dest; do
+  while read -r src dest tags; do
     [[ -z "$src" || "$src" == \#* ]] && continue
+    if [[ -n "$profile" ]] && command -v profile_includes >/dev/null 2>&1; then
+      profile_includes "$profile" "${tags:-}" || continue
+    fi
     DOTFILES_SYMLINKS+=("$src:$dest")
   done < "$manifest"
 }

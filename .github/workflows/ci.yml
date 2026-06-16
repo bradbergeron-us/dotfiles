@@ -84,28 +84,32 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Run install.sh against temp HOME
+      - name: Run install.sh against temp HOME (profile-aware)
         run: |
+          # Shared verifier: every map record must be linked iff it applies to
+          # PROFILE (per profile_includes + the optional tag column).
+          # shellcheck source=scripts/lib/profile_helpers.sh
+          source scripts/lib/profile_helpers.sh
+          verify_links() {
+            local h="$1" prof="$2" src dest tags
+            while read -r src dest tags; do
+              [[ -z "$src" || "$src" == \#* ]] && continue
+              if profile_includes "$prof" "${tags:-}"; then
+                if [[ -L "$h/$dest" ]]; then echo "OK         $dest"; else echo "MISSING    $dest (expected for $prof)" && return 1; fi
+              else
+                if [[ -e "$h/$dest" || -L "$h/$dest" ]]; then echo "UNEXPECTED $dest (should be skipped for $prof)" && return 1; else echo "skip       $dest (not in $prof)"; fi
+              fi
+            done < config/symlinks.map
+            return 0
+          }
+
+          # --- Default profile (personal): full set, same as before profiles ---
           export HOME=$(mktemp -d)
           echo "Isolated HOME: $HOME"
           zsh install.sh
           echo ""
-          echo "--- Verifying symlinks ---"
-
-          # Verify every destination in the manifest is a symlink. The manifest
-          # (config/symlinks.map) is the single source of truth install.sh links
-          # from, so this list can never drift from what install.sh creates.
-          while read -r src dest; do
-            [[ -z "$src" || "$src" == \#* ]] && continue
-            if [[ -L "$HOME/$dest" ]]; then
-              echo "OK  $dest"
-            else
-              echo "MISSING  $dest" && exit 1
-            fi
-          done < config/symlinks.map
-
-          echo ""
-          echo "All symlinks verified."
+          echo "--- Verifying symlinks (personal) ---"
+          verify_links "$HOME" personal
 
           echo ""
           echo "--- Verifying ~/.gitconfig is a thin include (not a symlink) ---"
@@ -130,11 +134,23 @@ jobs:
             echo "FAIL  second run did not report '0 backed up'" && exit 1
           fi
 
+          # --- minimal profile: GUI-tagged links must be skipped ---
           echo ""
-          echo "--- Residue: no publisher.extension files created in the repo dir ---"
-          # The original bug left empty VS Code extension-id files (e.g.
-          # ms-python.python) at the repo root. install.sh must not create or modify
-          # anything tracked here, so the working tree must stay clean after running.
+          echo "--- Verifying minimal profile skips gui-tagged links ---"
+          MIN_HOME=$(mktemp -d)
+          HOME="$MIN_HOME" DOTFILES_PROFILE=minimal zsh install.sh
+          verify_links "$MIN_HOME" minimal
+          for gui_dest in .hyper.js .config/ghostty/config; do
+            if [[ -e "$MIN_HOME/$gui_dest" || -L "$MIN_HOME/$gui_dest" ]]; then
+              echo "FAIL  $gui_dest should be skipped on minimal" && exit 1
+            fi
+          done
+          echo "OK  gui-tagged links skipped on minimal"
+
+          echo ""
+          echo "--- Residue: no files created/modified in the repo dir ---"
+          # install.sh must not create or modify anything tracked here, so the
+          # working tree must stay clean after running.
           residue=$(git status --porcelain --untracked-files=all)
           if [[ -n "$residue" ]]; then
             echo "FAIL  install.sh created/modified files in the repo dir:"
