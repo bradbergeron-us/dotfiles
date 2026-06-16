@@ -55,6 +55,10 @@ plugins:
 
 nav:
   - Home: index.md
+  - Tutorials:
+      - Getting Started (Your First Hour): tutorials/getting-started.md
+      - Set Up a Work Laptop: tutorials/work-laptop.md
+      - Adopt a Profile: tutorials/adopt-profile.md
   - Profiles: profiles.md
   - Usage: usage.md
   - Setup:
