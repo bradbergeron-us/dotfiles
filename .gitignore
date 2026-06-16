@@ -46,3 +46,11 @@ vivaxy.*
 # Git configs with actual keys/emails (only templates are tracked)
 config/git/*.gitconfig
 !config/git/*.template
+
+# Secrets (sops + age) — NEVER commit private keys or decrypted output.
+# See docs/secrets.md. Age private keys live at ~/.config/sops/age/keys.txt
+# (outside the repo); these guard against stray copies inside it.
+*.agekey
+age-key.txt
+keys.txt
+*.dec

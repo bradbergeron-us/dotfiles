@@ -1,0 +1,25 @@
+# .sops.yaml — sops + age encryption policy for this repo.
+#
+# `creation_rules` tell sops which files to encrypt and to which age recipient
+# (public key). On `sops <file>` / `scripts/secrets.sh encrypt <file>`, sops
+# matches the file path against `path_regex` top-to-bottom and uses the first
+# match's `age` recipients.
+#
+# SETUP (one time, per machine — see docs/secrets.md):
+#   1. Generate an age key:  age-keygen -o ~/.config/sops/age/keys.txt
+#   2. Copy the "public key:" line it prints (starts with `age1...`).
+#   3. Replace the placeholder recipient below with that public key, commit it.
+# The PRIVATE key stays at ~/.config/sops/age/keys.txt (outside this repo, see
+# .gitignore) and is what sops uses to DECRYPT. Only the PUBLIC key goes here.
+#
+# Add more recipients (one per line) to share secrets across machines/teammates;
+# every listed recipient can decrypt.
+
+creation_rules:
+  # Anything under a top-level secrets/ dir, or named *.secret / *.enc.
+  - path_regex: (^|/)secrets/.*\.(ya?ml|json|env|ini|toml|txt)$
+    age: >-
+      age1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsferecipientplaceholder
+  - path_regex: \.(secret|enc)\.(ya?ml|json|env|ini|toml|txt)$
+    age: >-
+      age1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsferecipientplaceholder
