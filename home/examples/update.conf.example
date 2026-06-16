@@ -1,0 +1,21 @@
+# ~/.config/dotfiles/update.conf — per-machine update.sh settings
+#
+# Copy this to ~/.config/dotfiles/update.conf to make `update.sh` honor these
+# defaults on this machine:
+#
+#   mkdir -p ~/.config/dotfiles
+#   cp ~/dotfiles/home/examples/update.conf.example ~/.config/dotfiles/update.conf
+#
+# update.sh reads this file directly on every run, so it ALSO applies to the
+# scheduled launchd job (which never sources ~/.zshrc / ~/.zshrc.local).
+# Command-line flags and the matching DOTFILES_UPDATE_* environment variables
+# override anything set here. Precedence: config file < environment < flags.
+#
+# Recognized keys (booleans: true/false, also yes/no, on/off, 1/0):
+
+# Skip brew/mise/rustup/gem upgrades — pull + re-symlink + verify only.
+# Recommended on work machines with version-sensitive tooling.
+NO_UPGRADE=false
+
+# Skip the `git pull` step entirely (re-symlink + verify against the current checkout).
+NO_PULL=false

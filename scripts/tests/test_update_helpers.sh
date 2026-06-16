@@ -141,6 +141,154 @@ else
   fail "can_notify: CI set" "expected false under CI"
 fi
 
+# ── working_tree_dirty / rebase_in_progress ───────────────────────────────────
+echo ""
+echo "=== working_tree_dirty / rebase_in_progress ==="
+
+if command -v git &>/dev/null; then
+  # Helper: init an isolated repo with one commit, no hooks, no signing.
+  _mkrepo() {
+    local repo="$1"
+    mkdir -p "$repo"
+    git -C "$repo" init -q
+    git -C "$repo" config user.email t@t
+    git -C "$repo" config user.name t
+    git -C "$repo" config commit.gpgsign false
+    git -C "$repo" config core.hooksPath /dev/null
+    printf 'hello\n' > "$repo/file.txt"
+    git -C "$repo" add file.txt
+    git -C "$repo" commit -q -m init --no-verify
+  }
+
+  # Case 1: clean repo → not dirty
+  if (
+    _mkrepo "$TMPDIR_BASE/wt_clean"
+    if working_tree_dirty "$TMPDIR_BASE/wt_clean"; then exit 1; else exit 0; fi
+  ); then
+    pass "working_tree_dirty: clean repo → false"
+  else
+    fail "working_tree_dirty: clean repo" "expected false"
+  fi
+
+  # Case 2: unstaged modification → dirty
+  if (
+    _mkrepo "$TMPDIR_BASE/wt_unstaged"
+    printf 'changed\n' >> "$TMPDIR_BASE/wt_unstaged/file.txt"
+    if working_tree_dirty "$TMPDIR_BASE/wt_unstaged"; then exit 0; else exit 1; fi
+  ); then
+    pass "working_tree_dirty: unstaged change → true"
+  else
+    fail "working_tree_dirty: unstaged change" "expected true"
+  fi
+
+  # Case 3: staged modification → dirty
+  if (
+    _mkrepo "$TMPDIR_BASE/wt_staged"
+    printf 'changed\n' >> "$TMPDIR_BASE/wt_staged/file.txt"
+    git -C "$TMPDIR_BASE/wt_staged" add file.txt
+    if working_tree_dirty "$TMPDIR_BASE/wt_staged"; then exit 0; else exit 1; fi
+  ); then
+    pass "working_tree_dirty: staged change → true"
+  else
+    fail "working_tree_dirty: staged change" "expected true"
+  fi
+
+  # Case 4: untracked file only → not dirty (does not block a rebase)
+  if (
+    _mkrepo "$TMPDIR_BASE/wt_untracked"
+    printf 'new\n' > "$TMPDIR_BASE/wt_untracked/other.txt"
+    if working_tree_dirty "$TMPDIR_BASE/wt_untracked"; then exit 1; else exit 0; fi
+  ); then
+    pass "working_tree_dirty: untracked-only → false"
+  else
+    fail "working_tree_dirty: untracked-only" "expected false"
+  fi
+
+  # Case 5: non-git directory → not dirty
+  if (
+    mkdir -p "$TMPDIR_BASE/wt_nogit"
+    if working_tree_dirty "$TMPDIR_BASE/wt_nogit"; then exit 1; else exit 0; fi
+  ); then
+    pass "working_tree_dirty: non-git dir → false"
+  else
+    fail "working_tree_dirty: non-git dir" "expected false"
+  fi
+
+  # Case 6: no rebase in progress → false
+  if (
+    _mkrepo "$TMPDIR_BASE/rip_no"
+    if rebase_in_progress "$TMPDIR_BASE/rip_no"; then exit 1; else exit 0; fi
+  ); then
+    pass "rebase_in_progress: no rebase → false"
+  else
+    fail "rebase_in_progress: no rebase" "expected false"
+  fi
+
+  # Case 7: rebase-merge dir present → true
+  if (
+    _mkrepo "$TMPDIR_BASE/rip_yes"
+    _gd=$(git -C "$TMPDIR_BASE/rip_yes" rev-parse --git-dir)
+    [[ "$_gd" = /* ]] || _gd="$TMPDIR_BASE/rip_yes/$_gd"
+    mkdir -p "$_gd/rebase-merge"
+    if rebase_in_progress "$TMPDIR_BASE/rip_yes"; then exit 0; else exit 1; fi
+  ); then
+    pass "rebase_in_progress: rebase-merge present → true"
+  else
+    fail "rebase_in_progress: rebase-merge present" "expected true"
+  fi
+else
+  printf "  SKIP  working_tree_dirty/rebase_in_progress (git not available)\n"
+fi
+
+# ── read_config_bool ────────────────────────────────────────────────
+echo ""
+echo "=== read_config_bool ==="
+
+CFG="$TMPDIR_BASE/update.conf"
+cat > "$CFG" <<'EOF'
+# sample update config
+NO_UPGRADE=true
+NO_PULL = false
+QUOTED="true"
+EOF
+
+if [[ "$(read_config_bool "$CFG" NO_UPGRADE)" == "true" ]]; then
+  pass "read_config_bool: NO_UPGRADE=true → true"
+else
+  fail "read_config_bool: NO_UPGRADE" "expected true"
+fi
+
+if [[ "$(read_config_bool "$CFG" NO_PULL)" == "false" ]]; then
+  pass "read_config_bool: 'NO_PULL = false' (spaces) → false"
+else
+  fail "read_config_bool: NO_PULL spaces" "expected false"
+fi
+
+if [[ "$(read_config_bool "$CFG" QUOTED)" == "true" ]]; then
+  pass "read_config_bool: quoted value → true"
+else
+  fail "read_config_bool: quoted value" "expected true"
+fi
+
+if [[ -z "$(read_config_bool "$CFG" MISSING_KEY)" ]]; then
+  pass "read_config_bool: absent key → empty"
+else
+  fail "read_config_bool: absent key" "expected empty"
+fi
+
+if [[ -z "$(read_config_bool "$TMPDIR_BASE/does-not-exist.conf" NO_UPGRADE)" ]]; then
+  pass "read_config_bool: missing file → empty"
+else
+  fail "read_config_bool: missing file" "expected empty"
+fi
+
+printf 'NO_UPGRADE=false\nNO_UPGRADE=true\n' > "$TMPDIR_BASE/last.conf"
+if [[ "$(read_config_bool "$TMPDIR_BASE/last.conf" NO_UPGRADE)" == "true" ]]; then
+  pass "read_config_bool: last assignment wins"
+else
+  fail "read_config_bool: last assignment" "expected true"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────"

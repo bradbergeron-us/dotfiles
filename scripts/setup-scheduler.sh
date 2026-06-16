@@ -2,8 +2,15 @@
 # setup-scheduler.sh — schedule update.sh to run daily via launchd
 #
 # Usage:
-#   bash ~/dotfiles/scripts/setup-scheduler.sh             # install (runs at 9 AM daily)
-#   bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall # remove the scheduled job
+#   bash ~/dotfiles/scripts/setup-scheduler.sh              # install (runs at 9 AM daily)
+#   bash ~/dotfiles/scripts/setup-scheduler.sh --no-upgrade # install; scheduled run skips upgrades
+#   bash ~/dotfiles/scripts/setup-scheduler.sh --no-pull    # install; scheduled run skips git pull
+#   bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall  # remove the scheduled job
+#
+# --no-upgrade / --no-pull are baked into the launchd plist's ProgramArguments,
+# so the scheduled job runs e.g. `update.sh --no-upgrade`. For a machine-wide
+# default that also applies to manual runs, set NO_UPGRADE=true in
+# ~/.config/dotfiles/update.conf instead.
 #
 # Logs are written to ~/dotfiles/logs/update.log
 # Edit system/LaunchAgents/com.dotfiles.update.plist to change the schedule.
@@ -26,12 +33,42 @@ LOG_DIR="$DOTFILES_DIR/logs"
 source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 setup_colors
 
+# ── Parse args ────────────────────────────────────────────────────────────────
+ACTION="install"
+EXTRA_ARGS=()   # extra args baked into the scheduled update.sh invocation
+for arg in "$@"; do
+  case "$arg" in
+    --uninstall)  ACTION="uninstall" ;;
+    --no-upgrade) EXTRA_ARGS+=("--no-upgrade") ;;
+    --no-pull)    EXTRA_ARGS+=("--no-pull") ;;
+    --help|-h)
+      cat <<'USAGE'
+Usage: bash setup-scheduler.sh [OPTIONS]
+
+  (no option)    Install the daily launchd job (runs update.sh at 9 AM)
+  --no-upgrade   Install so the scheduled run is `update.sh --no-upgrade`
+  --no-pull      Install so the scheduled run is `update.sh --no-pull`
+  --uninstall    Remove the scheduled job
+  --help, -h     Show this help
+
+For a machine-wide default that also affects manual runs, set NO_UPGRADE=true
+in ~/.config/dotfiles/update.conf instead.
+USAGE
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $arg (try --help)"
+      exit 1
+      ;;
+  esac
+done
+
 echo ""
 printf "${BOLD}  ⏰  dotfiles scheduler${RESET}  —  launchd setup\n"
 echo "  ─────────────────────────────────────────────────"
 
 # ── Uninstall ─────────────────────────────────────────────────────────────────
-if [[ "${1:-}" == "--uninstall" ]]; then
+if [[ "$ACTION" == "uninstall" ]]; then
   if launchctl print "gui/$(id -u)/$PLIST_LABEL" &>/dev/null 2>&1; then
     launchctl bootout "gui/$(id -u)" "$PLIST_DEST" 2>/dev/null || true
     success "Unloaded $PLIST_LABEL"
@@ -49,15 +86,31 @@ fi
 # ── Install ───────────────────────────────────────────────────────────────────
 mkdir -p "$LOG_DIR" "$HOME/Library/LaunchAgents"
 
-# Substitute __DOTFILES_DIR__ placeholder with the actual path
-sed "s|__DOTFILES_DIR__|$DOTFILES_DIR|g" "$PLIST_SRC" > "$PLIST_DEST"
+# Render the plist: substitute __DOTFILES_DIR__ and splice any extra update.sh
+# args into ProgramArguments in place of the __UPDATE_ARGS__ marker (or drop the
+# marker line when there are none). awk reads the multi-line block from the
+# environment (ENVIRON) so embedded newlines are handled safely.
+args_block=""
+if (( ${#EXTRA_ARGS[@]} > 0 )); then
+  args_block=$(printf '        <string>%s</string>\n' "${EXTRA_ARGS[@]}")
+  args_block=${args_block%$'\n'}
+fi
+EXTRA_BLOCK="$args_block" awk -v dir="$DOTFILES_DIR" '
+  { gsub(/__DOTFILES_DIR__/, dir) }
+  /^[[:space:]]*__UPDATE_ARGS__[[:space:]]*$/ { if (ENVIRON["EXTRA_BLOCK"] != "") print ENVIRON["EXTRA_BLOCK"]; next }
+  { print }
+' "$PLIST_SRC" > "$PLIST_DEST"
 
 # Reload idempotently — bootout any existing version first, then bootstrap
 launchctl bootout "gui/$(id -u)" "$PLIST_DEST" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$PLIST_DEST"
 
 echo ""
-success "update.sh scheduled — runs daily at 9 AM"
+if (( ${#EXTRA_ARGS[@]} > 0 )); then
+  success "update.sh scheduled — runs daily at 9 AM (args: ${EXTRA_ARGS[*]})"
+else
+  success "update.sh scheduled — runs daily at 9 AM"
+fi
 info "Log:       $LOG_DIR/update.log (auto-rotated; keeps ${DOTFILES_LOG_KEEP:-5} copies)"
 info "Status:    $LOG_DIR/update.status"
 info "Plist:     $PLIST_DEST"
