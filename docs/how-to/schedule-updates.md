@@ -54,3 +54,8 @@ bash ~/dotfiles/scripts/setup-scheduler.sh --uninstall
 ```
 
 This boots out the launchd job and removes the installed plist.
+
+## See also
+
+- [Usage & lifecycle](../usage.md) — `update.sh`, its flags, and `update.conf`.
+- [Recover from a failed update](recover-from-a-failed-update.md) — when a scheduled run reports failures.

@@ -84,3 +84,8 @@ dotstatus                       # expect: result: success
 
 !!! tip
     Use `bash ~/dotfiles/update.sh --dry-run` to preview exactly what the next run will do — including whether it would skip the pull — without changing anything.
+
+## See also
+
+- [Troubleshooting](../troubleshooting.md) — fixes for specific failures.
+- [Usage & lifecycle](../usage.md) — the update steps and safety flags.

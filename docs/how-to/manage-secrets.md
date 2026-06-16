@@ -66,3 +66,8 @@ If a private key or a plaintext secret is ever exposed: **rotate the affected cr
 
 !!! warning
     `.gitignore` blocks `keys.txt`, `*.agekey`, `age-key.txt`, and `*.dec`. The `gitleaks` pre-commit hook and CI job are a backstop — the encryption boundary is the primary protection.
+
+## See also
+
+- [Encrypted Secrets](../secrets.md) — the full reference and safety model.
+- [Troubleshooting](../troubleshooting.md) — fixes for missing keys and decryption errors.

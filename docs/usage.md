@@ -14,6 +14,16 @@ bash ~/dotfiles/verify.sh           # on demand: full health check
 bash ~/dotfiles/scripts/status.sh   # quick read-only snapshot (alias: dotstatus)
 ```
 
+```mermaid
+flowchart LR
+  Clone(["git clone"]) --> Bootstrap["bootstrap.sh<br/>(one-time)"]
+  Bootstrap --> Daily(["Daily use"])
+  Daily --> Update["update.sh<br/>pull · re-symlink · upgrade"]
+  Update --> Verify["verify.sh<br/>health check"]
+  Verify --> Daily
+  Daily -.-> Status["status.sh<br/>quick snapshot"]
+```
+
 | Stage | Script | When |
 |-------|--------|------|
 | Bootstrap | `bootstrap.sh` | Once, on a fresh Mac |
@@ -295,3 +305,5 @@ contexts).
 - [Dry-Run & Pre-flight](DRY_RUN_AND_PREFLIGHT.md) — previewing and validating before installing.
 - [Encrypted Secrets](secrets.md) — managing secrets with sops + age.
 - [Tool Reference](tools.md) — every tool in the Brewfile, with rationale.
+- [Troubleshooting](troubleshooting.md) — fixes for failed updates, broken symlinks, and more.
+- [Recover from a failed update](how-to/recover-from-a-failed-update.md) — the step-by-step recovery guide.

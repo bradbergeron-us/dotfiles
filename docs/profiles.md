@@ -56,6 +56,16 @@ Higher sources win, so a `--profile` flag overrides everything. An unrecognized
 value at any level is ignored and falls through to the next source, so a typo can
 never select an invalid profile — `resolve_profile` always echoes a valid name.
 
+```mermaid
+flowchart TD
+  Flag{"--profile flag<br/>valid?"} -->|yes| UseFlag["Active: flag value"]
+  Flag -->|no| Env{"DOTFILES_PROFILE<br/>env valid?"}
+  Env -->|yes| UseEnv["Active: env value"]
+  Env -->|no| File{"persisted file<br/>valid?"}
+  File -->|yes| UseFile["Active: persisted value"]
+  File -->|no| Default["Active: personal (default)"]
+```
+
 ### `scripts/profile.sh` and the `dotprofile` alias
 
 Use [`scripts/profile.sh`](https://github.com/bradbergeron-us/dotfiles/blob/main/scripts/profile.sh)
@@ -158,3 +168,9 @@ scripts honor it too:
 Because they all read `current_profile`, switching a machine's profile with
 `dotprofile set <name>` (followed by `install.sh` + `update.sh`) is enough to
 re-shape what the repo manages on that device — no re-bootstrap required.
+
+## See also
+
+- [Adopt a profile on an existing machine](tutorials/adopt-profile.md) — switch a machine's profile in place.
+- [Architecture](architecture.md) — where the profile system fits in the overall design.
+- [Usage & lifecycle](usage.md) — the lifecycle commands that read the active profile.

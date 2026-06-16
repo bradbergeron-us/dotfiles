@@ -69,3 +69,8 @@ git -C ~/dotfiles commit -m "feat: add htop to core Brewfile"
 
 !!! tip
     Put a tool in the **lowest** scope that needs it. A CLI used on every machine belongs in `Brewfile`; a desktop app belongs in `Brewfile.personal`; keep work-only tooling in `Brewfile.work` so personal machines stay lean.
+
+## See also
+
+- [Machine Profiles](../profiles.md) — how the core/personal/work Brewfiles map to profiles.
+- [Usage & lifecycle](../usage.md) — how `update.sh` and `verify.sh` check Brewfile drift.
