@@ -126,3 +126,81 @@ jobs:
             exit 1
           fi
           echo "all profile dry-runs OK"
+
+  # Heaviest, non-PR sweep: go BEYOND dry-run and run a REAL install.sh against
+  # an isolated $HOME for the headless profiles (minimal, server). install.sh
+  # only symlinks (no brew/casks/fonts), so this stays fast, deterministic, and
+  # GUI-free while proving the actual link creation — not just the preview —
+  # honors profile gating. Mirrors ci.yml's install-smoke verifier. Runs only on
+  # manual dispatch or the nightly schedule.
+  install-smoke-real:
+    name: real install smoke (minimal + server)
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Real install.sh against isolated HOME (minimal + server)
+        run: |
+          # Shared verifier (same contract as ci.yml install-smoke): every map
+          # record must be linked iff it applies to the profile per
+          # profile_includes + the optional tag column.
+          # shellcheck source=scripts/lib/profile_helpers.sh
+          source scripts/lib/profile_helpers.sh
+          verify_links() {
+            local h="$1" prof="$2" src dest tags
+            while read -r src dest tags; do
+              [[ -z "$src" || "$src" == \#* ]] && continue
+              if profile_includes "$prof" "${tags:-}"; then
+                if [[ -L "$h/$dest" ]]; then echo "OK         $dest"; else echo "MISSING    $dest (expected for $prof)" && return 1; fi
+              else
+                if [[ -e "$h/$dest" || -L "$h/$dest" ]]; then echo "UNEXPECTED $dest (should be skipped for $prof)" && return 1; else echo "skip       $dest (not in $prof)"; fi
+              fi
+            done < config/symlinks.map
+            return 0
+          }
+
+          for p in minimal server; do
+            echo "════════ real install: profile $p ════════"
+            PROFILE_HOME="$(mktemp -d)"
+            echo "Isolated HOME: $PROFILE_HOME"
+            HOME="$PROFILE_HOME" DOTFILES_PROFILE="$p" zsh install.sh
+
+            echo ""
+            echo "--- Verifying symlinks ($p) ---"
+            verify_links "$PROFILE_HOME" "$p"
+
+            # gui/work-tagged links must be ABSENT on these headless profiles.
+            echo ""
+            echo "--- Verifying gui/work-tagged links are absent ($p) ---"
+            for tagged_dest in .hyper.js .config/ghostty/config; do
+              if [[ -e "$PROFILE_HOME/$tagged_dest" || -L "$PROFILE_HOME/$tagged_dest" ]]; then
+                echo "::error::$tagged_dest should be skipped on $p" && exit 1
+              fi
+            done
+            echo "OK  gui/work-tagged links absent on $p"
+
+            # Idempotency: a second run against the SAME HOME backs up nothing.
+            echo ""
+            echo "--- Idempotency: a second run must back up nothing ($p) ---"
+            second_output="$(HOME="$PROFILE_HOME" DOTFILES_PROFILE="$p" zsh install.sh)"
+            printf '%s\n' "$second_output"
+            if grep -q "0 backed up" <<<"$second_output"; then
+              echo "OK  second run reports 0 backed up"
+            else
+              echo "::error::$p: second run did not report '0 backed up'" && exit 1
+            fi
+          done
+
+          echo ""
+          echo "--- Residue: no files created/modified in the repo dir ---"
+          # install.sh must not create or modify anything tracked here, so the
+          # working tree must stay clean after every run.
+          residue="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$residue" ]]; then
+            echo "::error::install.sh created/modified files in the repo dir:"
+            printf '%s\n' "$residue"
+            exit 1
+          fi
+          echo "OK  no residue files created in the repo dir"
