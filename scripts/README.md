@@ -5,7 +5,7 @@ Automation scripts for system setup, configuration, and maintenance.
 ## Layout
 
 - **`scripts/`** — runnable scripts (work setup, installers, `macos.sh`, `uninstall.sh`, `validate_templates.sh`, …).
-- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`.
+- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`, `status_helpers.sh`.
 - **`scripts/tests/`** — hand-rolled unit tests (`test_*.sh`) for the helpers and validators.
 
 ---
@@ -27,6 +27,24 @@ source "$(dirname "$0")/scripts/lib/bootstrap_helpers.sh"
 setup_colors
 success "Task completed"
 ```
+
+---
+
+## Maintenance
+
+### `status.sh`
+
+**Quick, read-only dotfiles health snapshot.**
+
+Prints the dotfiles repo's git state (branch, clean/dirty, ahead/behind upstream) and the result of the last `update.sh` run (read from `logs/update.status`). Fast and side-effect-free.
+
+**Usage:**
+```bash
+bash ~/dotfiles/scripts/status.sh            # repo + last-update summary
+bash ~/dotfiles/scripts/status.sh --verify   # also run the full verify.sh
+```
+
+Aliased as `dotstatus` in `home/zshrc`. Parsing and git-state helpers live in `lib/status_helpers.sh` (unit-tested by `tests/test_status_helpers.sh`).
 
 ---
 
@@ -195,7 +213,7 @@ code --list-extensions
 
 ## Tests (`tests/`)
 
-Hand-rolled unit tests (no framework), auto-discovered and run by `.github/workflows/test-bootstrap.yml`: `test_bootstrap_helpers.sh`, `test_verify_helpers.sh`, `test_dryrun_helpers.sh`, `test_update_helpers.sh`, and `test_validate_templates.sh`. Run one directly with `bash scripts/tests/<file>`.
+Hand-rolled unit tests (no framework), auto-discovered and run by `.github/workflows/test-bootstrap.yml`: `test_bootstrap_helpers.sh`, `test_verify_helpers.sh`, `test_dryrun_helpers.sh`, `test_update_helpers.sh`, `test_status_helpers.sh`, and `test_validate_templates.sh`. Run one directly with `bash scripts/tests/<file>`.
 
 ### `tests/test_bootstrap_helpers.sh`
 
