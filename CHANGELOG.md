@@ -5,6 +5,14 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.1.0...v1.2.0) (2026-06-16)
+
+
+### Features
+
+* **docs:** Tokyo Night theme for the docs site ([36612b2](https://github.com/bradbergeron-us/dotfiles/commit/36612b21cb53722467867ec63eb5e3510643ab2e))
+* **docs:** Tokyo Night theme for the docs site ([62c2392](https://github.com/bradbergeron-us/dotfiles/commit/62c239267e719006dbc8574a5a568a872d8868b0))
+
 ## [Unreleased]
 
 ## [1.1.0] - 2026-06-16
