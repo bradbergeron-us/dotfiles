@@ -245,6 +245,27 @@ EOF
   ! echo "$out" | sed -n '/--ACTIONS--/,$p' | grep -q "brew bundle"
 }
 
+# Regression: the `grep -c ... || true` count idiom must yield a single clean
+# integer. The old `|| echo "0"` form appended a second line on no-match (grep
+# -c already prints "0"), feeding multiline input to `(( ... ))` and emitting an
+# arithmetic "syntax error" to stderr. Drive the brew-absent branch with a
+# Brewfile that has zero matching entries and assert stderr stays clean. PATH is
+# scoped to a bin dir holding only the coreutils the branch needs (grep/uname)
+# so `command -v brew` fails while grep itself stays available.
+@test "check_brew_bundle: brew absent, no entries → clean stderr, single count" {
+  local nobrew="$BATS_TEST_TMPDIR/nobrew_bin"
+  mkdir -p "$nobrew"
+  ln -sf "$(command -v grep)" "$nobrew/grep"
+  ln -sf "$(command -v uname)" "$nobrew/uname"
+  local bf="$BATS_TEST_TMPDIR/Brewfile_empty"
+  printf '# only comments, no brew/cask/tap/mas lines\n' > "$bf"
+  local errfile="$BATS_TEST_TMPDIR/brew_bundle.err"
+  out=$( export PATH="$nobrew"; check_brew_bundle "$bf" 2>"$errfile" )
+  echo "$out" | grep -q "Brewfile contains: 0 total entries"
+  [ ! -s "$errfile" ]
+  ! grep -qi "syntax error" "$errfile"
+}
+
 # ── check_work_configs (profile-gated) ────────────────────────────────────────
 # DOTFILES_PROFILE is exported per-case so current_profile is deterministic and
 # never reads the developer's real ~/.config/dotfiles/profile (env beats file).

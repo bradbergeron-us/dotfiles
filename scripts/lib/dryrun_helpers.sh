@@ -61,7 +61,7 @@ check_brew_bundle() {
   if ! command -v brew &>/dev/null; then
     info "Would install packages from Brewfile (Homebrew not yet installed)"
     local entry_count
-    entry_count=$(grep -cE "^(brew|cask|tap|mas)" "$brewfile" || echo "0")
+    entry_count=$(grep -cE "^(brew|cask|tap|mas)" "$brewfile" || true)
     info "Brewfile contains: $entry_count total entries"
     return
   fi
@@ -78,7 +78,7 @@ check_brew_bundle() {
   else
     # Count missing packages from the output
     local missing_count
-    missing_count=$(echo "$check_output" | grep -c "needs to be installed" || echo "0")
+    missing_count=$(echo "$check_output" | grep -c "needs to be installed" || true)
     if (( missing_count > 0 )); then
       info "Would install: $missing_count package(s)"
     else
