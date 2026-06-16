@@ -1,5 +1,11 @@
 .DS_Store
 *.local
+*.bak
+*.backup
+.zcompdump*
+.z
+.lesshst
+.viminfo
 
 # VS Code extension residue — created when `code --install-extension`
 # runs from the dotfiles directory instead of the project root

@@ -53,6 +53,34 @@ Aliased as `dotstatus` in `home/zshrc`. Parsing and git-state helpers live in `l
 
 `bash scripts/profile.sh [show | list | set <name>]` reads/writes `~/.config/dotfiles/profile` so an existing machine can adopt a profile (`personal` | `work` | `minimal` | `server`) without re-running bootstrap. Resolution logic lives in `lib/profile_helpers.sh` (unit-tested by `tests/test_profile_helpers.bats`); aliased `dotprofile`.
 
+### `cleanup.sh`
+
+**Remove common dotfile cruft (backups, cache, legacy configs).**
+
+Cleans up backup files, cache, and legacy configs that accumulate over time.
+
+**Usage:**
+```bash
+bash ~/dotfiles/scripts/cleanup.sh             # interactive (asks for confirmation)
+bash ~/dotfiles/scripts/cleanup.sh --dry-run   # preview what would be removed
+bash ~/dotfiles/scripts/cleanup.sh --yes       # skip confirmation
+```
+
+**What it removes:**
+- **Backup files:** `.zshrc.bak`, `.gitconfig.backup`
+- **Cache files:** `.zcompdump*`, `.lesshst`, `.viminfo`, `.z`, `.DS_Store`
+- **Legacy configs:** `.bash_profile`, `.profile`, `.zshenv`, `.spaceship.zsh`, `.zsh_plugins.*`, `.angular-config.json`
+
+**What it never touches:**
+- Managed dotfiles (symlinks from `install.sh`)
+- Expected unmanaged files (`.fzf.zsh`, `.yarnrc`, `.zshrc.local`)
+- Directories or subdirectories
+- `.zsh_history` (command history)
+
+Safe to run anytime — explicit paths only, no wildcards, interactive by default.
+
+See: [docs/cleanup.md](../docs/cleanup.md) for full documentation.
+
 ---
 
 ## Work Configuration Scripts
