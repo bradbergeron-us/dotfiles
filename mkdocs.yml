@@ -63,8 +63,6 @@ nav:
       - Getting Started (Your First Hour): tutorials/getting-started.md
       - Set Up a Work Laptop: tutorials/work-laptop.md
       - Adopt a Profile: tutorials/adopt-profile.md
-  - Profiles: profiles.md
-  - Usage: usage.md
   - How-to:
       - Add a tracked dotfile: how-to/add-a-dotfile.md
       - Manage packages: how-to/manage-packages.md
@@ -73,6 +71,8 @@ nav:
       - Write a test: how-to/write-a-test.md
       - Schedule updates: how-to/schedule-updates.md
       - Recover from a failed update: how-to/recover-from-a-failed-update.md
+  - Profiles: profiles.md
+  - Usage: usage.md
   - Setup:
       - Dry-Run & Pre-flight: DRY_RUN_AND_PREFLIGHT.md
       - GPG Commit Signing: GPG_SIGNING.md
