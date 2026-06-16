@@ -65,6 +65,21 @@ Because the helpers are side-effect-free, tests exercise them directly against t
 
 - **`.github/workflows/ci.yml`** — three jobs: `shellcheck` (bash scripts, `-S warning`), `zsh-syntax` (`zsh -n` on the zsh files plus a `Brewfile` parse check), and `install-smoke` (runs `zsh install.sh` against a throwaway `$HOME` and asserts every expected symlink exists).
 - **`.github/workflows/test-bootstrap.yml`** — installs bats-core and runs the full `scripts/tests/*.bats` suite (auto-discovered via `bats scripts/tests/`), plus `bash -n` syntax checks on the scripts under test and a `bats --count` parse-check of every `.bats` file, when the relevant scripts change.
+- **`.github/workflows/release.yml`** — release automation (see [Releasing](#releasing)).
+
+## Releasing
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please-action) — there is no manual tagging or hand-editing of `CHANGELOG.md`. Versioning follows [Semantic Versioning](https://semver.org/) and the changelog stays in [Keep a Changelog](https://keepachangelog.com/) format.
+
+The flow, driven by Conventional Commits:
+
+1. **Land PRs with Conventional-Commit titles/commits** on `main` (`feat:` → minor bump, `fix:` → patch bump, `feat!:`/`fix!:` or a `BREAKING CHANGE:` footer → major bump; `chore:`/`docs:`/`ci:`/etc. don't trigger a release on their own).
+2. **release-please opens (and keeps updating) a release PR** titled like `chore: release 1.2.0`. That PR rolls up everything since the last release: it bumps the version, prepends a new `CHANGELOG.md` section, and updates `.release-please-manifest.json`. It refreshes automatically as more PRs land.
+3. **Merge the release PR** when you're ready to cut the release. Merging it tags the commit (`vX.Y.Z`) and publishes the matching GitHub release with the generated notes.
+
+Configuration lives in `release-please-config.json` (release strategy `simple` — this is a shell/dotfiles repo, not a language package — with a `v` tag prefix and `CHANGELOG.md` as the managed changelog) and `.release-please-manifest.json` (the current released version, seeded at `1.1.0`). The workflow runs on every push to `main` using the default `GITHUB_TOKEN`. The handwritten `1.0.0`/`1.1.0` history is preserved; release-please appends new entries above it.
+
+To force a specific version (e.g. an out-of-band `1.2.0`), add a `Release-As: 1.2.0` footer to a commit on `main`; manual `git tag` pushes are no longer the release path.
 
 ## Common tasks
 
