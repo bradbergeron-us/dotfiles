@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Neovim baseline: `config/nvim/init.lua` (symlinked to `~/.config/nvim/init.lua`) plus `neovim` in the `Brewfile`. Dependency-free defaults — Space leader, line numbers, 2-space indent, smart-case search, system clipboard, readable diagnostics, and highlight-on-yank.
+
 ## [1.0.0] - 2026-06-16
 
 First tagged release. Captures the matured macOS dotfiles setup: a one-command

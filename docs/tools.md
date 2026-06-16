@@ -178,6 +178,13 @@ git commit --no-verify         # skip hooks (use sparingly)
 
 ---
 
+## Editor
+
+### [Neovim](https://neovim.io)
+A hyperextensible, Vim-based terminal editor. This repo ships a **dependency-free baseline** at `config/nvim/init.lua` (symlinked to `~/.config/nvim/init.lua`): no plugin manager and no external plugins, so it works on any fresh machine with just Neovim installed. It sets sensible defaults — a Space leader, line numbers (relative + absolute), 2-space indentation, smart-case search, system-clipboard integration, `termguicolors`, readable diagnostics, and highlight-on-yank — plus a few core mappings (`<leader>w` write, `<leader>q` quit, `<Esc>` clears search highlight). Layer machine-specific config under `~/.config/nvim/` (e.g. a `lua/` directory), which is not tracked here.
+
+---
+
 ## tmux
 
 ### [tmux](https://github.com/tmux/tmux)

@@ -172,6 +172,7 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `home/pryrc` | `~/.pryrc` | Pry REPL defaults |
 | `home/psqlrc` | `~/.psqlrc` | psql defaults — `\x auto`, `\timing`, per-DB history |
 | `home/editorconfig` | `~/.editorconfig` | Global EditorConfig fallback |
+| `config/nvim/init.lua` | `~/.config/nvim/init.lua` | Neovim — dependency-free baseline (Space leader, 2-space indent, diagnostics) |
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code settings |
 | `vscode/extensions.txt` | _(auto-installed)_ | Core VS Code extensions |
 | `Brewfile` | _(used by bootstrap)_ | All Homebrew packages and casks |
@@ -252,6 +253,7 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 | [Insomnia](https://insomnia.rest) | GUI REST/GraphQL client — API design, collections, team sharing |
 | [OrbStack](https://orbstack.dev) | Docker Desktop replacement — starts in <1s, lower RAM/CPU |
 | [VS Code](https://code.visualstudio.com) | Editor — settings and extensions tracked in `vscode/` |
+| [Neovim](https://neovim.io) | Terminal editor — dependency-free baseline in `config/nvim/init.lua` |
 | [Postgres.app](https://postgresapp.com) | PostgreSQL with a macOS GUI |
 | [DBeaver](https://dbeaver.io) | Universal database GUI |
 

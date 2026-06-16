@@ -39,6 +39,11 @@ brew "rustup"         # Rust toolchain manager — bootstrap.sh runs rustup-init
 brew "ruff"           # extremely fast Python linter and formatter (from Astral, same team as uv)
 
 # ------------------
+# Editor
+# ------------------
+brew "neovim"         # terminal editor — dependency-free baseline config in config/nvim/init.lua
+
+# ------------------
 # Terminal multiplexer
 # ------------------
 brew "tmux"
