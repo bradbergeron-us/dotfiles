@@ -57,6 +57,14 @@ nav:
   - Home: index.md
   - Profiles: profiles.md
   - Usage: usage.md
+  - How-to:
+      - Add a tracked dotfile: how-to/add-a-dotfile.md
+      - Manage packages: how-to/manage-packages.md
+      - Manage secrets: how-to/manage-secrets.md
+      - Add a zsh plugin: how-to/add-a-zsh-plugin.md
+      - Write a test: how-to/write-a-test.md
+      - Schedule updates: how-to/schedule-updates.md
+      - Recover from a failed update: how-to/recover-from-a-failed-update.md
   - Setup:
       - Dry-Run & Pre-flight: DRY_RUN_AND_PREFLIGHT.md
       - GPG Commit Signing: GPG_SIGNING.md
