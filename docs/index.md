@@ -13,66 +13,52 @@ git clone https://github.com/bradbergeron-us/dotfiles.git ~/dotfiles
 bash ~/dotfiles/bootstrap.sh
 ```
 
-`bootstrap.sh` runs once on a fresh Mac and handles everything: Homebrew, all
-packages, runtimes (Ruby, Node, Java, Python, Go, Rust), dotfile symlinks, and
-macOS defaults. Open a new terminal when it finishes.
+`bootstrap.sh` runs once on a fresh Mac: Homebrew, all packages, runtimes (Ruby,
+Node, Java, Python, Go, Rust), dotfile symlinks, and — on a first interactive
+run — a prompt for this machine's [profile](profiles.md). Open a new terminal
+when it finishes.
 
-Preview what would happen without changing anything:
+Preview without changing anything: `bash ~/dotfiles/bootstrap.sh --dry-run`
+(see [Dry-Run & Pre-flight](DRY_RUN_AND_PREFLIGHT.md)).
 
-```sh
-bash ~/dotfiles/bootstrap.sh --dry-run
-```
+**New here?** Walk through the [Getting Started tutorial](tutorials/getting-started.md)
+for a guided first hour.
 
-See [Dry-Run & Pre-flight](DRY_RUN_AND_PREFLIGHT.md) for details.
+## Find your way around
 
-## Machine profiles
+This documentation follows the [Diátaxis](https://diataxis.fr) model — pick the
+lane that matches what you need.
 
-Each machine has a **profile** that selects which packages, dotfiles, and steps
-apply:
+### Tutorials — learn by doing
 
-- **`personal`** (default) — full GUI Mac: core CLI + GUI casks/fonts/apps + macOS defaults.
-- **`work`** — `personal` plus the work overlay (extra tooling, work git/signing).
-- **`minimal`** — core CLI toolchain + runtimes + core dotfiles only.
-- **`server`** — headless macOS: core CLI + runtimes + core dotfiles, no GUI, no macOS defaults.
+- [Getting started: your first hour](tutorials/getting-started.md)
+- [Set up a work laptop](tutorials/work-laptop.md)
+- [Adopt a profile on an existing machine](tutorials/adopt-profile.md)
 
-Show or set a machine's profile without re-bootstrapping:
+### How-to guides — accomplish a task
 
-```sh
-bash ~/dotfiles/scripts/profile.sh           # show the active profile (aliased: dotprofile)
-bash ~/dotfiles/scripts/profile.sh set work  # persist this machine's profile
-```
+- [Add a tracked dotfile](how-to/add-a-dotfile.md)
+- [Manage packages](how-to/manage-packages.md)
+- [Manage secrets](how-to/manage-secrets.md)
+- [Add a zsh plugin](how-to/add-a-zsh-plugin.md)
+- [Write a test](how-to/write-a-test.md)
+- [Schedule updates](how-to/schedule-updates.md)
+- [Recover from a failed update](how-to/recover-from-a-failed-update.md)
 
-The profile is stored at `~/.config/dotfiles/profile`. Precedence is
-`--profile` flag > `DOTFILES_PROFILE` env > that file > `personal`.
+### Reference — look something up
 
-## Keeping everything current
+- [Machine profiles](profiles.md) and [Usage & lifecycle](usage.md)
+- [Tool reference](tools.md) and [Shell performance](performance.md)
+- [Troubleshooting](troubleshooting.md)
+- Setup: [Dry-run & pre-flight](DRY_RUN_AND_PREFLIGHT.md) · [GPG commit signing](GPG_SIGNING.md) · [Encrypted secrets](secrets.md)
+- Work machine: [Overview](work-machine.md) · [Complete setup guide](work-setup-complete.md) · [Claude Code SSL fix](claude-code-ssl-fix.md)
 
-```sh
-bash ~/dotfiles/update.sh              # pull, re-symlink, upgrade packages, health check
-bash ~/dotfiles/update.sh --dry-run    # preview everything; change nothing
-bash ~/dotfiles/update.sh --no-upgrade # pull + re-symlink + verify only
-```
+### Explanation — understand how it fits
 
-Other handy commands:
+- [Architecture](architecture.md) — how bootstrap, install, update, verify, status, and profiles fit together.
+- [Glossary](glossary.md) — terms used across these docs.
 
-- `bash ~/dotfiles/verify.sh` — standalone health check.
-- `bash ~/dotfiles/scripts/status.sh` — quick read-only snapshot (aliased `dotstatus`).
-- `zsh ~/dotfiles/install.sh` — re-symlink without upgrading packages.
+## Contributing
 
-## Documentation
-
-- **Guides**
-    - [Profiles](profiles.md) — `minimal` / `personal` / `work` / `server` and how each is applied.
-    - [Usage & Lifecycle](usage.md) — clone, bootstrap, update, verify, status, and scheduling.
-    - [Contributing](contributing.md) — conventions, the bats-core test workflow, and CI.
-- **Setup**
-    - [Dry-Run & Pre-flight](DRY_RUN_AND_PREFLIGHT.md) — preview and validate before installing.
-    - [GPG Commit Signing](GPG_SIGNING.md) — set up signed Git commits.
-    - [Encrypted Secrets](secrets.md) — commit secrets safely with sops + age.
-- **Work machine**
-    - [Work Machine Setup](work-machine.md) — the layered work overlay approach.
-    - [Complete Work Setup Guide](work-setup-complete.md) — full corporate-environment walkthrough.
-    - [Claude Code SSL Fix](claude-code-ssl-fix.md) — corporate certificate workaround.
-- **Reference**
-    - [Tool Reference](tools.md) — every tool in the Brewfile, with rationale and usage.
-    - [Shell Performance](performance.md) — how shell startup was cut by ~97%.
+See [Contributing](contributing.md) for repo conventions, the bats-core test
+workflow, and CI.

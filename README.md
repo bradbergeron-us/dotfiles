@@ -406,6 +406,8 @@ The full documentation site is published at **<https://bradbergeron-us.github.io
 | Doc | Contents |
 |-----|---------|
 | [Home](docs/index.md) | Documentation landing page and site overview |
+| [Tutorials](docs/tutorials/getting-started.md) | Guided walkthroughs — your first hour, work laptop, adopting a profile |
+| [How-to Guides](docs/how-to/add-a-dotfile.md) | Task recipes — dotfiles, packages, secrets, zsh plugins, tests, scheduling, recovery |
 | [Dry-Run & Pre-flight](docs/DRY_RUN_AND_PREFLIGHT.md) | Previewing changes and read-only system checks before bootstrap |
 | [GPG Commit Signing](docs/GPG_SIGNING.md) | SSH/GPG signing, per-organization configs, uploading keys, troubleshooting |
 | [Encrypted Secrets](docs/secrets.md) | sops + age workflow for encrypting and managing secrets |
@@ -416,4 +418,7 @@ The full documentation site is published at **<https://bradbergeron-us.github.io
 | [Claude Code SSL Fix](docs/claude-code-ssl-fix.md) | Resolving Claude Code SSL/certificate issues behind a corporate proxy |
 | [Tool Reference](docs/tools.md) | Full descriptions, rationale, and commands for every tool |
 | [Shell Performance](docs/performance.md) | Shell startup optimization history and benchmarks |
+| [Architecture](docs/architecture.md) | How bootstrap, install, update, verify, status, and the SSOT files fit together |
+| [Troubleshooting](docs/troubleshooting.md) | FAQ and fixes for common failures (updates, symlinks, tools, secrets, docs) |
+| [Glossary](docs/glossary.md) | Definitions of terms used across the docs |
 | [Contributing](docs/contributing.md) | Contribution workflow — bats-core tests, shellcheck, CI jobs, and conventional commits |
