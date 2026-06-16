@@ -1,0 +1,128 @@
+name: bootstrap-dryrun
+
+# Exercises bootstrap.sh in --dry-run mode now that profiles exist. Dry-run
+# installs nothing (no Xcode/Homebrew/package mutations), so these jobs stay
+# cheap and deterministic while proving the profile gating still behaves.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['feature/**']
+  workflow_dispatch:
+  schedule:
+    # Nightly heavier sweep (03:17 UTC) of all four profiles.
+    - cron: '17 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  # Cheap PR-time guardrail: the default (personal) and minimal profiles must
+  # each dry-run to exit 0 and print their profile-gated previews + banner.
+  dryrun-pr:
+    name: dry-run (personal + minimal)
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: personal (default) dry-run
+        run: |
+          set +e
+          out="$(bash bootstrap.sh --dry-run)"
+          code=$?
+          set -e
+          printf '%s\n' "$out"
+          if [ "$code" -ne 0 ]; then
+            echo "::error::personal dry-run exited $code (expected 0)"
+            exit 1
+          fi
+          grep -Eq 'Profile[[:space:]]+personal' <<<"$out" \
+            || { echo "::error::missing 'Profile  personal' banner line"; exit 1; }
+          grep -q 'Would prompt to apply macOS developer defaults' <<<"$out" \
+            || { echo "::error::personal: missing macOS defaults prompt preview"; exit 1; }
+          echo "personal dry-run OK"
+
+      - name: minimal dry-run
+        run: |
+          set +e
+          out="$(bash bootstrap.sh --dry-run --profile minimal)"
+          code=$?
+          set -e
+          printf '%s\n' "$out"
+          if [ "$code" -ne 0 ]; then
+            echo "::error::minimal dry-run exited $code (expected 0)"
+            exit 1
+          fi
+          grep -Eq 'Profile[[:space:]]+minimal' <<<"$out" \
+            || { echo "::error::missing 'Profile  minimal' banner line"; exit 1; }
+          grep -q 'Would skip macOS defaults' <<<"$out" \
+            || { echo "::error::minimal: missing 'Would skip macOS defaults' preview"; exit 1; }
+          grep -q 'Would skip work configs' <<<"$out" \
+            || { echo "::error::minimal: missing 'Would skip work configs' preview"; exit 1; }
+          echo "minimal dry-run OK"
+
+  # Heavier, non-PR sweep: dry-run every profile and assert exit 0, the banner,
+  # and the correct gated previews per profile. Still install-free, so it stays
+  # green and fast; runs only on manual dispatch or the nightly schedule.
+  dryrun-all-profiles:
+    name: dry-run sweep (all profiles)
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: dry-run every profile
+        run: |
+          fail=0
+          for p in minimal personal work server; do
+            echo "──────── profile: $p ────────"
+            set +e
+            out="$(bash bootstrap.sh --dry-run --profile "$p")"
+            code=$?
+            set -e
+            printf '%s\n' "$out"
+
+            if [ "$code" -ne 0 ]; then
+              echo "::error::$p dry-run exited $code (expected 0)"
+              fail=1
+              continue
+            fi
+
+            if ! grep -Eq "Profile[[:space:]]+$p" <<<"$out"; then
+              echo "::error::$p: missing 'Profile  $p' banner line"
+              fail=1
+            fi
+
+            # Profile-specific gating (see scripts/lib/profile_helpers.sh):
+            #   gui  -> personal, work   (macOS defaults prompt)
+            #   work -> work             (work-configs prompt)
+            case "$p" in
+              personal)
+                grep -q 'Would prompt to apply macOS developer defaults' <<<"$out" \
+                  || { echo "::error::personal: missing macOS defaults prompt"; fail=1; }
+                grep -q 'Would skip work configs' <<<"$out" \
+                  || { echo "::error::personal: expected work configs to be skipped"; fail=1; }
+                ;;
+              work)
+                grep -q 'Would prompt to apply macOS developer defaults' <<<"$out" \
+                  || { echo "::error::work: missing macOS defaults prompt"; fail=1; }
+                grep -q 'Would prompt to run work configuration setup' <<<"$out" \
+                  || { echo "::error::work: missing work configuration prompt"; fail=1; }
+                ;;
+              minimal|server)
+                grep -q 'Would skip macOS defaults' <<<"$out" \
+                  || { echo "::error::$p: expected macOS defaults to be skipped"; fail=1; }
+                grep -q 'Would skip work configs' <<<"$out" \
+                  || { echo "::error::$p: expected work configs to be skipped"; fail=1; }
+                ;;
+            esac
+          done
+
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::one or more profile dry-runs failed assertions"
+            exit 1
+          fi
+          echo "all profile dry-runs OK"
