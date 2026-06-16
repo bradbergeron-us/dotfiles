@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bootstrap.sh — install all dependencies and symlink dotfiles on a fresh Mac
-# Usage: bash bootstrap.sh [--dry-run] [--skip-preflight]
+# Usage: bash bootstrap.sh [--profile <name>] [--dry-run] [--skip-preflight]
 
 set -euo pipefail
 
@@ -14,35 +14,59 @@ TOTAL_STEPS=14
 # Parse arguments
 export DRY_RUN=false
 export SKIP_PREFLIGHT=false
+PROFILE_FLAG=""
 
-for arg in "$@"; do
-  case "$arg" in
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     --dry-run)
       export DRY_RUN=true
       ;;
     --skip-preflight)
       export SKIP_PREFLIGHT=true
       ;;
+    --profile)
+      PROFILE_FLAG="${2:-}"
+      if [[ -z "$PROFILE_FLAG" ]]; then
+        echo "Error: --profile requires a name (minimal | personal | work | server)"
+        exit 1
+      fi
+      shift
+      ;;
+    --profile=*)
+      PROFILE_FLAG="${1#*=}"
+      ;;
     --help|-h)
       echo "Usage: bash bootstrap.sh [OPTIONS]"
       echo ""
       echo "Options:"
+      echo "  --profile <name>  Machine profile: minimal | personal | work | server (default: personal)"
       echo "  --dry-run         Show what would be done without actually doing it"
       echo "  --skip-preflight  Skip pre-flight system checks"
       echo "  --help, -h        Show this help message"
       exit 0
       ;;
     *)
-      echo "Unknown option: $arg"
+      echo "Unknown option: $1"
       echo "Use --help for usage information"
       exit 1
       ;;
   esac
+  shift
 done
 
 # shellcheck source=scripts/lib/bootstrap_helpers.sh
 source "$(dirname "$0")/scripts/lib/bootstrap_helpers.sh"
 setup_colors
+
+# ── Profile (durable per-machine identity) ────────────────────────────────────
+# shellcheck source=scripts/lib/profile_helpers.sh
+source "$(dirname "$0")/scripts/lib/profile_helpers.sh"
+DOTFILES_PROFILE="$(resolve_profile "$PROFILE_FLAG")"
+export DOTFILES_PROFILE
+# Persist so update/verify/status agree on this machine's profile (not in dry-run).
+if [[ "$DRY_RUN" != true ]]; then
+  persist_profile "$DOTFILES_PROFILE" || true
+fi
 
 # Source dry-run helpers if needed
 if [[ "$DRY_RUN" == true ]]; then
@@ -60,6 +84,7 @@ fi
 echo "  ─────────────────────────────────────────────────"
 printf "  ${DIM}Machine${RESET}  %s\n" "$(scutil --get ComputerName 2>/dev/null || hostname)"
 printf "  ${DIM}Date${RESET}     %s\n" "$(date '+%a %b %d %Y  %H:%M')"
+printf "  ${DIM}Profile${RESET}  %s\n" "$DOTFILES_PROFILE"
 echo "  ─────────────────────────────────────────────────"
 
 # ── Pre-flight check ─────────────────────────────────────────────────────────

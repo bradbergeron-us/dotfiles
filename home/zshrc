@@ -156,6 +156,7 @@ alias glog='git log --oneline --decorate --color --graph'
 
 alias src='source ~/.zshrc'
 alias dotstatus='bash ~/dotfiles/scripts/status.sh'  # dotfiles health: repo git state + last update
+alias dotprofile='bash ~/dotfiles/scripts/profile.sh'  # show/set this machine's dotfiles profile
 alias c='clear'
 alias edithost='sudo nano /etc/hosts'
 
