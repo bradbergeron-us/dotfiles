@@ -5,7 +5,7 @@ Automation scripts for system setup, configuration, and maintenance.
 ## Layout
 
 - **`scripts/`** — runnable scripts (work setup, installers, `macos.sh`, `uninstall.sh`, `validate_templates.sh`, …).
-- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`, `status_helpers.sh`.
+- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`, `status_helpers.sh`, `profile_helpers.sh`.
 - **`scripts/tests/`** — hand-rolled unit tests (`test_*.sh`) for the helpers and validators.
 
 ---
@@ -46,6 +46,12 @@ bash ~/dotfiles/scripts/status.sh --exit-code # exit non-zero if unhealthy (for 
 ```
 
 Aliased as `dotstatus` in `home/zshrc`. Parsing and git-state helpers live in `lib/status_helpers.sh` (unit-tested by `tests/test_status_helpers.sh`).
+
+### `profile.sh`
+
+**Show or set this machine's profile.**
+
+`bash scripts/profile.sh [show | list | set <name>]` reads/writes `~/.config/dotfiles/profile` so an existing machine can adopt a profile (`personal` | `work` | `minimal` | `server`) without re-running bootstrap. Resolution logic lives in `lib/profile_helpers.sh` (unit-tested by `tests/test_profile_helpers.sh`); aliased `dotprofile`.
 
 ---
 

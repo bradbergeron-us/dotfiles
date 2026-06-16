@@ -67,6 +67,16 @@ For a quick read-only snapshot (repo git state + last `update.sh` result): `bash
 
 To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
+### Machine profile
+Each machine has a **profile** selecting which packages, dotfiles, and steps apply: `personal` (default, full GUI Mac), `work`, `minimal`, or `server`. Show or set it without re-bootstrapping:
+
+```sh
+bash ~/dotfiles/scripts/profile.sh           # show the active profile (aliased: dotprofile)
+bash ~/dotfiles/scripts/profile.sh set work  # persist this machine's profile
+```
+
+Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFILES_PROFILE` env > that file > `personal`. (Selecting a profile is recorded now; profile-aware packages, symlinks, and steps land in follow-up changes.)
+
 ### Terminal preview
 
 <details>
@@ -181,6 +191,7 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, missing tools, installed runtimes, stale backups |
 | `scripts/setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
 | `scripts/status.sh` | _(run / `dotstatus`)_ | Quick read-only health snapshot — repo git state + last `update.sh` result |
+| `scripts/profile.sh` | _(run / `dotprofile`)_ | Show or set this machine's profile (`personal`/`work`/`minimal`/`server`) |
 | `scripts/macos.sh` | _(run once)_ | macOS developer defaults |
 | `home/examples/zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 
