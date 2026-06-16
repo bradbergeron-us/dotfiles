@@ -32,3 +32,28 @@ repos:
         language: script
         pass_filenames: false
         files: '\.template$'
+
+  # ------------------
+  # Workflow linting — actionlint validates .github/workflows/*.yml (and lints
+  # the embedded run: scripts via shellcheck). pre-commit builds it in an
+  # isolated golang env, like gitleaks above.
+  # ------------------
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12  # pin to a version; update with: pre-commit autoupdate
+    hooks:
+      - id: actionlint
+        name: actionlint (GitHub Actions workflow lint)
+
+  # ------------------
+  # Shell static analysis — parity with the shellcheck CI job. Uses the locally
+  # installed shellcheck (Brewfile) and lints bash *.sh only; install.sh and
+  # setup_gpg_signing.sh are zsh, which shellcheck cannot parse.
+  # ------------------
+  - repo: local
+    hooks:
+      - id: shellcheck
+        name: shellcheck (bash static analysis)
+        entry: shellcheck -S warning
+        language: system
+        files: '\.sh$'
+        exclude: '^(install\.sh|scripts/setup_gpg_signing\.sh)$'
