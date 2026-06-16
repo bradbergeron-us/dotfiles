@@ -193,6 +193,7 @@ Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFIL
 | `home/npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
 | `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, missing tools, installed runtimes, stale backups |
+| `uninstall.sh` | _(run to uninstall)_ | Reverse `install.sh` — remove tracked symlinks, restore backed-up originals (`--dry-run` to preview) |
 | `scripts/setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
 | `scripts/status.sh` | _(run / `dotstatus`)_ | Quick read-only health snapshot — repo git state + last `update.sh` result |
 | `scripts/profile.sh` | _(run / `dotprofile`)_ | Show or set this machine's profile (`personal`/`work`/`minimal`/`server`) |
@@ -387,6 +388,23 @@ Or for additional work-specific topics: [docs/work-machine.md](docs/work-machine
 
 ---
 
+## Uninstall
+Reverse `install.sh` when you want to step a machine off the dotfiles. It is the mirror image of install — driven by the same `config/symlinks.map` SSOT and honoring the active [profile](#machine-profile).
+
+```sh
+bash ~/dotfiles/uninstall.sh --dry-run   # preview everything; change nothing
+bash ~/dotfiles/uninstall.sh             # remove symlinks + restore backups (asks to confirm)
+bash ~/dotfiles/uninstall.sh --yes       # skip the confirmation prompt (for non-interactive use)
+```
+
+What it does:
+- **Removes** the tracked dotfile symlinks for the active profile — but only links that actually point into the repo. Symlinks that point elsewhere, and plain (non-symlink) files, are left alone.
+- **Restores** the most recent `~/.dotfiles_backup/<timestamp>/` entry for each destination it clears (best effort, matched by filename), so any original file `install.sh` moved aside comes back.
+- **Removes** the thin `~/.gitconfig` include that `install.sh` writes (a real file, not a symlink — removed only when it includes `home/gitconfig`), then restores any backed-up `~/.gitconfig`.
+
+What it deliberately leaves alone (safe by design): it never deletes the dotfiles repo or your `~/.dotfiles_backup`, never uninstalls Homebrew/`mise`/Rust packages, and never touches untracked local config such as `~/.zshrc.local` or `~/.config/git/local.gitconfig`. Removing a symlink only unlinks it; the tracked file in the repo is untouched. The script is idempotent — running it again is a no-op — and `--dry-run` prints exactly what a real run would remove and restore without changing anything. Re-link any time with `zsh ~/dotfiles/install.sh`.
+
+---
 ## Making changes
 
 Because most dotfiles are symlinked, editing `~/.zshrc` edits `~/dotfiles/home/zshrc` directly. (Exception: `~/.gitconfig` is a thin _include_, not a symlink — edit `home/gitconfig` for shared settings; machine-specific or tool-written git config stays in `~/.gitconfig` / `~/.config/git/local.gitconfig`.)
