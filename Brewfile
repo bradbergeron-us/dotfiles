@@ -74,3 +74,8 @@ brew "pdftk-java"    # PDF toolkit — merge, split, fill forms, extract pages
 # ------------------
 brew "sops"           # encrypt/decrypt structured files in git (see scripts/secrets.sh, docs/secrets.md)
 brew "age"            # modern file-encryption backend used by sops (key at ~/.config/sops/age/keys.txt)
+
+# ------------------
+# Testing
+# ------------------
+brew "bats-core"      # bash test runner for scripts/tests/*.bats (matches the CI suite)

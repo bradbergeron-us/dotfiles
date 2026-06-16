@@ -1,6 +1,6 @@
 name: Test shell scripts
 
-# Auto-discovers and runs every hand-rolled unit test (scripts/tests/test_*.sh).
+# Auto-discovers and runs every bats unit test (scripts/tests/*.bats).
 # New test files are picked up without editing this workflow, so the trigger
 # watches the whole scripts/ directory plus the scripts under test.
 on:
@@ -21,14 +21,22 @@ on:
 
 jobs:
   unit-tests:
-    name: Run hand-rolled unit tests
+    name: Run bats unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install bats-core
+        # The suite only uses core bats features (setup/teardown, @test, run,
+        # skip, $BATS_TEST_TMPDIR) — no external bats-assert/bats-support
+        # libraries are required.
+        run: sudo apt-get update && sudo apt-get install -y bats
+
       - name: Syntax check
-        # Syntax-check the scripts under test, their helpers, and every test file.
-        # Test files are globbed so new scripts/tests/test_*.sh are covered automatically.
+        # Syntax-check the scripts under test plus their helpers with `bash -n`,
+        # and parse-check every .bats file with `bats --count` (which loads and
+        # parses each file without running any test). New scripts/tests/*.bats
+        # files are covered automatically.
         run: |
           for f in bootstrap.sh verify.sh \
                    scripts/lib/bootstrap_helpers.sh \
@@ -37,31 +45,20 @@ jobs:
             echo "bash -n $f"
             bash -n "$f"
           done
-          shopt -s nullglob
-          for t in scripts/tests/test_*.sh; do
-            echo "bash -n $t"
-            bash -n "$t"
-          done
+          echo "bash -n scripts/tests/test_helper.bash"
+          bash -n scripts/tests/test_helper.bash
+          echo "bats --count scripts/tests/ (parse-check all .bats files)"
+          bats --count scripts/tests/
           echo "All scripts pass syntax check."
 
       - name: Run tests
-        # Auto-discover and run every unit-test script. New scripts/tests/test_*.sh files
-        # are picked up without naming them here.
+        # Auto-discover and run every bats unit test. New scripts/tests/*.bats
+        # files are picked up without naming them here.
         run: |
           shopt -s nullglob
-          tests=(scripts/tests/test_*.sh)
+          tests=(scripts/tests/*.bats)
           if [[ ${#tests[@]} -eq 0 ]]; then
-            echo "No test scripts found (scripts/tests/test_*.sh)" && exit 1
+            echo "No bats test files found (scripts/tests/*.bats)" && exit 1
           fi
-          fail=0
-          for t in "${tests[@]}"; do
-            echo ""
-            echo "=============================================="
-            echo "Running $t"
-            echo "=============================================="
-            bash "$t" || fail=1
-          done
-          if [[ "$fail" -ne 0 ]]; then
-            echo "One or more test scripts failed." && exit 1
-          fi
-          echo "All unit-test scripts passed."
+          bats scripts/tests/
+          echo "All bats unit tests passed."
