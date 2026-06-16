@@ -155,6 +155,7 @@ alias gco='git checkout'
 alias glog='git log --oneline --decorate --color --graph'
 
 alias src='source ~/.zshrc'
+alias dotstatus='bash ~/dotfiles/scripts/status.sh'  # dotfiles health: repo git state + last update
 alias c='clear'
 alias edithost='sudo nano /etc/hosts'
 

@@ -63,6 +63,8 @@ To schedule daily automatic runs via launchd (9 AM): `bash ~/dotfiles/scripts/se
 
 To run the health check standalone: `bash ~/dotfiles/verify.sh`
 
+For a quick read-only snapshot (repo git state + last `update.sh` result): `bash ~/dotfiles/scripts/status.sh` (aliased as `dotstatus`).
+
 To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 
 ### Terminal preview
@@ -176,6 +178,7 @@ To re-symlink without upgrading packages: `zsh ~/dotfiles/install.sh`
 | `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, missing tools, installed runtimes, stale backups |
 | `scripts/setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
+| `scripts/status.sh` | _(run / `dotstatus`)_ | Quick read-only health snapshot — repo git state + last `update.sh` result |
 | `scripts/macos.sh` | _(run once)_ | macOS developer defaults |
 | `home/examples/zshrc.local.example` | _(template)_ | Template for machine-specific overrides |
 
