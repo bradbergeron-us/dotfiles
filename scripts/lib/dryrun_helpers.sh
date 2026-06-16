@@ -274,16 +274,28 @@ check_dotfile_symlinks() {
   fi
 }
 
-# Check work configs
+# Check work configs (gated to the work profile, mirroring bootstrap.sh)
 check_work_configs() {
+  local _profile
+  _profile="$(current_profile)"
+  if ! profile_includes "$_profile" work; then
+    info "Would skip work configs (profile: $_profile — applies to 'work' only)"
+    return
+  fi
   if [[ -f "$DOTFILES_DIR/scripts/setup_work_configs.sh" ]]; then
     info "Would prompt to run work configuration setup (optional)"
     info "  Sets up: .m2, .yarnrc, .continue, .claude, .aws"
   fi
 }
 
-# Check macOS defaults
+# Check macOS defaults (gated to GUI profiles: personal/work)
 check_macos_defaults() {
+  local _profile
+  _profile="$(current_profile)"
+  if ! profile_includes "$_profile" gui; then
+    info "Would skip macOS defaults (profile: $_profile — applies to personal/work)"
+    return
+  fi
   info "Would prompt to apply macOS developer defaults (optional)"
   info "  Includes: keyboard, trackpad, Finder, Dock, screenshots"
 }
