@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Usage & setup docs
+    url: https://github.com/bradbergeron-us/dotfiles#readme
+    about: Check the README and docs/ before filing — many questions are answered there.
