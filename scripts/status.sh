@@ -48,6 +48,8 @@ done
 source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 # shellcheck source=scripts/lib/status_helpers.sh
 source "$DOTFILES_DIR/scripts/lib/status_helpers.sh"
+# shellcheck source=scripts/lib/profile_helpers.sh
+source "$DOTFILES_DIR/scripts/lib/profile_helpers.sh"
 setup_colors
 
 echo ""
@@ -57,6 +59,7 @@ echo "  ────────────────────────
 # ── Repo ──────────────────────────────────────────────────────────────────────
 git_state "$DOTFILES_DIR"
 _unhealthy=false
+printf "  ${DIM}Profile${RESET}     %s\n" "$(current_profile)"
 printf "  ${DIM}Repo${RESET}        %s\n" "${DOTFILES_DIR/#$HOME/~}"
 if [[ -n "$GIT_STATE_BRANCH" ]]; then
   if [[ "$GIT_STATE_DIRTY" == true ]]; then

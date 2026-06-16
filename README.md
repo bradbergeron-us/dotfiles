@@ -37,8 +37,8 @@ Shows what will be installed without making any changes. See [docs/DRY_RUN_AND_P
 9. TPM (tmux plugin manager)
 10. `install.sh` — symlinks all dotfiles
 11. `~/.zshrc.local` from template
-12. Work-specific configurations — `.m2`, `.yarnrc`, `.continue`, `.claude`, `.aws` (optional prompt)
-13. macOS developer defaults (optional prompt)
+12. Work-specific configurations — `.m2`, `.yarnrc`, `.continue`, `.claude`, `.aws` (optional prompt; `work` profile only)
+13. macOS developer defaults (optional prompt; `personal`/`work` only)
 
 </details>
 
@@ -75,7 +75,7 @@ bash ~/dotfiles/scripts/profile.sh           # show the active profile (aliased:
 bash ~/dotfiles/scripts/profile.sh set work  # persist this machine's profile
 ```
 
-Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFILES_PROFILE` env > that file > `personal`. (Selecting a profile is recorded now; profile-aware packages, symlinks, and steps land in follow-up changes.)
+Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFILES_PROFILE` env > that file > `personal`. The profile drives which packages ([Brewfile overlays](#package-management)) and dotfiles install, and which optional bootstrap steps run: **work configs** only on `work`, and **macOS defaults** only on `personal`/`work` (skipped on `minimal`/`server`). `status.sh` and `verify.sh` show the active profile in their banner.
 
 ### Terminal preview
 

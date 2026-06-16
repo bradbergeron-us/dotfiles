@@ -291,34 +291,51 @@ else
   pass "check_brew_bundle: missing Brewfile → no action logged"
 fi
 
-# ── check_work_configs ────────────────────────────────────────────────────────
+# ── check_work_configs (profile-gated) ────────────────────────────────────
 echo ""
 echo "=== check_work_configs ==="
 
-# Case 1: setup script present → reports it would prompt
+# DOTFILES_PROFILE is exported per-case so current_profile is deterministic and
+# never reads the developer's real ~/.config/dotfiles/profile (env beats file).
 WORK_DOTFILES="$TMPDIR_BASE/work_dotfiles"
 mkdir -p "$WORK_DOTFILES/scripts"
 : > "$WORK_DOTFILES/scripts/setup_work_configs.sh"
+
+# Case 1: work profile + script present → reports it would prompt
 out_work=$(
+  export DOTFILES_PROFILE=work
   DOTFILES_DIR="$WORK_DOTFILES"
   check_work_configs
 )
 if echo "$out_work" | grep -q "work configuration setup"; then
-  pass "check_work_configs: script present → reports prompt"
+  pass "check_work_configs: work profile + script present → reports prompt"
 else
-  fail "check_work_configs: script present" "got: $out_work"
+  fail "check_work_configs: work profile + script present" "got: $out_work"
 fi
 
-# Case 2: setup script absent → no output
+# Case 2: non-work profile → reports it would skip (script presence irrelevant)
+out_work_skip=$(
+  export DOTFILES_PROFILE=minimal
+  DOTFILES_DIR="$WORK_DOTFILES"
+  check_work_configs
+)
+if echo "$out_work_skip" | grep -q "Would skip work configs"; then
+  pass "check_work_configs: non-work profile → would skip"
+else
+  fail "check_work_configs: non-work profile skip" "got: $out_work_skip"
+fi
+
+# Case 3: work profile + script absent → silent (nothing to prompt for)
 out_work_none=$(
+  export DOTFILES_PROFILE=work
   DOTFILES_DIR="$TMPDIR_BASE/work_none"
   mkdir -p "$DOTFILES_DIR"
   check_work_configs
 )
 if [[ -z "$out_work_none" ]]; then
-  pass "check_work_configs: script absent → silent"
+  pass "check_work_configs: work profile + script absent → silent"
 else
-  fail "check_work_configs: script absent" "expected no output, got: $out_work_none"
+  fail "check_work_configs: work profile + script absent" "expected no output, got: $out_work_none"
 fi
 
 # ── show_dry_run_summary ──────────────────────────────────────────────────────
@@ -355,18 +372,19 @@ else
   fail "show_dry_run_summary: action enumeration" "got: $out_sum"
 fi
 
-# ── check_macos_defaults ──────────────────────────────────────────────────────
+# ── check_macos_defaults (profile-gated) ───────────────────────────────
 echo ""
 echo "=== check_macos_defaults ==="
 
-# Always informational; logs nothing but mentions the defaults it would apply.
+# Case 1: gui profile (personal) → would prompt; logs nothing.
 out_macos=$(
+  export DOTFILES_PROFILE=personal
   check_macos_defaults
   printf '\n--ACTIONS--\n'
   printf '%s\n' "${DRY_RUN_ACTIONS[@]}"
 )
 if echo "$out_macos" | grep -q "macOS developer defaults"; then
-  pass "check_macos_defaults: reports it would prompt"
+  pass "check_macos_defaults: gui profile → reports it would prompt"
 else
   fail "check_macos_defaults: prompt message" "got: $out_macos"
 fi
@@ -375,6 +393,17 @@ if [[ -n "$macos_actions" ]]; then
   fail "check_macos_defaults: should not log actions" "got: $out_macos"
 else
   pass "check_macos_defaults: logs no actions"
+fi
+
+# Case 2: non-gui profile (server) → would skip.
+out_macos_skip=$(
+  export DOTFILES_PROFILE=server
+  check_macos_defaults
+)
+if echo "$out_macos_skip" | grep -q "Would skip macOS defaults"; then
+  pass "check_macos_defaults: server profile → would skip"
+else
+  fail "check_macos_defaults: server skip" "got: $out_macos_skip"
 fi
 
 # ── check_* dry-run previews (tool present/absent branches) ───────────────

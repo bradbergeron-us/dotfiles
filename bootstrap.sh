@@ -464,7 +464,12 @@ if [[ "$DRY_RUN" == true ]]; then
   check_work_configs
 else
   step "🏢  Work-specific configurations"
-  if [[ -f "$DOTFILES_DIR/scripts/setup_work_configs.sh" ]]; then
+  # Work configs (corporate proxy/cert/registry setup) belong to the work
+  # profile only. Other profiles skip the prompt entirely — nothing work-
+  # related is installed by default, so personal/minimal/server are unchanged.
+  if ! profile_includes "$DOTFILES_PROFILE" work; then
+    info "Skipped — work configs apply to the 'work' profile (current: $DOTFILES_PROFILE)"
+  elif [[ -f "$DOTFILES_DIR/scripts/setup_work_configs.sh" ]]; then
     echo ""
     printf "  Setup work configs (.m2, .yarnrc, .continue, .claude, .aws)?\n"
     echo ""
@@ -485,23 +490,29 @@ if [[ "$DRY_RUN" == true ]]; then
   check_macos_defaults
 else
   step "⚙️  macOS developer defaults"
-  echo ""
-  printf "  Will apply:\n"
-  printf "  • Keyboard   — fast key repeat, disable autocorrect & smart quotes\n"
-  printf "  • Trackpad   — enable tap-to-click\n"
-  printf "  • Finder     — show hidden files & all extensions, path bar, list view\n"
-  printf "  • Dock       — auto-hide, instant animation, no recent apps\n"
-  printf "  • Screenshots → ~/Desktop/screenshots/ (PNG, no shadow)\n"
-  printf "  • TextEdit   — plain text mode by default\n"
-  printf "  • Mission Control — faster animation, don't rearrange Spaces\n"
-  echo ""
-  read -rp "  Apply these settings? [y/N] " apply_macos
-  if [[ "$apply_macos" =~ ^[Yy]$ ]]; then
-    bash "$DOTFILES_DIR/scripts/macos.sh"
-    success "macOS defaults applied — Finder and Dock restarted automatically"
-    warn "Key repeat and trackpad changes take full effect after logout"
+  # GUI defaults (Finder/Dock/trackpad/keyboard) only make sense on profiles
+  # with a desktop: personal and work. minimal and server (headless) skip this.
+  if ! profile_includes "$DOTFILES_PROFILE" gui; then
+    info "Skipped — macOS defaults apply to personal/work profiles (current: $DOTFILES_PROFILE)"
   else
-    info "Skipped. Run manually any time: bash ~/dotfiles/scripts/macos.sh"
+    echo ""
+    printf "  Will apply:\n"
+    printf "  • Keyboard   — fast key repeat, disable autocorrect & smart quotes\n"
+    printf "  • Trackpad   — enable tap-to-click\n"
+    printf "  • Finder     — show hidden files & all extensions, path bar, list view\n"
+    printf "  • Dock       — auto-hide, instant animation, no recent apps\n"
+    printf "  • Screenshots → ~/Desktop/screenshots/ (PNG, no shadow)\n"
+    printf "  • TextEdit   — plain text mode by default\n"
+    printf "  • Mission Control — faster animation, don't rearrange Spaces\n"
+    echo ""
+    read -rp "  Apply these settings? [y/N] " apply_macos
+    if [[ "$apply_macos" =~ ^[Yy]$ ]]; then
+      bash "$DOTFILES_DIR/scripts/macos.sh"
+      success "macOS defaults applied — Finder and Dock restarted automatically"
+      warn "Key repeat and trackpad changes take full effect after logout"
+    else
+      info "Skipped. Run manually any time: bash ~/dotfiles/scripts/macos.sh"
+    fi
   fi
 fi
 
