@@ -144,17 +144,27 @@ else
   WARNINGS=$(( WARNINGS + ${#DOTFILES_GIT_HEALTH_ISSUES[@]} ))
 fi
 
-# ── 8. Brewfile drift ────────────────────────────────────────────────────
+# ── 8. Brewfile drift ───────────────────────────────────
 step "🍺  Brewfile drift"
-check_brewfile_drift "$DOTFILES_DIR/Brewfile"
+# Check the core Brewfile plus the active profile's overlays.
+_drift_warn=0
+_drift_skipped=true
+while IFS= read -r _bf; do
+  check_brewfile_drift "$_bf"
+  [[ "$BREWFILE_DRIFT_SKIPPED" == "true" ]] && continue
+  _drift_skipped=false
+  if [[ "$BREWFILE_DRIFT_OK" != "true" ]]; then
+    warn "$BREWFILE_DRIFT_ISSUE"
+    _drift_warn=$(( _drift_warn + 1 ))
+  fi
+done < <(profile_brewfiles "$_profile" "$DOTFILES_DIR")
 
-if [[ "$BREWFILE_DRIFT_SKIPPED" == "true" ]]; then
+if [[ "$_drift_skipped" == "true" ]]; then
   info "brew not installed — skipping Brewfile drift check"
-elif [[ "$BREWFILE_DRIFT_OK" == "true" ]]; then
-  success "Brewfile in sync with installed packages"
+elif (( _drift_warn == 0 )); then
+  success "Brewfile(s) in sync with installed packages (profile: $_profile)"
 else
-  warn "$BREWFILE_DRIFT_ISSUE"
-  WARNINGS=$(( WARNINGS + 1 ))
+  WARNINGS=$(( WARNINGS + _drift_warn ))
 fi
 
 # ── 9. Git config include ────────────────────────────────────────────

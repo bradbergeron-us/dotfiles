@@ -185,7 +185,7 @@ Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFIL
 | `config/nvim/init.lua` | `~/.config/nvim/init.lua` | Neovim — dependency-free baseline (Space leader, 2-space indent, diagnostics) |
 | `vscode/settings.json` | `~/Library/.../Code/User/settings.json` | VS Code settings |
 | `vscode/extensions.txt` | _(auto-installed)_ | Core VS Code extensions |
-| `Brewfile` | _(used by bootstrap)_ | All Homebrew packages and casks |
+| `Brewfile` · `Brewfile.personal` · `Brewfile.work` | _(used by bootstrap)_ | Core CLI formulae + per-profile overlays (GUI casks/fonts/apps; work additions) |
 | `home/npmrc` | `~/.npmrc` | npm defaults — `save-exact`, no fund/update noise |
 | `update.sh` | _(run to update)_ | Upgrade all packages, runtimes, and gems; runs health check at end |
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, missing tools, installed runtimes, stale backups |
@@ -272,14 +272,22 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 
 ## Package management
 
+Packages are split by profile (see [Machine profile](#machine-profile)):
+
+- **`Brewfile`** — core CLI formulae, installed for every profile.
+- **`Brewfile.personal`** — GUI casks, fonts, and apps (`personal`, `work`).
+- **`Brewfile.work`** — work-only additions: Gradle, kubectl, Helm (`work`).
+
+`bootstrap.sh` installs the core file plus the active profile's overlays automatically; `minimal`/`server` get core only.
+
 ```sh
-brew bundle --file=~/dotfiles/Brewfile          # install everything
-brew bundle check --file=~/dotfiles/Brewfile    # check what's missing
+brew bundle --file=~/dotfiles/Brewfile           # core CLI tools (all profiles)
+brew bundle --file=~/dotfiles/Brewfile.personal  # GUI casks/fonts/apps (personal/work)
+brew bundle --file=~/dotfiles/Brewfile.work      # work-only additions
+brew bundle check --file=~/dotfiles/Brewfile     # check what's missing
 ```
 
-To add a package: edit `Brewfile`, run `brew bundle`. To upgrade all packages, use `update.sh` — it runs `brew upgrade` as part of the full update cycle.
-
-Work machine? Also run `brew bundle --file=~/dotfiles/Brewfile.work`.
+To add a package: put CLI formulae in `Brewfile`, GUI casks/fonts/apps in `Brewfile.personal`, then run `brew bundle`. To upgrade everything, use `update.sh`.
 
 ---
 

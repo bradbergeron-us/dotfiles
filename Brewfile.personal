@@ -1,0 +1,27 @@
+# Brewfile.personal — GUI casks, fonts, and apps for profiles WITH a desktop
+# (personal, work). Layered on top of the core Brewfile by bootstrap.sh; skipped
+# on minimal/server. Install standalone: brew bundle --file=~/dotfiles/Brewfile.personal
+
+# ------------------
+# Git (GUI credential helper)
+# ------------------
+cask "git-credential-manager" # cross-platform credential helper — GitHub, GitHub Enterprise, Bitbucket
+
+# ------------------
+# Fonts
+# ------------------
+cask "font-fira-code"                  # Fira Code (editor font with ligatures)
+cask "font-jetbrains-mono-nerd-font"   # JetBrains Mono with Nerd Font icons (terminal font)
+
+# ------------------
+# Apps (casks)
+# ------------------
+cask "insomnia"            # GUI REST/GraphQL client — API design, collections, team sharing
+cask "raycast"             # launcher, clipboard history, window management
+cask "visual-studio-code"  # editor
+cask "postgres-app"        # Postgres.app — PostgreSQL with a macOS GUI
+cask "dbeaver-community"   # universal database GUI (Postgres, MySQL, SQLite, etc.)
+cask "ghostty"             # preferred terminal — GPU-accelerated, native macOS (config in config/ghostty/config)
+cask "hyper"               # fallback terminal built on web technologies (Tokyo Night theme configured in hyper.js)
+cask "github"              # GitHub Desktop — GUI for Git and GitHub
+cask "flux"                # f.lux — adjusts screen color temperature based on time of day to reduce eye strain

@@ -38,6 +38,10 @@ setup_colors
 STEP=0
 TOTAL_STEPS=13
 source "$SCRIPT_DIR/../lib/dryrun_helpers.sh"
+# check_dotfile_symlinks resolves the active profile (current_profile) and filters
+# records by it (profile_includes), exactly as bootstrap.sh does at runtime —
+# source profile_helpers so those functions are available to the tests too.
+source "$SCRIPT_DIR/../lib/profile_helpers.sh"
 
 # ── Shared fake dotfiles checkout ─────────────────────────────────────────────
 # check_dotfile_symlinks reads $DOTFILES_DIR/<src> only for the readlink compare,

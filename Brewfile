@@ -1,7 +1,12 @@
-# Brewfile — declarative Homebrew packages
-# Install everything: brew bundle
-# Install and upgrade: brew bundle --upgrade
-# Check what's missing: brew bundle check
+# Brewfile — core CLI packages (Homebrew formulae) for ALL profiles.
+#
+# Profiles layer GUI/app packages on top (see scripts/lib/profile_helpers.sh):
+#   Brewfile.personal — GUI casks, fonts, apps (personal, work)
+#   Brewfile.work     — work-only additions (work)
+# bootstrap.sh installs this core file plus the active profile's overlays;
+# `minimal`/`server` get core only. Keep GUI/cask entries OUT of this file.
+#
+# Install core: brew bundle --file=Brewfile   (check: brew bundle check)
 
 # ------------------
 # Shell & prompt
@@ -26,7 +31,6 @@ brew "git-delta"               # syntax-highlighted diffs
 brew "lazygit"                 # terminal UI for git
 brew "gh"                      # GitHub CLI
 brew "gnupg"                   # GPG for signing commits
-cask "git-credential-manager" # cross-platform credential helper — GitHub, GitHub Enterprise, Bitbucket
 
 # ------------------
 # Runtime management
@@ -64,22 +68,3 @@ brew "newman"         # CLI runner for Insomnia/Postman collections (useful in C
 brew "redis"          # in-memory data store — background jobs (Sidekiq), caching, sessions
 brew "imagemagick"    # image conversion and manipulation (resize, crop, format conversion)
 brew "pdftk-java"     # PDF toolkit — merge, split, fill forms, extract pages
-
-# ------------------
-# Fonts
-# ------------------
-cask "font-fira-code"                  # Fira Code (editor font with ligatures)
-cask "font-jetbrains-mono-nerd-font"   # JetBrains Mono with Nerd Font icons (terminal font)
-
-# ------------------
-# Apps (casks)
-# ------------------
-cask "insomnia"            # GUI REST/GraphQL client — API design, collections, team sharing
-cask "raycast"             # launcher, clipboard history, window management
-cask "visual-studio-code"  # editor
-cask "postgres-app"        # Postgres.app — PostgreSQL with a macOS GUI
-cask "dbeaver-community"   # universal database GUI (Postgres, MySQL, SQLite, etc.)
-cask "ghostty"             # preferred terminal — GPU-accelerated, native macOS (config in config/ghostty/config)
-cask "hyper"               # fallback terminal built on web technologies (Tokyo Night theme configured in hyper.js)
-cask "github"              # GitHub Desktop — GUI for Git and GitHub
-cask "flux"                # f.lux — adjusts screen color temperature based on time of day to reduce eye strain
