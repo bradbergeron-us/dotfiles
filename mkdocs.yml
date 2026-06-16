@@ -1,6 +1,7 @@
 site_name: dotfiles
 site_description: Personal macOS dotfiles — zsh, tmux, git, and a full developer toolchain.
 site_author: Brad Bergeron
+site_url: https://bradbergeron-us.github.io/dotfiles/
 repo_name: bradbergeron-us/dotfiles
 repo_url: https://github.com/bradbergeron-us/dotfiles
 edit_uri: edit/main/docs/
