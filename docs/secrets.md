@@ -2,7 +2,7 @@
 
 This repo can store secrets (API tokens, `.env` files, credentials) **encrypted in git** using [sops](https://github.com/getsops/sops) with the [age](https://github.com/FiloSottile/age) backend. Encrypted files are safe to commit; only someone holding the matching age **private key** can decrypt them.
 
-The encryption policy lives in [`.sops.yaml`](../.sops.yaml). A small wrapper, [`scripts/secrets.sh`](../scripts/secrets.sh), provides `edit` / `encrypt` / `decrypt` helpers.
+The encryption policy lives in [`.sops.yaml`](https://github.com/bradbergeron-us/dotfiles/blob/main/.sops.yaml). A small wrapper, [`scripts/secrets.sh`](https://github.com/bradbergeron-us/dotfiles/blob/main/scripts/secrets.sh), provides `edit` / `encrypt` / `decrypt` helpers.
 
 ---
 
@@ -26,7 +26,7 @@ The encryption policy lives in [`.sops.yaml`](../.sops.yaml). A small wrapper, [
    age-keygen -o ~/.config/sops/age/keys.txt
    ```
    This prints a line like `# public key: age1qpz...`. The file also contains your **private** key — keep it secret.
-3. **Register your public key** in [`.sops.yaml`](../.sops.yaml): replace the placeholder recipient(s) under `creation_rules` with the `age1...` public key from step 2, then commit `.sops.yaml`.
+3. **Register your public key** in [`.sops.yaml`](https://github.com/bradbergeron-us/dotfiles/blob/main/.sops.yaml): replace the placeholder recipient(s) under `creation_rules` with the `age1...` public key from step 2, then commit `.sops.yaml`.
    - To share secrets across multiple machines or teammates, list each public key as its own `age:` entry — every listed recipient can decrypt.
    - After changing recipients, re-key existing files with `sops updatekeys <file>`.
 

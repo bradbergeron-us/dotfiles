@@ -752,7 +752,7 @@ Only templates and documentation are committed.
 
 ### Documentation
 
-- [Main README](../README.md) - General dotfiles information
+- [Main README](https://github.com/bradbergeron-us/dotfiles#readme) - General dotfiles information
 - [Work Machine Setup](work-machine.md) - Additional work-specific topics
 - [Tools Guide](tools.md) - Tool-specific configuration
 - [Performance](performance.md) - Optimization tips

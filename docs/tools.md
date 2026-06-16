@@ -1,7 +1,7 @@
 # Tool Reference
 
-Full descriptions, rationale, and usage for every tool in the [Brewfile](../Brewfile).
-For a quick summary of all tools, see the [tools table in the README](../README.md#tools).
+Full descriptions, rationale, and usage for every tool in the [Brewfile](https://github.com/bradbergeron-us/dotfiles/blob/main/Brewfile).
+For a quick summary of all tools, see the [tools table in the README](https://github.com/bradbergeron-us/dotfiles#tools).
 
 ---
 
@@ -379,7 +379,7 @@ For Clipboard History: assign `Cmd+Shift+V` in Settings → Extensions → Clipb
 
 ## Scripts
 
-### [`update.sh`](../update.sh)
+### [`update.sh`](https://github.com/bradbergeron-us/dotfiles/blob/main/update.sh)
 A one-command maintenance script that keeps the machine current without a full re-bootstrap. Run it manually any time, or automate it with `scripts/setup-scheduler.sh`.
 
 ```sh
@@ -399,7 +399,7 @@ Logs are written to `~/dotfiles/logs/update.log` when running via launchd.
 
 ---
 
-### [`verify.sh`](../verify.sh)
+### [`verify.sh`](https://github.com/bradbergeron-us/dotfiles/blob/main/verify.sh)
 A standalone environment health check. Run it any time to confirm the machine is in a good state — useful when returning to a machine after time away, after a failed update, or when something feels broken.
 
 ```sh
@@ -422,7 +422,7 @@ Errors require action (run `install.sh`). Warnings are informational — the exi
 
 ---
 
-### [`setup-scheduler.sh`](../scripts/setup-scheduler.sh)
+### [`setup-scheduler.sh`](https://github.com/bradbergeron-us/dotfiles/blob/main/scripts/setup-scheduler.sh)
 Installs a launchd `LaunchAgent` that runs `update.sh` daily at 9 AM. Uses the modern `launchctl bootstrap`/`bootout` API.
 
 ```sh
