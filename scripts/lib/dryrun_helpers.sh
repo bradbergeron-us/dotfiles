@@ -19,6 +19,15 @@ dry_run_step() {
   printf "${CYAN}${BOLD}  ▸ [%d/%d]  %s${RESET}  ${DIM}(dry-run)${RESET}\n" "$STEP" "$TOTAL_STEPS" "$title"
 }
 
+# preview_profile PROFILE — dry-run mirror of the bootstrap first-run summary.
+# profile_component_summary comes from profile_helpers.sh, which bootstrap.sh
+# sources before this file.
+preview_profile() {
+  printf "  ${DIM}This profile would set up${RESET}\n"
+  profile_component_summary "$1"
+  echo "  ─────────────────────────────────────────────────"
+}
+
 # Check if Xcode CLI tools would be installed
 check_xcode() {
   if ! xcode-select -p &>/dev/null; then

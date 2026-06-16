@@ -139,3 +139,34 @@ setup() {
   : > "$bfd/Brewfile"
   [ "$(profile_brewfiles work "$bfd" | wc -l | tr -d '[:space:]')" = "1" ]
 }
+
+# ── profile_component_summary ─────────────────────────────────────────────────
+@test "profile_component_summary: minimal → core only, no GUI/work/macOS" {
+  run profile_component_summary minimal
+  [ "$status" -eq 0 ]
+  grep -qE 'Package overlay +core only' <<<"$output"
+  grep -qE 'GUI apps \+ dotfiles +no' <<<"$output"
+  grep -qE 'Work configs +no' <<<"$output"
+  grep -qE 'macOS defaults +no' <<<"$output"
+}
+
+@test "profile_component_summary: personal → GUI overlay, macOS yes, work no" {
+  run profile_component_summary personal
+  grep -qE 'core \+ GUI \(Brewfile.personal\)' <<<"$output"
+  grep -qE 'GUI apps \+ dotfiles +yes' <<<"$output"
+  grep -qE 'macOS defaults +yes' <<<"$output"
+  grep -qE 'Work configs +no' <<<"$output"
+}
+
+@test "profile_component_summary: work → GUI + work overlay, work yes" {
+  run profile_component_summary work
+  grep -qE '\+ work \(Brewfile.work\)' <<<"$output"
+  grep -qE 'Work configs +yes' <<<"$output"
+  grep -qE 'macOS defaults +yes' <<<"$output"
+}
+
+@test "profile_component_summary: server → core only, no GUI" {
+  run profile_component_summary server
+  grep -qE 'Package overlay +core only' <<<"$output"
+  grep -qE 'GUI apps \+ dotfiles +no' <<<"$output"
+}
