@@ -157,4 +157,4 @@ scripts/check-compliance.sh --policy company-policy.yml
 
 - **Full Details**: See [roadmap-work-laptop-management.md](roadmap-work-laptop-management.md)
 - **Current Features**: See [work-machine.md](work-machine.md)
-- **How to Contribute**: See [CONTRIBUTING.md](../CONTRIBUTING.md)
+- **How to Contribute**: See [CONTRIBUTING.md](https://github.com/bradbergeron-us/dotfiles/blob/main/CONTRIBUTING.md)
