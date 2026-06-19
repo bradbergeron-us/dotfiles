@@ -584,7 +584,7 @@ scripts/check-drift.sh --baseline team-configs/platform-team/baseline.yml
 - [Work Machine Setup Guide](work-machine.md)
 - [Profiles Documentation](profiles.md)
 - [Secrets Management](secrets.md)
-- [Contributing Guidelines](../CONTRIBUTING.md)
+- [Contributing Guidelines](https://github.com/bradbergeron-us/dotfiles/blob/main/CONTRIBUTING.md)
 - [Architecture Overview](architecture.md)
 
 ---

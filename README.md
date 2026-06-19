@@ -18,6 +18,20 @@ bash ~/dotfiles/bootstrap.sh
 
 `bootstrap.sh` runs once on a fresh Mac and handles everything: Homebrew, all packages, runtimes (Ruby, Node, Java, Python, Go, Rust), dotfile symlinks, and macOS defaults. Open a new terminal when it finishes.
 
+### Common commands
+
+Day-to-day tasks run through one command, `dotfiles` (added to your `PATH` from `~/dotfiles/bin`):
+
+```bash
+dotfiles status     # repo state + last update
+dotfiles doctor     # read-only health check (status + verify + shell/terminal)
+dotfiles update     # pull, re-symlink, upgrade packages/runtimes, verify
+dotfiles profile    # show or set this machine's profile
+dotfiles cleanup    # remove backups, cache, and legacy configs
+```
+
+It's a thin wrapper over the scripts below — same flags, same behavior. See [docs/cli.md](docs/cli.md). Equivalent direct form: `bash ~/dotfiles/scripts/dotfiles.sh <command>`.
+
 ### Preview changes before running
 
 ```sh
@@ -169,12 +183,12 @@ Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFIL
 
 | File | Symlinked to | What it does |
 |------|-------------|--------------|
-| `home/zshrc` | `~/.zshrc` | Shell config — mise, PATH, aliases, plugins |
+| `home/zshrc` + `home/zsh/*.zsh` | `~/.zshrc` | Modular shell config — PATH, aliases, functions, plugins, integrations ([docs](docs/zsh.md)) |
 | `home/zprofile` | `~/.zprofile` | Login profile — Homebrew PATH setup |
 | `home/gitconfig` | `~/.gitconfig` _(include)_ | Git defaults, delta pager, SSH signing — loaded via a thin `~/.gitconfig` (not a symlink) so `git config --global` / tool writes stay out of the repo |
 | `home/gitignore_global` | `~/.gitignore_global` | Global ignores — macOS, editors, Java, Go |
 | `home/tmux.conf` | `~/.tmux.conf` | tmux — `C-a` prefix, vim keys, TPM plugins |
-| `config/ghostty/config` | `~/.config/ghostty/config` | **Ghostty (preferred terminal)** — Tokyo Night, JetBrains Mono Nerd Font |
+| `config/ghostty/config` | `~/.config/ghostty/config` | **Ghostty (preferred terminal)** — Tokyo Night, JetBrains Mono Nerd Font ([setup](docs/ghostty.md)) |
 | `home/hyper.js` | `~/.hyper.js` | Hyper _(fallback terminal)_ — Tokyo Night theme, JetBrains Mono |
 | `config/starship.toml` | `~/.config/starship.toml` | Starship prompt config |
 | `config/mise.toml` | `~/.config/mise/config.toml` | Global runtime versions (Ruby, Node, Java, Python, Go) |
@@ -195,6 +209,7 @@ Stored at `~/.config/dotfiles/profile`; precedence is `--profile` flag > `DOTFIL
 | `verify.sh` | _(run to verify)_ | Health check — symlinks, missing tools, installed runtimes, stale backups |
 | `uninstall.sh` | _(run to uninstall)_ | Reverse `install.sh` — remove tracked symlinks, restore backed-up originals (`--dry-run` to preview) |
 | `scripts/setup-scheduler.sh` | _(run once)_ | Install launchd job to run `update.sh` daily at 9 AM |
+| `scripts/dotfiles.sh` · `bin/dotfiles` | _(run / `dotfiles`)_ | Unified CLI — `status`, `verify`, `doctor`, `update`, `profile`, `cleanup` ([docs](docs/cli.md)) |
 | `scripts/status.sh` | _(run / `dotstatus`)_ | Quick read-only health snapshot — repo git state + last `update.sh` result |
 | `scripts/profile.sh` | _(run / `dotprofile`)_ | Show or set this machine's profile (`personal`/`work`/`minimal`/`server`) |
 | `scripts/macos.sh` | _(run once)_ | macOS developer defaults |
@@ -431,6 +446,9 @@ The full documentation site is published at **<https://bradbergeron-us.github.io
 | [Encrypted Secrets](docs/secrets.md) | sops + age workflow for encrypting and managing secrets |
 | [Machine Profiles](docs/profiles.md) | `personal`/`work`/`minimal`/`server` profiles, selection precedence, and how they drive packages, symlinks, and bootstrap steps |
 | [Usage & Lifecycle](docs/usage.md) | Day-to-day lifecycle — bootstrap, dry-run, update, verify, status, and scheduling |
+| [dotfiles CLI](docs/cli.md) | The unified `dotfiles` command — subcommands, delegation, and `doctor` |
+| [Zsh Configuration](docs/zsh.md) | Modular zsh layout — `home/zsh/` modules, loading, local overrides, validation |
+| [Ghostty](docs/ghostty.md) | Preferred terminal — install, validation, Hyper fallback, local overrides |
 | [Work Machine](docs/work-machine.md) | Additional work topics — Brewfile.work, zshrc.local, direnv, NVM migration |
 | [Complete Work Setup Guide](docs/work-setup-complete.md) | **End-to-end work machine setup** — from fresh macOS to production-ready |
 | [Claude Code SSL Fix](docs/claude-code-ssl-fix.md) | Resolving Claude Code SSL/certificate issues behind a corporate proxy |
@@ -439,4 +457,5 @@ The full documentation site is published at **<https://bradbergeron-us.github.io
 | [Architecture](docs/architecture.md) | How bootstrap, install, update, verify, status, and the SSOT files fit together |
 | [Troubleshooting](docs/troubleshooting.md) | FAQ and fixes for common failures (updates, symlinks, tools, secrets, docs) |
 | [Glossary](docs/glossary.md) | Definitions of terms used across the docs |
+| [Personal Workstation Roadmap](docs/roadmap-personal-workstation.md) | Future backlog for the `dotfiles` CLI (not yet implemented) |
 | [Contributing](docs/contributing.md) | Contribution workflow — bats-core tests, shellcheck, CI jobs, and conventional commits |

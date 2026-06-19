@@ -105,6 +105,9 @@ nav:
       - Complete Setup Guide: work-setup-complete.md
       - Claude Code SSL Fix: claude-code-ssl-fix.md
   - Reference:
+      - dotfiles CLI: cli.md
+      - Zsh Configuration: zsh.md
+      - Ghostty: ghostty.md
       - Tool Reference: tools.md
       - Shell Performance: performance.md
       - Troubleshooting: troubleshooting.md
@@ -113,5 +116,6 @@ nav:
       - Glossary: glossary.md
   - Roadmap:
       - Quick Reference: roadmap-quick-reference.md
+      - Personal Workstation: roadmap-personal-workstation.md
       - Work Laptop Management: roadmap-work-laptop-management.md
   - Contributing: contributing.md

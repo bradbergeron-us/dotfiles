@@ -55,3 +55,10 @@ macos-option-as-alt = left
 # ── Shell ──────────────────────────────────────────────────────────────────────
 # Default shell is zsh on this machine; Ghostty auto-detects shell integration.
 shell-integration = zsh
+
+# ── Local overrides ─────────────────────────────────────────────────────────────
+# Per-machine, untracked tweaks live in ~/.config/ghostty/ghostty.local (next to
+# this file once symlinked). The path is relative to this config file and the
+# leading `?` means Ghostty won't error if it doesn't exist. Kept last so its
+# values override everything above. See docs/ghostty.md.
+config-file = ?ghostty.local

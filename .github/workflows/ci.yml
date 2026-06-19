@@ -26,16 +26,16 @@ jobs:
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
 
-      # Lint every top-level *.sh plus scripts/, scripts/lib/, and scripts/tests/
-      # in one pass so new scripts are covered automatically. zsh files
-      # (install.sh, scripts/setup_gpg_signing.sh) are detected by shebang and
-      # routed to the zsh-syntax job instead, since shellcheck only understands
-      # sh/bash/dash/ksh.
+      # Lint every top-level *.sh plus scripts/, scripts/lib/, scripts/tests/,
+      # and bin/dotfiles in one pass so new scripts are covered automatically.
+      # zsh files (install.sh, scripts/setup_gpg_signing.sh) are detected by
+      # shebang and routed to the zsh-syntax job instead, since shellcheck only
+      # understands sh/bash/dash/ksh.
       - name: shellcheck all bash scripts
         run: |
           fail=0
           shopt -s nullglob
-          for script in *.sh scripts/*.sh scripts/lib/*.sh scripts/tests/*.sh; do
+          for script in *.sh scripts/*.sh scripts/lib/*.sh scripts/tests/*.sh bin/dotfiles; do
             if head -1 "$script" | grep -q 'zsh'; then
               echo "SKIP (zsh, see zsh-syntax job): $script"
               continue
@@ -63,7 +63,7 @@ jobs:
         # install.sh and scripts/setup_gpg_signing.sh are zsh (skipped by the
         # shellcheck job), so they are syntax-checked here with a real zsh.
         run: |
-          for f in home/zshrc home/zprofile install.sh bootstrap.sh scripts/macos.sh scripts/setup_gpg_signing.sh; do
+          for f in home/zshrc home/zsh/*.zsh home/zprofile install.sh bootstrap.sh scripts/macos.sh scripts/setup_gpg_signing.sh; do
             echo "zsh -n $f"
             zsh -n "$f"
           done
