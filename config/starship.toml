@@ -7,3 +7,10 @@ format = "via [$symbol$version]($style) "
 
 [ruby]
 disabled = true
+
+[custom.git_email]
+command = "git config user.email"
+when = "git rev-parse --is-inside-work-tree 2>/dev/null"
+symbol = "✉ "
+style = "bold yellow"
+format = "[$symbol$output]($style) "
