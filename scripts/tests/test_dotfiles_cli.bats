@@ -52,3 +52,25 @@ CLI() { bash "$REPO_ROOT/scripts/dotfiles.sh" "$@"; }
   [ "$status" -eq 0 ]
   [[ "$output" == *"Usage: dotfiles"* ]]
 }
+
+# ── per-command help ──────────────────────────────────────────────────────────
+@test "verify --help: exits 0, prints usage, does not run the checks" {
+  run CLI verify --help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: bash verify.sh"* ]]
+  [[ "$output" != *"[1/9]"* ]]   # the step banner only appears on a real run
+}
+
+@test "doctor --help: exits 0, prints usage, does not run the checks" {
+  run CLI doctor --help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: dotfiles doctor"* ]]
+  [[ "$output" != *"[1/4]"* ]]   # the step banner only appears on a real run
+}
+
+@test "help mentions per-command help and the man page" {
+  run CLI help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"--help"* ]]
+  [[ "$output" == *"man dotfiles"* ]]
+}
