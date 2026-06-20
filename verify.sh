@@ -17,6 +17,33 @@
 
 set -euo pipefail
 
+# --help/-h: verify.sh takes no options; print what it checks and exit early
+# (before any work). Other arguments are ignored, as before.
+for _arg in "$@"; do
+  case "$_arg" in
+    -h|--help)
+      cat <<'USAGE'
+Usage: bash verify.sh
+
+Full, read-only environment health check. Reports:
+  1. Symlinks             broken/missing tracked links      (errors -> exit 1)
+  2. Required tools       tools missing from PATH           (warnings)
+  3. Stale backups        old ~/.dotfiles_backup entries    (warnings)
+  4. SSH key              present and loaded in the agent    (warnings)
+  5. git-lfs              initialized globally               (warnings)
+  6. mise runtimes        declared runtimes installed        (warnings)
+  7. Dotfiles git health  no conflict markers; config parses (warnings)
+  8. Brewfile drift       installed packages vs Brewfile(s)  (warnings)
+  9. Git config include   ~/.gitconfig thin include present  (warnings)
+
+This command takes no options. Exit status: 1 if any errors, otherwise 0.
+Run via: dotfiles verify   (or: bash ~/dotfiles/verify.sh)
+USAGE
+      exit 0
+      ;;
+  esac
+done
+
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 VERIFY_START=$SECONDS
 ERRORS=0

@@ -45,6 +45,9 @@ Examples:
   dotfiles doctor
   dotfiles update
 
+Command-specific help:  dotfiles <command> --help
+Full manual:            man dotfiles
+
 Run via `dotfiles <command>` (when ~/dotfiles/bin is on PATH) or
 `bash ~/dotfiles/scripts/dotfiles.sh <command>`.
 USAGE
@@ -55,6 +58,20 @@ USAGE
 # modifies the system; it aggregates failures and returns non-zero if any check
 # fails so it is usable in scripts and CI.
 doctor() {
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat <<'USAGE'
+Usage: dotfiles doctor
+
+Read-only aggregate health check (makes no changes). Runs:
+  1. Repository status   status.sh --exit-code (repo git state + last update)
+  2. Verification        verify.sh (symlinks, tools, runtimes, git health, ...)
+  3. Shell configuration zsh -n on home/zshrc + home/zsh/*.zsh modules
+  4. Terminal config     Ghostty +validate-config (or presence check); Hyper note
+
+Takes no options. Exit status: non-zero if any check fails, otherwise 0.
+USAGE
+    return 0
+  fi
   local fails=0 f
   # shellcheck disable=SC2034  # STEP/TOTAL_STEPS are read by step() in bootstrap_helpers.sh
   STEP=0

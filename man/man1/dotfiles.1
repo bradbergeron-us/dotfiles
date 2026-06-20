@@ -1,0 +1,142 @@
+.\" man page for the dotfiles CLI. View with: man dotfiles
+.\" (MANPATH is extended by home/zsh/path.zsh) or: man ./man/man1/dotfiles.1
+.TH DOTFILES 1 "2026-06-20" "dotfiles" "User Commands"
+.SH NAME
+dotfiles \- unified entry point for common dotfiles operations
+.SH SYNOPSIS
+.B dotfiles
+.I command
+.RI [ arguments ...]
+.SH DESCRIPTION
+.B dotfiles
+is a thin wrapper around the scripts in the dotfiles repository. Most
+subcommands delegate to an existing script, forwarding all arguments and the
+exit code; the
+.B doctor
+subcommand runs a read\-only aggregate health check.
+.PP
+The command is available on
+.B PATH
+through the
+.I bin/dotfiles
+shim, which is added to
+.B PATH
+by
+.IR home/zsh/path.zsh .
+It can also be run directly as
+.IR "bash ~/dotfiles/scripts/dotfiles.sh <command>" .
+.SH COMMANDS
+.TP
+.B help
+Show the usage message. This is also the default when no command is given, and
+is equivalent to
+.B \-h
+and
+.BR \-\-help .
+.TP
+.B status
+Print a read\-only snapshot of dotfiles health: the repository git state and the
+result of the last
+.I update.sh
+run. Delegates to
+.IR scripts/status.sh .
+.TP
+.B verify
+Run the full environment health check (symlinks, required tools, runtimes, git
+health, Brewfile drift, and more). Delegates to
+.IR verify.sh .
+Exits non\-zero when there are errors such as broken symlinks.
+.TP
+.B doctor
+Read\-only aggregate health check. Runs
+.B status
+.RB ( \-\-exit\-code ),
+then
+.BR verify ,
+then a
+.B zsh \-n
+syntax check of
+.I home/zshrc
+and the
+.I home/zsh/*.zsh
+modules, and finally a Ghostty configuration check. It makes no changes and
+exits non\-zero if any check fails.
+.TP
+.B update
+Pull the latest dotfiles, re\-symlink, upgrade packages and runtimes, then run
+the health check. Delegates to
+.IR update.sh .
+.TP
+.B profile
+Show or set this machine's profile
+.RB ( personal ,
+.BR work ,
+.BR minimal ,
+or
+.BR server ).
+Delegates to
+.IR scripts/profile.sh .
+.TP
+.B cleanup
+Remove common dotfile cruft (backups, cache, legacy configs). Delegates to
+.IR scripts/cleanup.sh .
+.SH OPTIONS
+Options are command\-specific and forwarded to the underlying script. Run
+.B dotfiles
+.I command
+.B \-\-help
+to see the options a given command accepts. For example:
+.PP
+.RS
+.nf
+dotfiles status \-\-verify
+dotfiles update \-\-dry\-run
+dotfiles cleanup \-\-dry\-run
+.fi
+.RE
+.SH EXAMPLES
+.TP
+.B dotfiles doctor
+Run the full read\-only health check.
+.TP
+.B dotfiles update \-\-dry\-run
+Preview an update without changing anything.
+.TP
+.B dotfiles profile set work
+Switch this machine to the
+.I work
+profile.
+.SH EXIT STATUS
+.TP
+.B 0
+The command succeeded.
+.TP
+.B non\-zero
+A command failed, one of
+.BR doctor 's
+checks failed, or an unknown command was given.
+.SH FILES
+.TP
+.I ~/dotfiles/scripts/dotfiles.sh
+The CLI implementation.
+.TP
+.I ~/dotfiles/bin/dotfiles
+PATH shim that delegates to the CLI.
+.TP
+.I ~/dotfiles/home/zsh/path.zsh
+Adds the repository
+.I bin
+directory to
+.B PATH
+and the
+.I man
+directory to
+.BR MANPATH .
+.SH SEE ALSO
+.BR git (1),
+.BR zsh (1).
+Project documentation lives in
+.I ~/dotfiles/docs/cli.md
+and on the documentation site.
+.SH AUTHOR
+Brad Bergeron.

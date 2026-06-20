@@ -16,6 +16,10 @@ export EDITOR=code
 # DOTFILES_DIR is resolved in home/zshrc from this file's real location.
 [[ -n "${DOTFILES_DIR:-}" && -d "$DOTFILES_DIR/bin" ]] && export PATH="$DOTFILES_DIR/bin:$PATH"
 
+# dotfiles man page — make `man dotfiles` work (man/man1/dotfiles.1). The
+# trailing colon (when MANPATH is empty) keeps the system man paths searched.
+[[ -n "${DOTFILES_DIR:-}" && -d "$DOTFILES_DIR/man" ]] && export MANPATH="$DOTFILES_DIR/man:${MANPATH:-}"
+
 # NVM conflict guard: if NVM is still installed on this machine but empty
 # (no versions), suppress it so mise owns Node cleanly.
 # NVM has been removed from this machine; this guard is a safety net for

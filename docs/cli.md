@@ -62,6 +62,27 @@ safe to use in scripts and CI. The flow is:
 dotfiles doctor
 ```
 
+## Help & man page
+
+Every command has help text:
+
+- **Top-level usage**: `dotfiles`, `dotfiles help`, `dotfiles -h`, or `dotfiles --help`.
+- **Per-command help**: `dotfiles <command> --help`. For delegating commands this
+  is forwarded to the underlying script — e.g. `dotfiles status --help`,
+  `dotfiles update --help`, `dotfiles cleanup --help`, `dotfiles profile --help`.
+  `dotfiles verify --help` and `dotfiles doctor --help` also print command-specific
+  usage (without running the checks).
+
+A man page is bundled at `man/man1/dotfiles.1`:
+
+```bash
+man dotfiles                 # works in a new shell (MANPATH is set by path.zsh)
+man ./man/man1/dotfiles.1    # or view the file directly, from the repo
+```
+
+`home/zsh/path.zsh` adds `~/dotfiles/man` to `MANPATH`, so `man dotfiles` works
+after opening a new shell — nothing needs to be installed.
+
 ## See also
 
 - [Usage & Lifecycle](usage.md) — bootstrap, update, verify, status, scheduling
