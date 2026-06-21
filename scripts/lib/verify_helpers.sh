@@ -161,7 +161,11 @@ check_ssh_key() {
 }
 
 # check_git_lfs_global
-# Checks that git-lfs is installed and initialized in the global git config.
+# Checks that git-lfs is installed and initialized in the effective global git
+# config. Uses `git config --global --includes` so filters provided via an
+# [include]d file are detected — the dotfiles keep the git-lfs filters in the
+# tracked home/gitconfig, included from ~/.gitconfig, which a plain
+# `git config --global` (no include processing) misses, producing a false warning.
 # Sets:
 #   GIT_LFS_OK    — true if git-lfs is installed and globally initialized
 #   GIT_LFS_ISSUE — human-readable problem description (empty when OK)
@@ -174,8 +178,10 @@ check_git_lfs_global() {
     return
   fi
 
+  # --includes makes git follow [include] directives in the global config, so
+  # filters defined in an included file (e.g. the tracked home/gitconfig) count.
   local clean_filter
-  clean_filter=$(git config --global filter.lfs.clean 2>/dev/null) || true
+  clean_filter=$(git config --global --includes filter.lfs.clean 2>/dev/null) || true
 
   if [[ -n "$clean_filter" ]]; then
     GIT_LFS_OK=true

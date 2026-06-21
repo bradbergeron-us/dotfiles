@@ -250,6 +250,27 @@ EOF
   fi
 }
 
+@test "check_git_lfs_global: filters via [include] are detected (follows includes)" {
+  # Regression: the global file itself has NO lfs filters; they live in an
+  # [include]d file (mirrors the dotfiles' ~/.gitconfig -> home/gitconfig setup).
+  # A plain `git config --global` misses this; --includes detects it.
+  if ! command -v git-lfs &>/dev/null; then skip "git-lfs not installed"; fi
+  local inc="$BATS_TEST_TMPDIR/included_lfs.gitconfig"
+  cat > "$inc" << 'EOF'
+[filter "lfs"]
+clean = git-lfs clean -- %f
+smudge = git-lfs smudge -- %f
+process = git-lfs filter-process
+required = true
+EOF
+  local cfg="$BATS_TEST_TMPDIR/gitconfig_include"
+  printf '[include]\n\tpath = %s\n' "$inc" > "$cfg"
+  export GIT_CONFIG_GLOBAL="$cfg"
+  check_git_lfs_global
+  [ "$GIT_LFS_OK" = "true" ]
+  [ -z "$GIT_LFS_ISSUE" ]
+}
+
 # ── check_mise_installed ──────────────────────────────────────────────────────
 write_mise_match() {
   cat > "$BATS_TEST_TMPDIR/mise_match.toml" << 'EOF'
