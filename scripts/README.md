@@ -402,9 +402,6 @@ bash scripts/setup_work_configs.sh
 # Test with shellcheck
 shellcheck scripts/setup_work_configs.sh
 
-# Test in a clean environment
-docker run -it --rm -v ~/dotfiles:/dotfiles ubuntu:22.04 bash
-cd /dotfiles && bash scripts/setup_work_configs.sh
 ```
 
 ---

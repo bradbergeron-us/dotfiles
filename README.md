@@ -282,7 +282,6 @@ Quick reference — [full descriptions, rationale, and usage in docs/tools.md](d
 | [Hyper](https://hyper.is) | Fallback terminal — kept installed during the Ghostty transition (`home/hyper.js`) |
 | [Raycast](https://raycast.com) | Launcher, clipboard history, window management — replaces Spotlight |
 | [Insomnia](https://insomnia.rest) | GUI REST/GraphQL client — API design, collections, team sharing |
-| [OrbStack](https://orbstack.dev) | Docker Desktop replacement — starts in <1s, lower RAM/CPU |
 | [VS Code](https://code.visualstudio.com) | Editor — settings and extensions tracked in `vscode/` |
 | [Neovim](https://neovim.io) | Terminal editor — dependency-free baseline in `config/nvim/init.lua` |
 | [Postgres.app](https://postgresapp.com) | PostgreSQL with a macOS GUI |
