@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.5.0...v1.6.0) (2026-06-22)
+
+
+### Features
+
+* add interactive branch selection to vets-api and vets-website scripts ([9d0028f](https://github.com/bradbergeron-us/dotfiles/commit/9d0028f28303e1b6fe2b78b437f35175df46dbe5))
+* add interactive prompt to open education app pages ([832a8ee](https://github.com/bradbergeron-us/dotfiles/commit/832a8eed3b5cd00784c3d0bc97364ddf1371f283))
+* add interactive prompt to open education app pages ([97806c9](https://github.com/bradbergeron-us/dotfiles/commit/97806c91e1ee2f6e3f180a9f7a58514a877f734a))
+* add vets-api startup script with Hyper tab integration ([3acefa2](https://github.com/bradbergeron-us/dotfiles/commit/3acefa2503e593a0bb2b279569df178ba3abfed3))
+* add vets-api startup script with Hyper tab integration ([706c1e5](https://github.com/bradbergeron-us/dotfiles/commit/706c1e53d40392c4b66972c2c7170fc699acc654))
+* configure Gemfile to use jfrog proxy for gem installation ([6dc23b9](https://github.com/bradbergeron-us/dotfiles/commit/6dc23b94e8ef116d7ce632740b66fbb5a4d41478))
+* improve vets-website script UX with Hyper tab integration ([7dc7d62](https://github.com/bradbergeron-us/dotfiles/commit/7dc7d6225885dedc7ccf7d35628bdcc29dd8a928))
+* improve vets-website script UX with Hyper tab integration ([dbdd0dc](https://github.com/bradbergeron-us/dotfiles/commit/dbdd0dc50b878004b703baccd8ad81d2f2061c95))
+
+
+### Bug Fixes
+
+* add includeIf section for VA.gov git config ([8a7aeff](https://github.com/bradbergeron-us/dotfiles/commit/8a7aeff79b8c6ad98af74dc799b413d509094967))
+* improve vets-api bundle install with jfrog proxy ([36559ef](https://github.com/bradbergeron-us/dotfiles/commit/36559ef58c88deb7cbf5f0dd32f0d5b326a4c760))
+* move vets-api aliases to .zshrc.local instead of dotfiles ([7d62689](https://github.com/bradbergeron-us/dotfiles/commit/7d626899dfd294627849730af041a8af7f8a90d6))
+* use education benefit apps as default in vets-website scripts ([4da8ebd](https://github.com/bradbergeron-us/dotfiles/commit/4da8ebd163d15111247189549df47d729082d768))
+
 ## [1.5.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.4.0...v1.5.0) (2026-06-22)
 
 
