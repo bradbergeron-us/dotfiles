@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.3.0...v1.4.0) (2026-06-22)
+
+
+### Features
+
+* add cleanup script for removing dotfile cruft ([5be01eb](https://github.com/bradbergeron-us/dotfiles/commit/5be01ebc0dfb34d865f2a089686aee270d44328c))
+* add unified dotfiles CLI wrapper with doctor command ([890825b](https://github.com/bradbergeron-us/dotfiles/commit/890825b3f35a459b52367f4605fd9791dc6993b0))
+* **cli:** add dotfiles man page and verify/doctor --help ([ca6474b](https://github.com/bradbergeron-us/dotfiles/commit/ca6474b33bff591b734252f69d0dbb992ff567a4))
+* **cli:** add dotfiles man page and verify/doctor --help ([6fd3ac6](https://github.com/bradbergeron-us/dotfiles/commit/6fd3ac6d04a7cad82227a6834ecd3e8c76b4a168))
+* dotfiles platform roadmap (unified CLI, doctor, modular zsh, Ghostty) ([bb526c5](https://github.com/bradbergeron-us/dotfiles/commit/bb526c5809c1112d84ec58e69f7bce452fe3c6ba))
+* **ghostty:** support an optional local override include ([6e7334b](https://github.com/bradbergeron-us/dotfiles/commit/6e7334b0a8725d39a662a60a1a29864f7c37c49d))
+* show active git email in starship prompt ([75866e7](https://github.com/bradbergeron-us/dotfiles/commit/75866e7dfc4262619de5eee8b954c06ed2977937))
+
+
+### Bug Fixes
+
+* **brewfile:** use current flux-app cask name ([95a05f3](https://github.com/bradbergeron-us/dotfiles/commit/95a05f361af63cdfe5398f14ff8655c0db43a89f))
+* **docs:** use absolute URL for root CONTRIBUTING.md links ([33adced](https://github.com/bradbergeron-us/dotfiles/commit/33adcedf4356d19e41052859f331ee0e7f185327))
+* **verify:** detect git-lfs via include-aware global config ([05b3dc5](https://github.com/bradbergeron-us/dotfiles/commit/05b3dc58bffdbb50000c8ef5cfdb3b7d9be056de))
+* **verify:** missing-only Brewfile drift check + flux-app rename ([b74df96](https://github.com/bradbergeron-us/dotfiles/commit/b74df966a204947a48929d1904124b4eea4f3cec))
+* **verify:** report only missing packages in Brewfile drift check ([bc01fa9](https://github.com/bradbergeron-us/dotfiles/commit/bc01fa940e694ec60c8d478ed12e6f10aa9c2d8c))
+
 ## [1.3.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.2.0...v1.3.0) (2026-06-16)
 
 
