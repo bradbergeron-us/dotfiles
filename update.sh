@@ -256,10 +256,12 @@ if [[ "$NO_UPGRADE" == true ]]; then
 elif [[ "$DRY_RUN" == true ]]; then
   dry "brew update && brew upgrade && brew autoremove && brew cleanup --prune=7"
 else
+  info "Updating Homebrew package definitions..."
   if ! brew update; then
     warn "brew update failed — continuing"
     mark_failure "Homebrew"
   fi
+  info "Upgrading Homebrew packages (this may take several minutes)..."
   if brew upgrade; then
     success "All Homebrew packages upgraded"
   else
@@ -277,6 +279,7 @@ if [[ "$NO_UPGRADE" == true ]]; then
 elif [[ "$DRY_RUN" == true ]]; then
   dry "mise upgrade"
 elif command -v mise &>/dev/null; then
+  info "Upgrading runtimes (Node, Ruby, Python, etc. — may take a few minutes)..."
   if mise upgrade; then
     success "Runtimes upgraded: $(mise current 2>/dev/null | tr '\n' ' ' || true)"
   else
@@ -293,6 +296,7 @@ if [[ "$NO_UPGRADE" == true ]]; then
 elif [[ "$DRY_RUN" == true ]]; then
   dry "rustup update"
 elif command -v rustup &>/dev/null; then
+  info "Updating Rust toolchain (this may take a minute while downloading components)..."
   if rustup update; then
     success "Rust toolchain updated: $(rustc --version 2>/dev/null || true)"
   else
