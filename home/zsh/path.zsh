@@ -38,8 +38,18 @@ if command -v mise &>/dev/null; then
   eval "$(mise activate zsh)"
 fi
 
-# Rust (cargo) — add to PATH if rustup is installed
-[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+# Rust — the official rustup installer writes ~/.cargo/env; Homebrew's keg-only
+# rustup instead keeps its proxies (cargo, rustc, ...) under
+# <brew prefix>/opt/rustup/bin and does NOT put them on PATH. Handle both,
+# without shelling out to `brew` (HOMEBREW_PREFIX is exported by zprofile).
+if [[ -f "$HOME/.cargo/env" ]]; then
+  . "$HOME/.cargo/env"
+else
+  for _rustup_bin in "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/rustup/bin" /usr/local/opt/rustup/bin; do
+    [[ -d "$_rustup_bin" ]] && { export PATH="$_rustup_bin:$PATH"; break; }
+  done
+  unset _rustup_bin
+fi
 
 # Go — tools installed via `go install` land in ~/go/bin
 export GOPATH="${GOPATH:-$HOME/go}"

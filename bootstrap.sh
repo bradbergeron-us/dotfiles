@@ -417,19 +417,24 @@ else
     warn "rustup (installed via Brewfile) manages the Rust toolchain from here."
   fi
   if ! command -v rustup &>/dev/null; then
-    if command -v rustup-init &>/dev/null; then
-      info "Initializing Rust toolchain via rustup..."
-      # --no-modify-path: zshrc sources ~/.cargo/env directly
-      rustup-init -y --no-modify-path
-      # shellcheck source=/dev/null
-      . "$HOME/.cargo/env"
-      rustup component add rustfmt clippy
-      success "Rust installed via rustup (stable + rustfmt + clippy)"
-    else
-      warn "rustup-init not found — skipping Rust installation (install it later with: brew install rustup)"
-    fi
+    warn "rustup not found — install it with: brew install rustup, then re-run bootstrap"
   else
-    success "rustup already installed: $(rustc --version 2>/dev/null || echo 'rustc not yet in PATH')"
+    # Homebrew's rustup is keg-only: its cargo/rustc proxies live under
+    # <brew prefix>/opt/rustup/bin (not on PATH by default), and `brew install
+    # rustup` does NOT install a toolchain. Put the proxies on PATH for this
+    # session, then ensure a stable toolchain exists so rustc/cargo work.
+    if _brew_rustup="$(brew --prefix rustup 2>/dev/null)" && [[ -d "$_brew_rustup/bin" ]]; then
+      export PATH="$_brew_rustup/bin:$PATH"
+    fi
+    unset _brew_rustup
+    # shellcheck source=/dev/null
+    [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+    if ! rustc --version &>/dev/null; then
+      info "Installing the Rust stable toolchain via rustup (first run)..."
+      rustup default stable || warn "rustup default stable failed — run it manually later"
+      rustup component add rustfmt clippy &>/dev/null || true
+    fi
+    success "Rust ready: $(rustc --version 2>/dev/null || echo 'toolchain pending — run: rustup default stable')"
   fi
 fi
 
