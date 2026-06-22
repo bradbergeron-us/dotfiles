@@ -116,18 +116,20 @@ echo "To customize applications, edit this script and modify the --entry paramet
 echo "See available apps: yarn apps"
 echo ""
 
-# Start watch mode in background
-yarn watch --entry=auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent,1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters &
-WATCH_PID=$!
-
-# Function to cleanup on exit
-cleanup() {
-  echo ""
-  echo "Shutting down dev server..."
-  kill $WATCH_PID 2>/dev/null
-  exit
-}
-trap cleanup SIGINT SIGTERM
+# Start watch mode in a new Hyper tab
+echo "Opening dev server in new Hyper tab..."
+osascript <<EOF
+tell application "Hyper"
+    activate
+    delay 0.3
+    tell application "System Events"
+        keystroke "t" using {command down}
+        delay 0.5
+        keystroke "cd '$VETS_WEBSITE_DIR' && yarn watch --entry=auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent,1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters"
+        keystroke return
+    end tell
+end tell
+EOF
 
 # Wait for server to be ready
 echo "Waiting for dev server to start..."
@@ -150,7 +152,12 @@ echo "  5) VET TEC (22-10297)"
 echo "  6) Enrollment Verification"
 echo "  7) Education Letters"
 echo ""
-read -p "Open pages in browser? (enter numbers like '1 3 5', 'all', or 'n'): " SELECTION
+echo "Options:"
+echo "  - Enter page numbers separated by spaces (e.g., 1 3 5)"
+echo "  - Enter 'all' to open all pages"
+echo "  - Press Enter or 'n' to skip"
+echo ""
+read -p "Your selection: " SELECTION
 echo ""
 
 if [[ $SELECTION =~ ^[Nn]$ ]] || [[ -z $SELECTION ]]; then
@@ -168,21 +175,28 @@ elif [[ $SELECTION == "all" ]]; then
   echo -e "${GREEN}✓ Opened ${#EDU_APP_URLS[@]} education app pages${NC}"
 else
   echo "Opening selected pages..."
+  OPENED_COUNT=0
   for num in $SELECTION; do
     if [[ $num =~ ^[1-7]$ ]]; then
       idx=$((num-1))
       echo "  → ${EDU_APP_URLS[$idx]}"
       open "${EDU_APP_URLS[$idx]}"
+      OPENED_COUNT=$((OPENED_COUNT+1))
       sleep 0.5
+    else
+      echo -e "  ${YELLOW}⚠ Skipping invalid selection: $num${NC}"
     fi
   done
-  echo -e "${GREEN}✓ Opened selected education app pages${NC}"
+  if [ $OPENED_COUNT -gt 0 ]; then
+    echo -e "${GREEN}✓ Opened $OPENED_COUNT education app page(s)${NC}"
+  else
+    echo -e "${RED}✗ No valid pages selected${NC}"
+  fi
 fi
 
 echo ""
-echo "Dev server running (PID: $WATCH_PID)"
-echo "Press Ctrl+C to stop"
+echo -e "${GREEN}✓ Setup complete!${NC}"
 echo ""
-
-# Wait for yarn watch to finish (keeps script running)
-wait $WATCH_PID
+echo "Dev server is running in the new Hyper tab."
+echo "You can monitor build status and errors there."
+echo "To stop the server, use Ctrl+C in that tab."
