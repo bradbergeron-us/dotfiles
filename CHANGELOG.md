@@ -5,6 +5,29 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.4.0...v1.5.0) (2026-06-22)
+
+
+### Features
+
+* **update:** add progress messages for long-running upgrade steps ([1ceebb6](https://github.com/bradbergeron-us/dotfiles/commit/1ceebb61f322a7d4cf58be48c61b5cb78fa3dea1))
+* **update:** add progress messages for long-running upgrade steps ([6e08166](https://github.com/bradbergeron-us/dotfiles/commit/6e081660f10ca3bbce9af6ade17cc514f4e53a14))
+
+
+### Bug Fixes
+
+* **install:** install only missing VS Code extensions with correct flag order ([083889c](https://github.com/bradbergeron-us/dotfiles/commit/083889c85045c2bf1e04d325c9b37124cc541413))
+* **install:** make VS Code extension install best-effort (don't abort) ([e1c1513](https://github.com/bradbergeron-us/dotfiles/commit/e1c1513be00a845c780369dd0b6de72e04ddb9e0))
+* **install:** make VS Code extension install best-effort (don't abort) ([89359d1](https://github.com/bradbergeron-us/dotfiles/commit/89359d1715f2fbe9315e064f86aac5646a9957c2))
+* **rust:** support Homebrew's keg-only rustup on PATH and in bootstrap ([ff3dc49](https://github.com/bradbergeron-us/dotfiles/commit/ff3dc49cc103d37cdb5a2b94e9ac1402db0dc325))
+* **rust:** support Homebrew's keg-only rustup on PATH and in bootstrap ([8559710](https://github.com/bradbergeron-us/dotfiles/commit/8559710c2e3edae7ee2b90d6cb0f8c1938001862))
+
+
+### Performance Improvements
+
+* **verify:** snapshot installed packages for the Brewfile drift check ([dfc9436](https://github.com/bradbergeron-us/dotfiles/commit/dfc9436630dbcc4f4aa1aab1c0760cb3c2c6556e))
+* **verify:** snapshot installed packages for the Brewfile drift check ([4709e08](https://github.com/bradbergeron-us/dotfiles/commit/4709e08e163edcf8702e6571f58d37d2e75ca8f4))
+
 ## [1.4.0](https://github.com/bradbergeron-us/dotfiles/compare/v1.3.0...v1.4.0) (2026-06-22)
 
 
