@@ -265,13 +265,14 @@ check_dotfiles_git_health() {
 }
 
 # check_brewfile_drift BREWFILE
-# Reports packages declared in BREWFILE that are *not installed at all*. This is
-# intentionally presence-based rather than `brew bundle check`: that command also
-# flags installed-but-outdated entries, which is noise for a health check
-# (upgrades are handled by update.sh / `brew upgrade`). Each brew/cask entry is
-# checked with `brew list` at any version; tap/mas/vscode lines and comments are
-# ignored. Silently skips when brew is not on PATH (check_required_tools already
-# reports a missing brew).
+# Reports packages declared in BREWFILE that are *not installed at all* (missing),
+# tolerating installed-but-outdated entries — upgrades are update.sh / `brew
+# upgrade`'s job, and flagging them here is noise. To stay fast it snapshots the
+# installed formulae and casks in two `brew list` calls and matches each entry
+# against them in-shell (calling `brew` once per package spawns Ruby dozens of
+# times and makes the check take tens of seconds). tap/mas/vscode lines and
+# comments are ignored. Silently skips when brew is not on PATH
+# (check_required_tools already reports a missing brew).
 # Sets:
 #   BREWFILE_DRIFT_OK      — true when every brew/cask entry is installed (or skipped)
 #   BREWFILE_DRIFT_SKIPPED — true when brew is unavailable
@@ -293,6 +294,12 @@ check_brewfile_drift() {
     return 0
   fi
 
+  # Snapshot installed formulae and casks once (two brew calls total), each
+  # space-wrapped so membership can be tested with *" $leaf "*.
+  local installed_formulae installed_casks
+  installed_formulae=" $(brew list --formula 2>/dev/null | tr '\n' ' ') "
+  installed_casks=" $(brew list --cask 2>/dev/null | tr '\n' ' ') "
+
   local line kind name leaf
   local -a missing=()
   while IFS= read -r line || [[ -n "$line" ]]; do
@@ -308,9 +315,9 @@ check_brewfile_drift() {
     [[ -n "$name" ]] || continue
     leaf="${name##*/}"                          # drop any tap prefix for the lookup
     if [[ "$kind" == "formula" ]]; then
-      brew list --formula "$leaf" &>/dev/null || missing+=("$name")
+      [[ "$installed_formulae" == *" $leaf "* ]] || missing+=("$name")
     else
-      brew list --cask "$leaf" &>/dev/null || missing+=("$name")
+      [[ "$installed_casks" == *" $leaf "* ]] || missing+=("$name")
     fi
   done < "$brewfile"
 
