@@ -104,6 +104,7 @@ nav:
       - Overview: work-machine.md
       - Complete Setup Guide: work-setup-complete.md
       - Claude Code SSL Fix: claude-code-ssl-fix.md
+      - Vets-Website Scripts: vets-website.md
   - Reference:
       - dotfiles CLI: cli.md
       - Zsh Configuration: zsh.md
