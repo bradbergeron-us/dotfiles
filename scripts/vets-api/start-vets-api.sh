@@ -201,6 +201,24 @@ else
 fi
 echo ""
 
+# Clear Rails cache
+echo -e "${BLUE}→ Clearing Rails cache...${NC}"
+if bundle exec rails runner 'Rails.cache.clear' > /dev/null 2>&1; then
+  echo -e "${GREEN}  ✓ Rails cache cleared${NC}"
+else
+  echo -e "${YELLOW}  ⚠ Failed to clear Rails cache (continuing anyway)${NC}"
+fi
+echo ""
+
+# Clear Sidekiq queues
+echo -e "${BLUE}→ Clearing Sidekiq queues...${NC}"
+if bundle exec rails runner 'Sidekiq::Queue.all.each(&:clear); Sidekiq::RetrySet.new.clear; Sidekiq::ScheduledSet.new.clear' > /dev/null 2>&1; then
+  echo -e "${GREEN}  ✓ Sidekiq queues cleared${NC}"
+else
+  echo -e "${YELLOW}  ⚠ Failed to clear Sidekiq queues (continuing anyway)${NC}"
+fi
+echo ""
+
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
 
