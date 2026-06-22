@@ -20,8 +20,20 @@ Before using this script, ensure you have:
 - **PostgreSQL** (running via Docker or locally)
 - **Redis** (running via Docker or locally)
 - **Bundler** (Ruby dependency manager)
+- **gsed** (GNU sed) - install via `brew install gsed`
+- **jfrog proxy configured** for gem installation
 - **vets-api repository** cloned to `~/Code/va.gov/vets-api`
 - **vets-api-mockdata repository** cloned to `~/Code/va.gov/vets-api-mockdata`
+
+### JFrog Proxy Configuration
+
+The script automatically configures the `Gemfile` to use the corporate jfrog proxy instead of rubygems.org:
+
+```
+https://jfrog.accenturefederaldev.com/artifactory/afs-gems-proxy/
+```
+
+This replacement happens automatically each time the script runs.
 
 ---
 
@@ -38,8 +50,9 @@ The comprehensive daily startup script that syncs everything.
 3. Updates vets-api-mockdata repository
 4. Runs `make_table.rb` to generate mock data tables
 5. Validates Ruby version
-6. **Installs/updates bundle dependencies**
-7. Starts the Rails server with foreman in a new Hyper tab
+6. **Configures Gemfile to use jfrog proxy** (replaces rubygems.org)
+7. **Installs/updates bundle dependencies**
+8. Starts the Rails server with foreman in a new Hyper tab
 
 **Time**: 2-4 minutes
 
@@ -239,7 +252,27 @@ ruby make_table.rb
 
 ### Gem Installation Errors
 
-If you see gem installation errors:
+If you see gem installation errors related to rubygems.org:
+
+```
+Retrying fetcher due to error (2/4): Bundler::HTTPError Could not fetch specs from https://rubygems.org/
+```
+
+**Solution**: The script automatically configures the Gemfile to use jfrog proxy. If you see this error, the replacement may have failed. Manually check your Gemfile source:
+
+```bash
+cd ~/Code/va.gov/vets-api
+# Check current source
+grep "source" Gemfile
+
+# Should be using jfrog proxy:
+source 'https://jfrog.accenturefederaldev.com/artifactory/afs-gems-proxy/'
+
+# If not, manually replace:
+gsed -i "s/rubygems\.org/jfrog.accenturefederaldev.com\/artifactory\/afs-gems-proxy/g" Gemfile
+```
+
+For other gem installation errors:
 
 ```bash
 # Clean reinstall

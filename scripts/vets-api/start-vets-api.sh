@@ -114,6 +114,23 @@ RUBY_VERSION=$(ruby --version)
 echo "  Ruby version: $RUBY_VERSION"
 echo ""
 
+# Configure Gemfile to use jfrog proxy
+echo -e "${BLUE}→ Configuring Gemfile for jfrog proxy...${NC}"
+if command -v gsed &> /dev/null; then
+  SED_CMD="gsed"
+else
+  SED_CMD="sed"
+fi
+
+# Replace rubygems.org with jfrog proxy URL
+if grep -q "rubygems.org" Gemfile; then
+  $SED_CMD -i.bak "s/rubygems\.org/jfrog.accenturefederaldev.com\/artifactory\/afs-gems-proxy/g" Gemfile
+  echo -e "${GREEN}  ✓ Gemfile configured for jfrog proxy${NC}"
+else
+  echo -e "${YELLOW}  ⚠ Gemfile already configured or doesn't use rubygems.org${NC}"
+fi
+echo ""
+
 # Install bundle dependencies
 echo -e "${BLUE}→ Installing bundle dependencies...${NC}"
 if bundle install; then
