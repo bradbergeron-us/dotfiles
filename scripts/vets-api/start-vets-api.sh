@@ -173,7 +173,7 @@ echo ""
 
 # Configure Bundler to mirror rubygems.org to jfrog
 echo -e "${BLUE}→ Configuring Bundler mirror...${NC}"
-bundle config mirror.https://rubygems.org https://jfrog.accenturefederaldev.com/artifactory/afs-gems-proxy
+bundle config set mirror.https://rubygems.org https://jfrog.accenturefederaldev.com/artifactory/afs-gems-proxy
 echo -e "${GREEN}  ✓ Bundler mirror configured${NC}"
 echo ""
 
