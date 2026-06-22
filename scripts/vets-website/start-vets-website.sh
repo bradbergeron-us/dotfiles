@@ -96,21 +96,14 @@ echo "Starting development server..."
 echo "========================================"
 echo ""
 echo "Default applications loaded:"
-echo "  - auth"
-echo "  - login-page"
-echo "  - profile"
-echo "  - static-pages"
-echo "  - terms-of-use"
-echo "  - verify"
-echo "  - virtual-agent"
+echo "  - auth, login-page, profile, static-pages"
+echo "  - terms-of-use, verify, virtual-agent"
+echo "  - Education benefits: 1990ez, toe, 22-5490, 1995, 10297"
+echo "  - enrollment-verification, education-letters"
 echo ""
-echo "To add more applications, edit this script and modify the --entry parameter"
+echo "To customize applications, edit this script and modify the --entry parameter"
 echo "See available apps: yarn apps"
 echo ""
 
-# Start watch mode with specified applications
-# You can customize the --entry parameter to include the apps you need
-yarn watch --entry=auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent
-
-# Alternative: Start with all education benefit apps (from your old instructions)
-# yarn watch --entry=auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent,1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters
+# Start watch mode with education benefit applications
+yarn watch --entry=auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent,1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters

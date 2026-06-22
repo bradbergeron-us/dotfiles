@@ -22,11 +22,8 @@ fi
 
 cd "$VETS_WEBSITE_DIR"
 
-# Default applications to load
-DEFAULT_APPS="auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent"
-
-# Education benefit apps (from your old workflow)
-EDU_APPS="1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters"
+# Default applications to load (includes education benefits)
+DEFAULT_APPS="auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent,1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters"
 
 # Check if user provided app list
 if [ -n "$1" ]; then
@@ -34,14 +31,11 @@ if [ -n "$1" ]; then
   echo "Starting dev server with: $@"
   yarn watch "$@"
 else
-  # Use default apps
-  echo "Starting dev server with default apps: $DEFAULT_APPS"
+  # Use default apps (includes education benefits)
+  echo "Starting dev server with default apps (including education benefits)"
   echo ""
   echo "To start with different apps, use:"
   echo "  vets-dev --entry=app1,app2,app3"
-  echo ""
-  echo "To include education apps, use:"
-  echo "  vets-dev --entry=$DEFAULT_APPS,$EDU_APPS"
   echo ""
   yarn watch --entry="$DEFAULT_APPS"
 fi
