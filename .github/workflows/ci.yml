@@ -21,7 +21,7 @@ jobs:
     name: Lint bash scripts (shellcheck)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
@@ -57,7 +57,7 @@ jobs:
     name: Zsh syntax + Brewfile validation
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Syntax-check all shell files
         # install.sh and scripts/setup_gpg_signing.sh are zsh (skipped by the
@@ -87,7 +87,7 @@ jobs:
     name: install.sh smoke test
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Run install.sh against temp HOME (profile-aware)
         run: |
@@ -174,7 +174,7 @@ jobs:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -193,7 +193,7 @@ jobs:
     name: Lint GitHub Actions workflows (actionlint)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Run actionlint
         uses: docker://rhysd/actionlint:1.7.12
