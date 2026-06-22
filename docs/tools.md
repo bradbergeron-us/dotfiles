@@ -344,9 +344,6 @@ A GUI REST and GraphQL API client — a solid replacement for Postman. Best for 
 
 **Insomnia vs HTTPie:** they serve different purposes and complement each other. Use Insomnia for organized API collections, complex auth flows, and team sharing. Use HTTPie for quick terminal one-liners, scripting, and piping responses. Exploring a single endpoint? HTTPie. Managing a suite across dev/staging/prod environments? Insomnia.
 
-### [OrbStack](https://orbstack.dev)
-A fast, lightweight replacement for Docker Desktop on macOS. Starts in under a second (vs Docker Desktop's 10–30s), uses significantly less RAM and CPU, and runs Linux VMs natively on Apple Silicon. The CLI is fully compatible with Docker (`docker`, `docker-compose`) so no workflow changes are needed. Free for personal use.
-
 ### [Raycast](https://raycast.com)
 Replaces macOS Spotlight as your primary launcher and desktop control layer. Everything is keyboard-driven: press the hotkey, type what you want, press `Enter`.
 
