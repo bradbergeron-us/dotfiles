@@ -73,15 +73,17 @@ git pull origin main
 
 The scripts will be available at `~/dotfiles/scripts/vets-api/`.
 
-### 2. Shell Aliases
+### 2. Configure Shell Aliases
 
-The alias `vets-api-start` is automatically configured in `~/dotfiles/home/zsh/aliases.zsh`:
+Add the vets-api alias to your `~/.zshrc.local` file for quick access:
 
 ```bash
-alias vets-api-start='bash ~/dotfiles/scripts/vets-api/start-vets-api.sh'
+# Vets-api development workflow
+alias vets-api-start="~/dotfiles/scripts/vets-api/start-vets-api.sh"
+alias vets-api-cd="cd ~/Code/va.gov/vets-api"
 ```
 
-Reload your shell:
+Then reload your shell:
 
 ```bash
 source ~/.zshrc
