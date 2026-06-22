@@ -132,16 +132,31 @@ if [[ -d "$VSCODE_DIR" ]]; then
   symlink "$DOTFILES_DIR/vscode/settings.json" "$VSCODE_DIR/settings.json"
   success "VS Code settings linked"
   if command -v code &>/dev/null; then
-    info "Installing VS Code extensions..."
-    # Run the install loop inside a subshell rooted at a throwaway temp dir.
-    # `code --install-extension` drops empty `publisher.extension` residue
-    # files into the cwd; isolating cwd here guarantees that residue never
-    # lands in the dotfiles repo (the root cause of past stray files).
-    (
-      cd "$(mktemp -d)" || exit 1
-      grep -v '^#' "$DOTFILES_DIR/vscode/extensions.txt" | xargs -L1 code --install-extension --force 2>/dev/null
-    )
-    success "VS Code extensions installed"
+    # Install only extensions that aren't already present, using the correct flag
+    # order: `code --install-extension <id> --force`. The previous
+    # `--install-extension --force <id>` order made `code` treat each <id> as a
+    # file to open, spawning an editor tab (and a stray residue file) per
+    # extension on every run. Diffing against `code --list-extensions` also makes
+    # re-runs (e.g. from update.sh) a no-op when nothing is missing.
+    _code_installed=":$(code --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr '\n' ':'):"
+    _code_missing=()
+    while IFS= read -r _ext; do
+      _ext="${_ext%%#*}"               # drop comments
+      _ext="${_ext//[[:space:]]/}"     # drop all whitespace
+      [[ -z "$_ext" ]] && continue
+      [[ "$_code_installed" == *":${_ext:l}:"* ]] || _code_missing+=("$_ext")
+    done < "$DOTFILES_DIR/vscode/extensions.txt"
+
+    if (( ${#_code_missing[@]} > 0 )); then
+      info "Installing ${#_code_missing[@]} missing VS Code extension(s)..."
+      for _ext in "${_code_missing[@]}"; do
+        code --install-extension "$_ext" --force >/dev/null 2>&1
+      done
+      success "VS Code extensions installed (${#_code_missing[@]} new)"
+    else
+      success "VS Code extensions already present"
+    fi
+    unset _code_installed _code_missing _ext
   fi
 else
   info "VS Code not installed — skipping settings symlink"
