@@ -21,7 +21,7 @@ jobs:
       #
       # NOTE: release-type lives in release-please-config.json, NOT here — when
       # the action is given a `release-type` input it ignores config-file.
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
