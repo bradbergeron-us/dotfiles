@@ -50,3 +50,8 @@ alias history='history 0'
 
 # bat (syntax-highlighted cat)
 command -v bat &>/dev/null && alias cat='bat --paging=never'
+
+# VA.gov development shortcuts
+alias vets-api-start='bash ~/dotfiles/scripts/vets-api/start-vets-api.sh'
+alias vets-start='bash ~/dotfiles/scripts/vets-website/start-vets-website.sh'
+alias vets-start-all='bash ~/dotfiles/scripts/start-all-vets.sh'
