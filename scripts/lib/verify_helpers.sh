@@ -265,11 +265,15 @@ check_dotfiles_git_health() {
 }
 
 # check_brewfile_drift BREWFILE
-# Detects divergence between installed Homebrew packages and the Brewfile via
-# `brew bundle check`. Silently skips when brew is not on PATH (check_required_tools
-# already reports a missing brew).
+# Reports packages declared in BREWFILE that are *not installed at all*. This is
+# intentionally presence-based rather than `brew bundle check`: that command also
+# flags installed-but-outdated entries, which is noise for a health check
+# (upgrades are handled by update.sh / `brew upgrade`). Each brew/cask entry is
+# checked with `brew list` at any version; tap/mas/vscode lines and comments are
+# ignored. Silently skips when brew is not on PATH (check_required_tools already
+# reports a missing brew).
 # Sets:
-#   BREWFILE_DRIFT_OK      — true when packages match the Brewfile (or skipped)
+#   BREWFILE_DRIFT_OK      — true when every brew/cask entry is installed (or skipped)
 #   BREWFILE_DRIFT_SKIPPED — true when brew is unavailable
 #   BREWFILE_DRIFT_ISSUE   — human-readable problem description (empty when OK)
 check_brewfile_drift() {
@@ -289,11 +293,32 @@ check_brewfile_drift() {
     return 0
   fi
 
-  if brew bundle check --file="$brewfile" &>/dev/null; then
+  local line kind name leaf
+  local -a missing=()
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"   # strip leading whitespace
+    case "$line" in
+      brew\ *) kind="formula" ;;
+      cask\ *) kind="cask" ;;
+      *) continue ;;                            # comments, taps, mas, vscode, blanks
+    esac
+    name="${line#* }"                           # text after 'brew '/'cask '
+    name="${name#[\"\']}"                       # strip the opening quote
+    name="${name%%[\"\']*}"                     # keep up to the closing quote
+    [[ -n "$name" ]] || continue
+    leaf="${name##*/}"                          # drop any tap prefix for the lookup
+    if [[ "$kind" == "formula" ]]; then
+      brew list --formula "$leaf" &>/dev/null || missing+=("$name")
+    else
+      brew list --cask "$leaf" &>/dev/null || missing+=("$name")
+    fi
+  done < "$brewfile"
+
+  if [[ "${#missing[@]}" -eq 0 ]]; then
     BREWFILE_DRIFT_OK=true
   else
     BREWFILE_DRIFT_OK=false
-    BREWFILE_DRIFT_ISSUE="installed packages diverge from Brewfile — run: brew bundle install --file=$brewfile"
+    BREWFILE_DRIFT_ISSUE="not installed: ${missing[*]} — run: brew bundle install --file=$brewfile"
   fi
 }
 

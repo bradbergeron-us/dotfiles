@@ -412,20 +412,20 @@ setup_gci_dotfiles() {
 }
 
 # ── check_brewfile_drift ──────────────────────────────────────────────────────
-# Fake brew stub: `brew bundle check --file=F` exits 0 iff F contains IN_SYNC.
+# Fake brew stub: `brew list --formula|--cask NAME` exits 0 iff NAME is listed in
+# $FAKE_INSTALLED (space-separated); any other subcommand exits 0. This models
+# "installed (any version)" vs "not installed" without touching real packages.
 setup_fake_brew() {
   FAKE_BIN="$BATS_TEST_TMPDIR/fakebin"
   mkdir -p "$FAKE_BIN"
   cat > "$FAKE_BIN/brew" << 'EOF'
 #!/usr/bin/env bash
-f=""
-for a in "$@"; do
-  case "$a" in
-    --file=*) f="${a#--file=}" ;;
-  esac
-done
-if [[ "${1:-}" == "bundle" ]]; then
-  if [[ -f "$f" ]] && grep -q IN_SYNC "$f"; then exit 0; else exit 1; fi
+if [[ "${1:-}" == "list" ]]; then
+  name="${@: -1}"
+  for p in $FAKE_INSTALLED; do
+    [[ "$p" == "$name" ]] && exit 0
+  done
+  exit 1
 fi
 exit 0
 EOF
@@ -442,27 +442,55 @@ EOF
   )
 }
 
-@test "check_brewfile_drift: in sync → OK=true" {
+@test "check_brewfile_drift: all entries installed → OK=true" {
   setup_fake_brew
   local bf="$BATS_TEST_TMPDIR/Brewfile_sync"
-  echo "# IN_SYNC marker" > "$bf"
+  printf 'brew "git"\ncask "ghostty"\n' > "$bf"
   ( set -e
     export PATH="$FAKE_BIN:$PATH"
+    export FAKE_INSTALLED="git ghostty"
     check_brewfile_drift "$bf"
     [ "$BREWFILE_DRIFT_SKIPPED" = "false" ]
     [ "$BREWFILE_DRIFT_OK" = "true" ]
   )
 }
 
-@test "check_brewfile_drift: drift detected → OK=false, issue set" {
+@test "check_brewfile_drift: installed but outdated → OK=true (only missing counts)" {
+  # Presence-based: an installed package is OK regardless of version, so the
+  # check never warns merely because something is outdated.
   setup_fake_brew
-  local bf="$BATS_TEST_TMPDIR/Brewfile_drift"
-  echo "brew \"git\"" > "$bf"
+  local bf="$BATS_TEST_TMPDIR/Brewfile_outdated"
+  printf 'cask "dbeaver-community"\n' > "$bf"
   ( set -e
     export PATH="$FAKE_BIN:$PATH"
+    export FAKE_INSTALLED="dbeaver-community"
+    check_brewfile_drift "$bf"
+    [ "$BREWFILE_DRIFT_OK" = "true" ]
+  )
+}
+
+@test "check_brewfile_drift: a not-installed entry → OK=false, issue names it" {
+  setup_fake_brew
+  local bf="$BATS_TEST_TMPDIR/Brewfile_missing"
+  printf 'brew "git"\nbrew "definitely-not-installed"\n' > "$bf"
+  ( set -e
+    export PATH="$FAKE_BIN:$PATH"
+    export FAKE_INSTALLED="git"
     check_brewfile_drift "$bf"
     [ "$BREWFILE_DRIFT_OK" = "false" ]
-    [ -n "$BREWFILE_DRIFT_ISSUE" ]
+    echo "$BREWFILE_DRIFT_ISSUE" | grep -q "definitely-not-installed"
+  )
+}
+
+@test "check_brewfile_drift: comments and non-brew/cask lines are ignored" {
+  setup_fake_brew
+  local bf="$BATS_TEST_TMPDIR/Brewfile_comments"
+  printf '# a comment\ntap "homebrew/cask"\nvscode "some.extension"\nbrew "git"\n' > "$bf"
+  ( set -e
+    export PATH="$FAKE_BIN:$PATH"
+    export FAKE_INSTALLED="git"
+    check_brewfile_drift "$bf"
+    [ "$BREWFILE_DRIFT_OK" = "true" ]
   )
 }
 
