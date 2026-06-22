@@ -150,9 +150,13 @@ if [[ -d "$VSCODE_DIR" ]]; then
     if (( ${#_code_missing[@]} > 0 )); then
       info "Installing ${#_code_missing[@]} missing VS Code extension(s)..."
       for _ext in "${_code_missing[@]}"; do
-        code --install-extension "$_ext" --force >/dev/null 2>&1
+        # `|| info ...` keeps a single failed extension (e.g. transient network or
+        # an unavailable id) from aborting install.sh under `set -e`; extension
+        # installs are best-effort.
+        code --install-extension "$_ext" --force >/dev/null 2>&1 \
+          || info "could not install VS Code extension: $_ext (skipped)"
       done
-      success "VS Code extensions installed (${#_code_missing[@]} new)"
+      success "VS Code extensions up to date"
     else
       success "VS Code extensions already present"
     fi
