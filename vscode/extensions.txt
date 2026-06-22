@@ -18,8 +18,9 @@ visualstudioexptteam.intellicode-api-usage-examples
 
 # AI assistants
 continue.continue
-github.copilot
-github.copilot-chat
+# GitHub Copilot is intentionally not tracked here: it doesn't install via the
+# `code` CLI (needs sign-in) and is configured per-org in the VS Code UI
+# (e.g. the va.gov enterprise account), so dotfiles shouldn't try to install it.
 
 # Docker / containers
 docker.docker
