@@ -24,4 +24,4 @@ cask "dbeaver-community"   # universal database GUI (Postgres, MySQL, SQLite, et
 cask "ghostty"             # preferred terminal — GPU-accelerated, native macOS (config in config/ghostty/config)
 cask "hyper"               # fallback terminal built on web technologies (Tokyo Night theme configured in hyper.js)
 cask "github"              # GitHub Desktop — GUI for Git and GitHub
-cask "flux"                # f.lux — adjusts screen color temperature based on time of day to reduce eye strain
+cask "flux-app"            # f.lux — adjusts screen color temperature based on time of day to reduce eye strain
