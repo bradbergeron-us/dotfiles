@@ -41,10 +41,11 @@ The comprehensive "Monday morning" script that syncs everything.
 **What it does:**
 
 1. Checks git status and branch
-2. **Pulls latest from `origin/main`** (if on main with no uncommitted changes)
-3. Validates Node.js and Yarn versions
-4. **Installs/updates dependencies** via jfrog proxy
-5. Starts the dev server with default applications
+2. **Checks out and pulls latest from `origin/main`** (if no uncommitted changes)
+3. **Interactive branch selection** - prompts to run server on a different branch
+4. Validates Node.js and Yarn versions
+5. **Installs/updates dependencies** via jfrog proxy
+6. Starts the dev server with default applications in a new Hyper tab
 
 **Time**: 3-5 minutes
 
@@ -215,39 +216,63 @@ vets-dev --entry=auth,profile --api=https://dev-api.va.gov
 
 ---
 
-## Git Pull Behavior
+## Branch Management
 
-The `vets-start` script handles git pull intelligently based on your current state:
+The `vets-start` script provides intelligent branch management:
 
-### ✅ Clean Main Branch
+### Default Behavior: Checkout and Pull Main
+
+By default, the script:
+1. Checks out the `main` branch (unless you have uncommitted changes)
+2. Pulls the latest changes from `origin/main`
+3. Prompts you to optionally switch to a different branch for the dev server
 
 ```
-Current branch: main
-No uncommitted changes
-→ Automatically pulls from origin/main
+→ Checking git status...
+  Current branch: feature/old-work
+  Switching to main branch...
+  ✓ Switched to main
+  Pulling latest changes from origin/main...
+  ✓ Successfully pulled from main
+
+→ Branch selection for dev server...
+  Current branch: main
+
+Run dev server on a different branch? (y/N):
 ```
 
-**Result**: Pulls latest changes automatically.
+### Interactive Branch Selection
+
+After pulling main, you can choose to run the server on a different branch:
+
+**Option 1: Stay on main (default)**
+```
+Run dev server on a different branch? (y/N): n
+  → Dev server will run on branch: main
+```
+
+**Option 2: Switch to feature branch**
+```
+Run dev server on a different branch? (y/N): y
+
+Enter branch name: feature/my-ui-changes
+  Switching to branch: feature/my-ui-changes
+  ✓ Switched to feature/my-ui-changes
+  → Dev server will run on branch: feature/my-ui-changes
+```
 
 ### ⚠️ Uncommitted Changes
 
-```
-Current branch: main
-⚠ You have uncommitted changes
-→ Skips git pull (commit or stash your changes first)
-```
-
-**Result**: Skips pull to protect your work. Commit or stash changes first.
-
-### ⚠️ Feature Branch
+If you have uncommitted changes, the script skips all git operations:
 
 ```
-Current branch: feature/my-work
-⚠ Not on main branch
-→ Skips git pull (not on main)
+→ Checking git status...
+  Current branch: feature/my-work
+  ⚠ You have uncommitted changes
+  Skipping git operations (commit or stash your changes first)
 ```
 
-**Result**: Skips pull. Switch to main manually if you want latest.
+**Result**: Server runs on your current branch with uncommitted changes intact.
 
 ---
 
