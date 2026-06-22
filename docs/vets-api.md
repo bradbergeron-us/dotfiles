@@ -46,13 +46,14 @@ The comprehensive daily startup script that syncs everything.
 **What it does:**
 
 1. Checks vets-api git status and branch
-2. **Pulls latest from `origin/main`** (if on main with no uncommitted changes)
-3. Updates vets-api-mockdata repository
-4. Runs `make_table.rb` to generate mock data tables
-5. Validates Ruby version
-6. **Configures Gemfile to use jfrog proxy** (replaces rubygems.org)
-7. **Installs/updates bundle dependencies**
-8. Starts the Rails server with foreman in a new Hyper tab
+2. **Checks out and pulls latest from `origin/master`** (if no uncommitted changes)
+3. **Interactive branch selection** - prompts to run server on a different branch
+4. Updates vets-api-mockdata repository (from master)
+5. Runs `make_table.rb` to generate mock data tables
+6. Validates Ruby version
+7. **Configures Gemfile to use jfrog proxy** (replaces rubygems.org)
+8. **Installs/updates bundle dependencies**
+9. Starts the Rails server with foreman in a new Hyper tab
 
 **Time**: 2-4 minutes
 
@@ -115,7 +116,8 @@ vets-api-start
 ```
 
 This will:
-- Pull latest changes from vets-api main branch
+- Checkout and pull latest changes from master branch
+- Prompt for branch selection (run server on different branch if needed)
 - Update vets-api-mockdata repository
 - Generate mock data tables
 - Update bundle dependencies
@@ -124,12 +126,25 @@ This will:
 Expected output:
 ```
 → Checking vets-api git status...
-  Current branch: main
-  Pulling latest changes from origin/main...
-  ✓ Successfully pulled from main
+  Current branch: feature-branch
+  Switching to master branch...
+  ✓ Switched to master
+  Pulling latest changes from origin/master...
+  ✓ Successfully pulled from master
+
+→ Branch selection for Rails server...
+  Current branch: master
+
+Run Rails server on a different branch? (y/N): y
+
+Enter branch name: feature/my-work
+  Switching to branch: feature/my-work
+  ✓ Switched to feature/my-work
+
+  → Rails server will run on branch: feature/my-work
 
 → Updating vets-api-mockdata...
-  Current branch: main
+  Current branch: master
   Pulling latest mockdata changes...
   ✓ Successfully pulled mockdata
 
@@ -138,6 +153,9 @@ Expected output:
 
 → Checking Ruby version...
   Ruby version: ruby 3.3.6
+
+→ Configuring Gemfile for jfrog proxy...
+  ✓ Gemfile configured for jfrog proxy
 
 → Installing bundle dependencies...
   ✓ Bundle install complete
@@ -159,39 +177,63 @@ To stop the server: Press `Ctrl+C` in the Hyper tab
 
 ---
 
-## Git Pull Behavior
+## Branch Management
 
-The `vets-api-start` script handles git pull intelligently for both repositories:
+The `vets-api-start` script provides intelligent branch management:
 
-### ✅ Clean Main Branch
+### Default Behavior: Checkout and Pull Master
+
+By default, the script:
+1. Checks out the `master` branch (unless you have uncommitted changes)
+2. Pulls the latest changes from `origin/master`
+3. Prompts you to optionally switch to a different branch for the server
 
 ```
-Current branch: main
-No uncommitted changes
-→ Automatically pulls from origin/main
+→ Checking vets-api git status...
+  Current branch: feature/old-work
+  Switching to master branch...
+  ✓ Switched to master
+  Pulling latest changes from origin/master...
+  ✓ Successfully pulled from master
+
+→ Branch selection for Rails server...
+  Current branch: master
+
+Run Rails server on a different branch? (y/N):
 ```
 
-**Result**: Pulls latest changes automatically.
+### Interactive Branch Selection
+
+After pulling master, you can choose to run the server on a different branch:
+
+**Option 1: Stay on master (default)**
+```
+Run Rails server on a different branch? (y/N): n
+  → Rails server will run on branch: master
+```
+
+**Option 2: Switch to feature branch**
+```
+Run Rails server on a different branch? (y/N): y
+
+Enter branch name: feature/my-api-changes
+  Switching to branch: feature/my-api-changes
+  ✓ Switched to feature/my-api-changes
+  → Rails server will run on branch: feature/my-api-changes
+```
 
 ### ⚠️ Uncommitted Changes
 
-```
-Current branch: main
-⚠ You have uncommitted changes
-→ Skips git pull (commit or stash your changes first)
-```
-
-**Result**: Skips pull to protect your work. Commit or stash changes first.
-
-### ⚠️ Feature Branch
+If you have uncommitted changes, the script skips all git operations:
 
 ```
-Current branch: feature/my-work
-⚠ Not on main branch
-→ Skips git pull (not on main)
+→ Checking vets-api git status...
+  Current branch: feature/my-work
+  ⚠ You have uncommitted changes
+  Skipping git operations (commit or stash your changes first)
 ```
 
-**Result**: Skips pull. Switch to main manually if you want latest.
+**Result**: Server runs on your current branch with uncommitted changes intact.
 
 ---
 

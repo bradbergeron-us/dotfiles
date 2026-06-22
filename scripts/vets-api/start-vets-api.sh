@@ -44,7 +44,7 @@ YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Git pull from main
+# Git branch management and pull from master
 echo -e "${BLUE}→ Checking vets-api git status...${NC}"
 CURRENT_BRANCH=$(git branch --show-current)
 echo "  Current branch: $CURRENT_BRANCH"
@@ -52,21 +52,61 @@ echo "  Current branch: $CURRENT_BRANCH"
 # Check for uncommitted changes
 if ! git diff-index --quiet HEAD -- 2>/dev/null; then
   echo -e "${YELLOW}  ⚠ You have uncommitted changes${NC}"
-  echo "  Skipping git pull (commit or stash your changes first)"
+  echo "  Skipping git operations (commit or stash your changes first)"
   echo ""
+  BRANCH_TO_USE="$CURRENT_BRANCH"
 else
-  if [ "$CURRENT_BRANCH" = "main" ]; then
-    echo "  Pulling latest changes from origin/main..."
-    if git pull origin main; then
-      echo -e "${GREEN}  ✓ Successfully pulled from main${NC}"
+  # Checkout and pull from master
+  if [ "$CURRENT_BRANCH" != "master" ]; then
+    echo "  Switching to master branch..."
+    if git checkout master; then
+      echo -e "${GREEN}  ✓ Switched to master${NC}"
     else
-      echo -e "${RED}  ✗ Git pull failed${NC}"
-      echo "  Continuing anyway..."
+      echo -e "${RED}  ✗ Failed to checkout master${NC}"
+      echo "  Continuing with current branch: $CURRENT_BRANCH"
+      BRANCH_TO_USE="$CURRENT_BRANCH"
+    fi
+  fi
+
+  # Pull latest from master
+  echo "  Pulling latest changes from origin/master..."
+  if git pull origin master; then
+    echo -e "${GREEN}  ✓ Successfully pulled from master${NC}"
+  else
+    echo -e "${RED}  ✗ Git pull failed${NC}"
+    echo "  Continuing anyway..."
+  fi
+  echo ""
+
+  # Interactive branch selection
+  echo -e "${BLUE}→ Branch selection for Rails server...${NC}"
+  echo "  Current branch: master"
+  echo ""
+  read -p "Run Rails server on a different branch? (y/N): " SWITCH_BRANCH
+
+  if [[ $SWITCH_BRANCH =~ ^[Yy]$ ]]; then
+    echo ""
+    read -p "Enter branch name: " BRANCH_NAME
+
+    if [ -n "$BRANCH_NAME" ]; then
+      echo "  Switching to branch: $BRANCH_NAME"
+      if git checkout "$BRANCH_NAME"; then
+        echo -e "${GREEN}  ✓ Switched to $BRANCH_NAME${NC}"
+        BRANCH_TO_USE="$BRANCH_NAME"
+      else
+        echo -e "${RED}  ✗ Failed to checkout $BRANCH_NAME${NC}"
+        echo "  Continuing with master branch"
+        BRANCH_TO_USE="master"
+      fi
+    else
+      echo -e "${YELLOW}  No branch name provided, using master${NC}"
+      BRANCH_TO_USE="master"
     fi
   else
-    echo -e "${YELLOW}  ⚠ Not on main branch${NC}"
-    echo "  Tip: Run 'git checkout main && git pull' if you want latest main"
+    BRANCH_TO_USE="master"
   fi
+  echo ""
+  echo -e "${GREEN}  → Rails server will run on branch: $BRANCH_TO_USE${NC}"
   echo ""
 fi
 
@@ -81,16 +121,16 @@ if ! git diff-index --quiet HEAD -- 2>/dev/null; then
   echo "  Skipping git pull"
   echo ""
 else
-  if [ "$MOCKDATA_BRANCH" = "main" ]; then
+  if [ "$MOCKDATA_BRANCH" = "master" ]; then
     echo "  Pulling latest mockdata changes..."
-    if git pull origin main; then
+    if git pull origin master; then
       echo -e "${GREEN}  ✓ Successfully pulled mockdata${NC}"
     else
       echo -e "${RED}  ✗ Mockdata git pull failed${NC}"
       echo "  Continuing anyway..."
     fi
   else
-    echo -e "${YELLOW}  ⚠ Not on main branch${NC}"
+    echo -e "${YELLOW}  ⚠ Not on master branch${NC}"
   fi
   echo ""
 fi
