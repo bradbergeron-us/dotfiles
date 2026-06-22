@@ -71,3 +71,8 @@
 # Example: ~/Code/work2/ could be a secondary employer or client
 [includeIf "gitdir:~/Code/work2/"]
 	path = ~/.config/git/work2.gitconfig
+
+# VA.gov repositories — auto-loads VA-specific email and signing key
+# Uses bradley.bergeron@va.gov for all repos in ~/Code/va.gov/
+[includeIf "gitdir:~/Code/va.gov/"]
+	path = ~/.config/git/va.gitconfig
