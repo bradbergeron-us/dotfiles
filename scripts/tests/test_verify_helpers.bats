@@ -412,20 +412,17 @@ setup_gci_dotfiles() {
 }
 
 # ── check_brewfile_drift ──────────────────────────────────────────────────────
-# Fake brew stub: `brew list --formula|--cask NAME` exits 0 iff NAME is listed in
-# $FAKE_INSTALLED (space-separated); any other subcommand exits 0. This models
-# "installed (any version)" vs "not installed" without touching real packages.
+# Fake brew stub: `brew list --formula|--cask` prints the names in $FAKE_INSTALLED
+# (space-separated), so the helper's snapshot sees them as installed; any other
+# subcommand exits 0. Models "installed (any version)" vs "not installed".
 setup_fake_brew() {
   FAKE_BIN="$BATS_TEST_TMPDIR/fakebin"
   mkdir -p "$FAKE_BIN"
   cat > "$FAKE_BIN/brew" << 'EOF'
 #!/usr/bin/env bash
 if [[ "${1:-}" == "list" ]]; then
-  name="${@: -1}"
-  for p in $FAKE_INSTALLED; do
-    [[ "$p" == "$name" ]] && exit 0
-  done
-  exit 1
+  for p in $FAKE_INSTALLED; do echo "$p"; done
+  exit 0
 fi
 exit 0
 EOF

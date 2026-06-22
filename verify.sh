@@ -174,6 +174,8 @@ fi
 
 # ── 8. Brewfile drift ───────────────────────────────────
 step "🍺  Brewfile drift"
+# Immediate feedback — the installed-package snapshot below can take a moment.
+command -v brew &>/dev/null && info "checking installed formulae & casks…"
 # Check the core Brewfile plus the active profile's overlays.
 _drift_warn=0
 _drift_skipped=true
