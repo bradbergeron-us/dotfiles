@@ -51,8 +51,8 @@ The comprehensive daily startup script that syncs everything.
 4. Updates vets-api-mockdata repository (from master)
 5. Runs `make_table.rb` to generate mock data tables
 6. Validates Ruby version
-7. **Configures Gemfile to use jfrog proxy** (replaces rubygems.org)
-8. **Installs/updates bundle dependencies**
+7. **Configures Gemfile and Bundler to use jfrog proxy** (replaces rubygems.org, sets mirror)
+8. **Optionally installs/updates bundle dependencies** (only prompts if gems are out of date)
 9. Starts the Rails server with foreman in a new Hyper tab
 
 **Time**: 2-4 minutes

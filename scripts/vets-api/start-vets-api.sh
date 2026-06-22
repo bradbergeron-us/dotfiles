@@ -171,13 +171,33 @@ else
 fi
 echo ""
 
-# Install bundle dependencies
-echo -e "${BLUE}→ Installing bundle dependencies...${NC}"
-if bundle install; then
-  echo -e "${GREEN}  ✓ Bundle install complete${NC}"
+# Configure Bundler to mirror rubygems.org to jfrog
+echo -e "${BLUE}→ Configuring Bundler mirror...${NC}"
+bundle config mirror.https://rubygems.org https://jfrog.accenturefederaldev.com/artifactory/afs-gems-proxy
+echo -e "${GREEN}  ✓ Bundler mirror configured${NC}"
+echo ""
+
+# Optional: Install bundle dependencies
+echo -e "${BLUE}→ Checking if bundle install is needed...${NC}"
+if bundle check > /dev/null 2>&1; then
+  echo -e "${GREEN}  ✓ Dependencies are up to date (skipping bundle install)${NC}"
 else
-  echo -e "${RED}  ✗ Bundle install failed${NC}"
-  exit 1
+  echo -e "${YELLOW}  ⚠ Dependencies need updating${NC}"
+  read -p "Run bundle install? (y/N): " RUN_BUNDLE
+  echo ""
+
+  if [[ $RUN_BUNDLE =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}→ Installing bundle dependencies...${NC}"
+    if bundle install; then
+      echo -e "${GREEN}  ✓ Bundle install complete${NC}"
+    else
+      echo -e "${RED}  ✗ Bundle install failed${NC}"
+      echo "  Continuing anyway (server may work with existing gems)"
+    fi
+  else
+    echo -e "${YELLOW}  Skipping bundle install${NC}"
+    echo "  Note: Run 'bundle install' manually if you see gem errors"
+  fi
 fi
 echo ""
 
