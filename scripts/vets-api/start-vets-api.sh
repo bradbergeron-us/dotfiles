@@ -285,6 +285,60 @@ else
 fi
 echo ""
 
+# Run database migrations
+echo -e "${BLUE}→ Running database migrations...${NC}"
+MIGRATE_OUTPUT=$(bundle exec rails db:migrate 2>&1)
+MIGRATE_STATUS=$?
+
+if [ $MIGRATE_STATUS -eq 0 ]; then
+  # Check if there were any migrations to run
+  if echo "$MIGRATE_OUTPUT" | grep -q "Migrating to"; then
+    echo -e "${GREEN}  ✓ Database migrations applied${NC}"
+    echo "$MIGRATE_OUTPUT" | grep "Migrating to" | sed 's/^/    /'
+  else
+    echo -e "${GREEN}  ✓ Database is up to date (no pending migrations)${NC}"
+  fi
+else
+  echo -e "${YELLOW}  ⚠ Database migrations failed${NC}"
+  echo "$MIGRATE_OUTPUT" | sed 's/^/    /'
+  echo ""
+  echo -e "${BLUE}  → Attempting fallback: rails db:schema:load...${NC}"
+
+  SCHEMA_OUTPUT=$(bundle exec rails db:schema:load 2>&1)
+  SCHEMA_STATUS=$?
+
+  if [ $SCHEMA_STATUS -eq 0 ]; then
+    echo -e "${GREEN}  ✓ Database schema loaded successfully${NC}"
+  else
+    echo -e "${RED}  ✗ Both db:migrate and db:schema:load failed${NC}"
+    echo "$SCHEMA_OUTPUT" | sed 's/^/    /'
+    echo "  Cannot start server without a valid database"
+    exit 1
+  fi
+fi
+echo ""
+
+# Seed database
+echo -e "${BLUE}→ Seeding database...${NC}"
+SEED_OUTPUT=$(bundle exec rails db:seed 2>&1)
+SEED_STATUS=$?
+
+if [ $SEED_STATUS -eq 0 ]; then
+  # Show summary of what was seeded if available
+  if echo "$SEED_OUTPUT" | grep -q "Created\|Seeded\|Added"; then
+    echo -e "${GREEN}  ✓ Database seeded${NC}"
+    echo "$SEED_OUTPUT" | grep -E "Created|Seeded|Added" | sed 's/^/    /'
+  else
+    echo -e "${GREEN}  ✓ Database seeding completed${NC}"
+  fi
+else
+  echo -e "${RED}  ✗ Database seeding failed${NC}"
+  echo "$SEED_OUTPUT" | sed 's/^/    /'
+  echo "  Cannot start server without successful seeding"
+  exit 1
+fi
+echo ""
+
 # Clear Rails cache
 echo -e "${BLUE}→ Clearing Rails cache...${NC}"
 if bundle exec rails runner 'Rails.cache.clear' > /dev/null 2>&1; then
