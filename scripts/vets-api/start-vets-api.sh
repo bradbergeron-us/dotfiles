@@ -154,6 +154,41 @@ RUBY_VERSION=$(ruby --version)
 echo "  Ruby version: $RUBY_VERSION"
 echo ""
 
+# Configure AIO URL for local development
+echo -e "${BLUE}→ Configuring AIO URL...${NC}"
+echo "  This will update config/settings/development.yml with your AIO gateway URL"
+echo ""
+read -p "Enter your AIO username (e.g., brabergeron) or press Enter to skip: " AIO_USERNAME
+
+if [ -n "$AIO_USERNAME" ]; then
+  DEVELOPMENT_YML="$VETS_API_DIR/config/settings/development.yml"
+  AIO_URL="http://apigw-${AIO_USERNAME}.ld.afsp.io:32512/vets-service/v1/"
+
+  if [ -f "$DEVELOPMENT_YML" ]; then
+    # Replace the jenkins URL with the AIO URL
+    if grep -q "jenkins.ld.afsp.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+      if command -v gsed &> /dev/null; then
+        gsed -i "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+      else
+        sed -i '' "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+      fi
+      echo -e "${GREEN}  ✓ Updated development.yml with AIO URL: ${AIO_URL}${NC}"
+    else
+      # Check if it's already set to an AIO URL
+      if grep -q "apigw-.*\.ld\.afsp\.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+        echo -e "${YELLOW}  ⚠ AIO URL already configured in development.yml${NC}"
+      else
+        echo -e "${YELLOW}  ⚠ Jenkins URL not found in expected format${NC}"
+      fi
+    fi
+  else
+    echo -e "${RED}  ✗ development.yml not found${NC}"
+  fi
+else
+  echo -e "${YELLOW}  Skipping AIO configuration${NC}"
+fi
+echo ""
+
 # Configure Gemfile to use jfrog proxy
 echo -e "${BLUE}→ Configuring Gemfile for jfrog proxy...${NC}"
 if command -v gsed &> /dev/null; then
