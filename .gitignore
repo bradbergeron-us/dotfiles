@@ -61,5 +61,8 @@ age-key.txt
 keys.txt
 *.dec
 
+# Authentication credentials — NEVER commit .netrc (contains JFrog access tokens)
+.netrc
+
 # MkDocs build output (docs site is built in CI, never committed)
 site/
