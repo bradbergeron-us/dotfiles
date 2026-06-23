@@ -6,21 +6,30 @@ TERMINAL_CONFIG_FILE="$HOME/.dotfiles_terminal_preference"
 
 # Get the user's preferred terminal emulator
 # If not set, prompt them to choose and store the preference
+# Pass "quiet" as first argument to suppress output after setup
 get_terminal_emulator() {
+  local quiet_mode="$1"
+
   if [ -f "$TERMINAL_CONFIG_FILE" ]; then
     cat "$TERMINAL_CONFIG_FILE"
     return 0
   fi
 
   # No preference stored, prompt user
+  echo ""
   echo "========================================"
-  echo "Terminal Emulator Selection"
+  echo "⚙️  First-Time Terminal Setup Required"
   echo "========================================"
   echo ""
-  echo "Select your terminal emulator:"
+  echo "This script needs to open new terminal tabs."
+  echo "Please select your terminal emulator:"
+  echo ""
   echo "  1) Hyper"
   echo "  2) macOS Terminal (Terminal.app)"
   echo "  3) iTerm2"
+  echo ""
+  echo "Your choice will be saved for future use."
+  echo "(Run 'reset_terminal_preference' to change later)"
   echo ""
   read -r -p "Enter choice [1-3] (default: 2): " TERMINAL_CHOICE
   echo ""
@@ -36,17 +45,31 @@ get_terminal_emulator() {
       TERMINAL="iTerm"
       ;;
     *)
-      echo "Invalid choice. Defaulting to macOS Terminal."
+      echo "⚠️  Invalid choice. Defaulting to macOS Terminal."
       TERMINAL="Terminal"
       ;;
   esac
 
   # Store the preference
   echo "$TERMINAL" > "$TERMINAL_CONFIG_FILE"
-  echo "Terminal preference saved: $TERMINAL"
+  echo "✓ Terminal preference saved: $TERMINAL"
   echo ""
 
-  echo "$TERMINAL"
+  # Output terminal name for command substitution (unless in quiet mode)
+  if [ "$quiet_mode" != "quiet" ]; then
+    cat "$TERMINAL_CONFIG_FILE"
+  fi
+}
+
+# Ensure terminal preference is set before running scripts
+# Call this at the start of scripts that use open_terminal_tab
+# This ensures the terminal selection happens upfront, not mid-execution
+ensure_terminal_configured() {
+  if [ ! -f "$TERMINAL_CONFIG_FILE" ]; then
+    # Terminal not configured yet - trigger the setup in quiet mode
+    # This displays the menu and confirmation but not the redundant terminal name
+    get_terminal_emulator quiet
+  fi
 }
 
 # Open a new tab and execute a command
