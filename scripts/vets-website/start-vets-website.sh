@@ -12,6 +12,11 @@
 
 set -e  # Exit on error
 
+# Resolve script directory and source helpers
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+
 # Navigate to vets-website directory
 VETS_WEBSITE_DIR="$HOME/Code/va.gov/vets-website"
 
@@ -156,20 +161,9 @@ echo "To customize applications, edit this script and modify the --entry paramet
 echo "See available apps: yarn apps"
 echo ""
 
-# Start watch mode in a new Hyper tab
-echo "Opening dev server in new Hyper tab..."
-osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "cd '$VETS_WEBSITE_DIR' && yarn watch --entry=auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent,1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters"
-        keystroke return
-    end tell
-end tell
-EOF
+# Start watch mode in a new terminal tab
+echo "Opening dev server in new terminal tab..."
+open_terminal_tab "cd '$VETS_WEBSITE_DIR' && yarn watch --entry=auth,login-page,profile,static-pages,terms-of-use,verify,virtual-agent,1990ez-edu-benefits,toe,survivor-dependent-education-benefit-22-5490,1995-edu-benefits,10297-edu-benefits,enrollment-verification,education-letters"
 
 # Wait for server to be ready
 echo "Waiting for dev server to start..."
@@ -237,6 +231,6 @@ fi
 echo ""
 echo -e "${GREEN}✓ Setup complete!${NC}"
 echo ""
-echo "Dev server is running in the new Hyper tab."
+echo "Dev server is running in the new terminal tab."
 echo "You can monitor build status and errors there."
 echo "To stop the server, use Ctrl+C in that tab."

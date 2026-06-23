@@ -12,6 +12,11 @@
 
 set -e  # Exit on error
 
+# Resolve script directory and source helpers
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+
 # Navigate to vets-api directory
 VETS_API_DIR="$HOME/Code/va.gov/vets-api"
 VETS_API_MOCKDATA_DIR="$HOME/Code/va.gov/vets-api-mockdata"
@@ -387,20 +392,9 @@ case $SERVER_MODE in
     echo "Starting server with: foreman start -m all=1,clamd=0,freshclam=0"
     echo ""
 
-    # Start foreman in a new Hyper tab
-    echo "Opening Rails server in new Hyper tab..."
-    osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "cd '$VETS_API_DIR' && foreman start -m all=1,clamd=0,freshclam=0"
-        keystroke return
-    end tell
-end tell
-EOF
+    # Start foreman in a new terminal tab
+    echo "Opening Rails server in new terminal tab..."
+    open_terminal_tab "cd '$VETS_API_DIR' && foreman start -m all=1,clamd=0,freshclam=0"
     ;;
   2)
     # Start with plain Rails server
@@ -412,39 +406,17 @@ EOF
     echo -e "${YELLOW}Note: Sidekiq jobs will NOT run in this mode${NC}"
     echo ""
 
-    # Start rails server in a new Hyper tab
-    echo "Opening Rails server in new Hyper tab..."
-    osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "cd '$VETS_API_DIR' && bundle exec rails s -p 3000"
-        keystroke return
-    end tell
-end tell
-EOF
+    # Start rails server in a new terminal tab
+    echo "Opening Rails server in new terminal tab..."
+    open_terminal_tab "cd '$VETS_API_DIR' && bundle exec rails s -p 3000"
     ;;
   *)
     echo -e "${RED}Invalid choice. Defaulting to foreman mode.${NC}"
     echo ""
 
-    # Start foreman in a new Hyper tab
-    echo "Opening Rails server in new Hyper tab..."
-    osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "cd '$VETS_API_DIR' && foreman start -m all=1,clamd=0,freshclam=0"
-        keystroke return
-    end tell
-end tell
-EOF
+    # Start foreman in a new terminal tab
+    echo "Opening Rails server in new terminal tab..."
+    open_terminal_tab "cd '$VETS_API_DIR' && foreman start -m all=1,clamd=0,freshclam=0"
     ;;
 esac
 
@@ -461,7 +433,7 @@ done
 echo ""
 echo -e "${GREEN}✓ Setup complete!${NC}"
 echo ""
-echo "Rails server is running in the new Hyper tab."
+echo "Rails server is running in the new terminal tab."
 echo "You can monitor server logs and requests there."
 echo "To stop the server, use Ctrl+C in that tab."
 echo ""
