@@ -148,10 +148,94 @@ echo ""
 # Return to vets-api directory
 cd "$VETS_API_DIR"
 
+# Verify settings.local.yml cache_dir configuration
+echo -e "${BLUE}→ Verifying settings.local.yml cache_dir...${NC}"
+SETTINGS_LOCAL_YML="$VETS_API_DIR/config/settings.local.yml"
+
+if [ -f "$SETTINGS_LOCAL_YML" ]; then
+  # Calculate relative path from vets-api to vets-api-mockdata
+  MOCKDATA_RELATIVE_PATH=$(realpath --relative-to="$VETS_API_DIR" "$VETS_API_MOCKDATA_DIR" 2>/dev/null || python3 -c "import os.path; print(os.path.relpath('$VETS_API_MOCKDATA_DIR', '$VETS_API_DIR'))")
+
+  # Check if cache_dir line exists (not commented out)
+  if grep -q "^[[:space:]]*cache_dir:" "$SETTINGS_LOCAL_YML"; then
+    CURRENT_CACHE_DIR=$(grep "^[[:space:]]*cache_dir:" "$SETTINGS_LOCAL_YML" | sed 's/^[[:space:]]*cache_dir:[[:space:]]*//' | tr -d '\r\n')
+
+    if [ "$CURRENT_CACHE_DIR" != "$MOCKDATA_RELATIVE_PATH" ]; then
+      echo -e "${YELLOW}  ⚠ cache_dir needs updating${NC}"
+      echo "    Current: $CURRENT_CACHE_DIR"
+      echo "    Expected: $MOCKDATA_RELATIVE_PATH"
+
+      # Update the cache_dir
+      if command -v gsed &> /dev/null; then
+        gsed -i "s|^[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+      else
+        sed -i '' "s|^[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+      fi
+      echo -e "${GREEN}  ✓ Updated cache_dir to: $MOCKDATA_RELATIVE_PATH${NC}"
+    else
+      echo -e "${GREEN}  ✓ cache_dir is correctly configured${NC}"
+    fi
+  # Check if cache_dir line is commented out
+  elif grep -q "^[[:space:]]*#.*cache_dir:" "$SETTINGS_LOCAL_YML"; then
+    echo -e "${YELLOW}  ⚠ cache_dir is commented out${NC}"
+    echo "  Uncommenting and setting to: $MOCKDATA_RELATIVE_PATH"
+
+    # Uncomment and update the cache_dir line
+    if command -v gsed &> /dev/null; then
+      gsed -i "s|^[[:space:]]*#[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+    else
+      sed -i '' "s|^[[:space:]]*#[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+    fi
+    echo -e "${GREEN}  ✓ Uncommented and set cache_dir to: $MOCKDATA_RELATIVE_PATH${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ cache_dir not found in settings.local.yml${NC}"
+    echo "  You may need to add it manually under betamocks:"
+  fi
+else
+  echo -e "${RED}  ✗ settings.local.yml not found${NC}"
+  echo "  Create it from settings.local.yml.example if needed"
+fi
+echo ""
+
 # Check Ruby version
 echo -e "${BLUE}→ Checking Ruby version...${NC}"
 RUBY_VERSION=$(ruby --version)
 echo "  Ruby version: $RUBY_VERSION"
+echo ""
+
+# Configure AIO URL for local development
+echo -e "${BLUE}→ Configuring AIO URL...${NC}"
+echo "  This will update config/settings/development.yml with your AIO gateway URL"
+echo ""
+read -p "Enter your AIO username (e.g., brabergeron) or press Enter to skip: " AIO_USERNAME
+
+if [ -n "$AIO_USERNAME" ]; then
+  DEVELOPMENT_YML="$VETS_API_DIR/config/settings/development.yml"
+  AIO_URL="http://apigw-${AIO_USERNAME}.ld.afsp.io:32512/vets-service/v1/"
+
+  if [ -f "$DEVELOPMENT_YML" ]; then
+    # Replace the jenkins URL with the AIO URL
+    if grep -q "jenkins.ld.afsp.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+      if command -v gsed &> /dev/null; then
+        gsed -i "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+      else
+        sed -i '' "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+      fi
+      echo -e "${GREEN}  ✓ Updated development.yml with AIO URL: ${AIO_URL}${NC}"
+    else
+      # Check if it's already set to an AIO URL
+      if grep -q "apigw-.*\.ld\.afsp\.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+        echo -e "${YELLOW}  ⚠ AIO URL already configured in development.yml${NC}"
+      else
+        echo -e "${YELLOW}  ⚠ Jenkins URL not found in expected format${NC}"
+      fi
+    fi
+  else
+    echo -e "${RED}  ✗ development.yml not found${NC}"
+  fi
+else
+  echo -e "${YELLOW}  Skipping AIO configuration${NC}"
+fi
 echo ""
 
 # Configure Gemfile to use jfrog proxy
@@ -222,17 +306,36 @@ echo ""
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
 
-# Start the Rails server
+# Server mode selection
 echo "========================================"
-echo "Starting Rails server with foreman..."
+echo "Select Rails server mode"
 echo "========================================"
 echo ""
-echo "Starting server with: foreman start -m all=1,clamd=0,freshclam=0"
+echo "Options:"
+echo "  1) Foreman (with Sidekiq) - Full stack with background jobs"
+echo "  2) Rails server only - Cleaner logs, no background processing"
+echo ""
+read -p "Enter choice [1-2] (default: 1): " SERVER_MODE
 echo ""
 
-# Start foreman in a new Hyper tab
-echo "Opening Rails server in new Hyper tab..."
-osascript <<EOF
+# Default to foreman if no choice made
+if [[ -z "$SERVER_MODE" ]]; then
+  SERVER_MODE="1"
+fi
+
+case $SERVER_MODE in
+  1)
+    # Start with foreman (original behavior)
+    echo "========================================"
+    echo "Starting Rails server with foreman..."
+    echo "========================================"
+    echo ""
+    echo "Starting server with: foreman start -m all=1,clamd=0,freshclam=0"
+    echo ""
+
+    # Start foreman in a new Hyper tab
+    echo "Opening Rails server in new Hyper tab..."
+    osascript <<EOF
 tell application "Hyper"
     activate
     delay 0.3
@@ -244,6 +347,52 @@ tell application "Hyper"
     end tell
 end tell
 EOF
+    ;;
+  2)
+    # Start with plain Rails server
+    echo "========================================"
+    echo "Starting Rails server (without foreman)..."
+    echo "========================================"
+    echo ""
+    echo "Starting server with: bundle exec rails s -p 3000"
+    echo -e "${YELLOW}Note: Sidekiq jobs will NOT run in this mode${NC}"
+    echo ""
+
+    # Start rails server in a new Hyper tab
+    echo "Opening Rails server in new Hyper tab..."
+    osascript <<EOF
+tell application "Hyper"
+    activate
+    delay 0.3
+    tell application "System Events"
+        keystroke "t" using {command down}
+        delay 0.5
+        keystroke "cd '$VETS_API_DIR' && bundle exec rails s -p 3000"
+        keystroke return
+    end tell
+end tell
+EOF
+    ;;
+  *)
+    echo -e "${RED}Invalid choice. Defaulting to foreman mode.${NC}"
+    echo ""
+
+    # Start foreman in a new Hyper tab
+    echo "Opening Rails server in new Hyper tab..."
+    osascript <<EOF
+tell application "Hyper"
+    activate
+    delay 0.3
+    tell application "System Events"
+        keystroke "t" using {command down}
+        delay 0.5
+        keystroke "cd '$VETS_API_DIR' && foreman start -m all=1,clamd=0,freshclam=0"
+        keystroke return
+    end tell
+end tell
+EOF
+    ;;
+esac
 
 # Wait for server to be ready
 echo "Waiting for Rails server to start..."
