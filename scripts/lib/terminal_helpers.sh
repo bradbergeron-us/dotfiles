@@ -22,7 +22,7 @@ get_terminal_emulator() {
   echo "  2) macOS Terminal (Terminal.app)"
   echo "  3) iTerm2"
   echo ""
-  read -p "Enter choice [1-3] (default: 2): " TERMINAL_CHOICE
+  read -r -p "Enter choice [1-3] (default: 2): " TERMINAL_CHOICE
   echo ""
 
   case $TERMINAL_CHOICE in
@@ -53,7 +53,8 @@ get_terminal_emulator() {
 # Usage: open_terminal_tab "command to execute"
 open_terminal_tab() {
   local COMMAND="$1"
-  local TERMINAL=$(get_terminal_emulator)
+  local TERMINAL
+  TERMINAL=$(get_terminal_emulator)
 
   case $TERMINAL in
     Hyper)
