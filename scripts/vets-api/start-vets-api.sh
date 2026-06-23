@@ -425,7 +425,7 @@ esac
 
 # Wait for server to be ready
 echo "Waiting for Rails server to start..."
-for i in {1..60}; do
+for _ in {1..60}; do
   if curl -s -o /dev/null http://localhost:3000; then
     echo -e "${GREEN}✓ Rails server is ready at http://localhost:3000${NC}"
     break
