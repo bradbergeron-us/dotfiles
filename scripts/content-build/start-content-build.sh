@@ -17,6 +17,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
 
+# Ensure terminal is configured before starting
+ensure_terminal_configured
+
 # Navigate to content-build directory
 CONTENT_BUILD_DIR="$HOME/Code/va.gov/content-build"
 

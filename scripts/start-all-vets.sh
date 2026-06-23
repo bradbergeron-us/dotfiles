@@ -16,6 +16,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
 
+# Ensure terminal is configured before starting
+# This prompts the user upfront if needed, not mid-execution
+ensure_terminal_configured
+
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
