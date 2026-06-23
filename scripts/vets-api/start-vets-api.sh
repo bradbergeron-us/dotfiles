@@ -285,6 +285,28 @@ else
 fi
 echo ""
 
+# Run database migrations
+echo -e "${BLUE}→ Running database migrations...${NC}"
+if bundle exec rails db:migrate; then
+  echo -e "${GREEN}  ✓ Database migrations completed${NC}"
+else
+  echo -e "${RED}  ✗ Database migrations failed${NC}"
+  echo "  Cannot start server without successful migrations"
+  exit 1
+fi
+echo ""
+
+# Seed database
+echo -e "${BLUE}→ Seeding database...${NC}"
+if bundle exec rails db:seed; then
+  echo -e "${GREEN}  ✓ Database seeded${NC}"
+else
+  echo -e "${RED}  ✗ Database seeding failed${NC}"
+  echo "  Cannot start server without successful seeding"
+  exit 1
+fi
+echo ""
+
 # Clear Rails cache
 echo -e "${BLUE}→ Clearing Rails cache...${NC}"
 if bundle exec rails runner 'Rails.cache.clear' > /dev/null 2>&1; then
