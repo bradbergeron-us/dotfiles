@@ -66,6 +66,7 @@ brew "httpie"         # human-friendly HTTP client (replaces curl for interactiv
 brew "watch"          # re-run a command on an interval (e.g. watch kubectl get pods)
 brew "direnv"         # per-directory environment variables via .envrc files
 brew "newman"         # CLI runner for Insomnia/Postman collections (useful in CI)
+brew "jfrog-cli"      # JFrog Artifactory CLI for artifact management and Go proxy authentication
 brew "redis"          # in-memory data store — background jobs (Sidekiq), caching, sessions
 brew "imagemagick"    # image conversion and manipulation (resize, crop, format conversion)
 brew "pdftk-java"    # PDF toolkit — merge, split, fill forms, extract pages
