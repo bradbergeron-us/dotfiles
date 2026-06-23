@@ -290,9 +290,17 @@ echo -e "${BLUE}→ Running database migrations...${NC}"
 if bundle exec rails db:migrate; then
   echo -e "${GREEN}  ✓ Database migrations completed${NC}"
 else
-  echo -e "${RED}  ✗ Database migrations failed${NC}"
-  echo "  Cannot start server without successful migrations"
-  exit 1
+  echo -e "${YELLOW}  ⚠ Database migrations failed${NC}"
+  echo "  Attempting fallback: rails db:schema:load"
+  echo ""
+
+  if bundle exec rails db:schema:load; then
+    echo -e "${GREEN}  ✓ Database schema loaded successfully${NC}"
+  else
+    echo -e "${RED}  ✗ Both db:migrate and db:schema:load failed${NC}"
+    echo "  Cannot start server without a valid database"
+    exit 1
+  fi
 fi
 echo ""
 
