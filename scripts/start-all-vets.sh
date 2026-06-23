@@ -1,8 +1,8 @@
 #!/bin/bash
-# Start both vets-api and vets-website simultaneously
+# Start vets-api, vets-website, and content-build simultaneously
 #
 # This script handles:
-# - Running both start scripts in parallel
+# - Running all start scripts in parallel
 # - Opening multiple Hyper tabs for each service
 # - Coordinated startup with proper ordering
 #
@@ -22,13 +22,14 @@ NC='\033[0m' # No Color
 DOTFILES_DIR="$HOME/dotfiles"
 VETS_API_SCRIPT="$DOTFILES_DIR/scripts/vets-api/start-vets-api.sh"
 VETS_WEBSITE_SCRIPT="$DOTFILES_DIR/scripts/vets-website/start-vets-website.sh"
+CONTENT_BUILD_SCRIPT="$DOTFILES_DIR/scripts/content-build/start-content-build.sh"
 
 echo "========================================"
 echo "Starting ALL VA.gov Services"
 echo "========================================"
 echo ""
 
-# Check that both scripts exist
+# Check that all scripts exist
 if [ ! -f "$VETS_API_SCRIPT" ]; then
   echo -e "${RED}ERROR: vets-api start script not found at $VETS_API_SCRIPT${NC}"
   exit 1
@@ -39,9 +40,15 @@ if [ ! -f "$VETS_WEBSITE_SCRIPT" ]; then
   exit 1
 fi
 
+if [ ! -f "$CONTENT_BUILD_SCRIPT" ]; then
+  echo -e "${RED}ERROR: content-build start script not found at $CONTENT_BUILD_SCRIPT${NC}"
+  exit 1
+fi
+
 echo -e "${BLUE}Starting services in order:${NC}"
 echo "  1. vets-api (Rails backend)"
 echo "  2. vets-website (React frontend)"
+echo "  3. content-build (Static content generator)"
 echo ""
 
 # Start vets-api in the first tab
@@ -83,7 +90,28 @@ EOF
 echo -e "${GREEN}  ✓ vets-website setup started in new tab${NC}"
 echo ""
 
-# Wait for both services to be ready
+# Wait a moment for the vets-website tab to initialize
+sleep 2
+
+# Start content-build in the third tab
+echo -e "${BLUE}→ Launching content-build setup...${NC}"
+osascript <<EOF
+tell application "Hyper"
+    activate
+    delay 0.3
+    tell application "System Events"
+        keystroke "t" using {command down}
+        delay 0.5
+        keystroke "$CONTENT_BUILD_SCRIPT"
+        keystroke return
+    end tell
+end tell
+EOF
+
+echo -e "${GREEN}  ✓ content-build setup started in new tab${NC}"
+echo ""
+
+# Wait for all services to be ready
 echo "========================================"
 echo "Waiting for services to start..."
 echo "========================================"
@@ -117,6 +145,20 @@ for i in {1..60}; do
 done
 echo ""
 
+# Wait for content-build (port 3002)
+echo -e "${BLUE}→ Checking content-build...${NC}"
+for i in {1..120}; do
+  if curl -s -o /dev/null http://localhost:3002; then
+    echo -e "${GREEN}  ✓ content-build is ready at http://localhost:3002${NC}"
+    break
+  fi
+  if [ $i -eq 120 ]; then
+    echo -e "${YELLOW}  ⚠ content-build not responding yet (may still be building)${NC}"
+  fi
+  sleep 2
+done
+echo ""
+
 echo "========================================"
 echo -e "${GREEN}✓ All services launched!${NC}"
 echo "========================================"
@@ -124,6 +166,7 @@ echo ""
 echo "Service endpoints:"
 echo "  - vets-api:     http://localhost:3000"
 echo "  - vets-website: http://localhost:3001"
+echo "  - content-build: http://localhost:3002"
 echo ""
 echo "Useful vets-api endpoints:"
 echo "  - Flipper features: http://localhost:3000/flipper/features"
