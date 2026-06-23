@@ -12,6 +12,11 @@
 
 set -e  # Exit on error
 
+# Resolve script directory and source helpers
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+
 # Navigate to content-build directory
 CONTENT_BUILD_DIR="$HOME/Code/va.gov/content-build"
 
@@ -186,20 +191,9 @@ echo "  - Edit src/site/stages/build/drupal/individual-queries.js"
 echo "  - Comment out content types you won't be testing"
 echo ""
 
-# Start watch mode in a new Hyper tab
-echo "Opening watch server in new Hyper tab..."
-osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "cd '$CONTENT_BUILD_DIR' && yarn watch"
-        keystroke return
-    end tell
-end tell
-EOF
+# Start watch mode in a new terminal tab
+echo "Opening watch server in new terminal tab..."
+open_terminal_tab "cd '$CONTENT_BUILD_DIR' && yarn watch"
 
 # Wait for server to be ready
 echo "Waiting for watch server to start..."
@@ -215,7 +209,7 @@ done
 echo ""
 echo -e "${GREEN}✓ Setup complete!${NC}"
 echo ""
-echo "Watch server is running in the new Hyper tab."
+echo "Watch server is running in the new terminal tab."
 echo "You can monitor build progress and errors there."
 echo "To stop the server, use Ctrl+C in that tab."
 echo ""

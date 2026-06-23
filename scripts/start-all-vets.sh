@@ -3,13 +3,18 @@
 #
 # This script handles:
 # - Running all start scripts in parallel
-# - Opening multiple Hyper tabs for each service
+# - Opening multiple terminal tabs for each service
 # - Coordinated startup with proper ordering
 #
 # Usage: ~/dotfiles/scripts/start-all-vets.sh
 #        Or use alias: vets-start-all
 
 set -e  # Exit on error
+
+# Resolve script directory and source helpers
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -19,7 +24,6 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Script paths
-DOTFILES_DIR="$HOME/dotfiles"
 VETS_API_SCRIPT="$DOTFILES_DIR/scripts/vets-api/start-vets-api.sh"
 VETS_WEBSITE_SCRIPT="$DOTFILES_DIR/scripts/vets-website/start-vets-website.sh"
 CONTENT_BUILD_SCRIPT="$DOTFILES_DIR/scripts/content-build/start-content-build.sh"
@@ -53,18 +57,7 @@ echo ""
 
 # Start vets-api in the first tab
 echo -e "${BLUE}→ Launching vets-api setup...${NC}"
-osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "$VETS_API_SCRIPT"
-        keystroke return
-    end tell
-end tell
-EOF
+open_terminal_tab "$VETS_API_SCRIPT"
 
 echo -e "${GREEN}  ✓ vets-api setup started in new tab${NC}"
 echo ""
@@ -74,18 +67,7 @@ sleep 2
 
 # Start vets-website in the second tab
 echo -e "${BLUE}→ Launching vets-website setup...${NC}"
-osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "$VETS_WEBSITE_SCRIPT"
-        keystroke return
-    end tell
-end tell
-EOF
+open_terminal_tab "$VETS_WEBSITE_SCRIPT"
 
 echo -e "${GREEN}  ✓ vets-website setup started in new tab${NC}"
 echo ""
@@ -95,18 +77,7 @@ sleep 2
 
 # Start content-build in the third tab
 echo -e "${BLUE}→ Launching content-build setup...${NC}"
-osascript <<EOF
-tell application "Hyper"
-    activate
-    delay 0.3
-    tell application "System Events"
-        keystroke "t" using {command down}
-        delay 0.5
-        keystroke "$CONTENT_BUILD_SCRIPT"
-        keystroke return
-    end tell
-end tell
-EOF
+open_terminal_tab "$CONTENT_BUILD_SCRIPT"
 
 echo -e "${GREEN}  ✓ content-build setup started in new tab${NC}"
 echo ""
@@ -172,7 +143,7 @@ echo "Useful vets-api endpoints:"
 echo "  - Flipper features: http://localhost:3000/flipper/features"
 echo "  - API docs:         http://localhost:3000/api-docs"
 echo ""
-echo "Each service is running in its own Hyper tab."
+echo "Each service is running in its own terminal tab."
 echo "Monitor the tabs for logs and build status."
 echo "Use Ctrl+C in each tab to stop the services."
 echo ""
