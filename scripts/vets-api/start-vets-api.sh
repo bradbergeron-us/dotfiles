@@ -148,6 +148,55 @@ echo ""
 # Return to vets-api directory
 cd "$VETS_API_DIR"
 
+# Verify settings.local.yml cache_dir configuration
+echo -e "${BLUE}→ Verifying settings.local.yml cache_dir...${NC}"
+SETTINGS_LOCAL_YML="$VETS_API_DIR/config/settings.local.yml"
+
+if [ -f "$SETTINGS_LOCAL_YML" ]; then
+  # Calculate relative path from vets-api to vets-api-mockdata
+  MOCKDATA_RELATIVE_PATH=$(realpath --relative-to="$VETS_API_DIR" "$VETS_API_MOCKDATA_DIR" 2>/dev/null || python3 -c "import os.path; print(os.path.relpath('$VETS_API_MOCKDATA_DIR', '$VETS_API_DIR'))")
+
+  # Check if cache_dir line exists (not commented out)
+  if grep -q "^[[:space:]]*cache_dir:" "$SETTINGS_LOCAL_YML"; then
+    CURRENT_CACHE_DIR=$(grep "^[[:space:]]*cache_dir:" "$SETTINGS_LOCAL_YML" | sed 's/^[[:space:]]*cache_dir:[[:space:]]*//' | tr -d '\r\n')
+
+    if [ "$CURRENT_CACHE_DIR" != "$MOCKDATA_RELATIVE_PATH" ]; then
+      echo -e "${YELLOW}  ⚠ cache_dir needs updating${NC}"
+      echo "    Current: $CURRENT_CACHE_DIR"
+      echo "    Expected: $MOCKDATA_RELATIVE_PATH"
+
+      # Update the cache_dir
+      if command -v gsed &> /dev/null; then
+        gsed -i "s|^[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+      else
+        sed -i '' "s|^[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+      fi
+      echo -e "${GREEN}  ✓ Updated cache_dir to: $MOCKDATA_RELATIVE_PATH${NC}"
+    else
+      echo -e "${GREEN}  ✓ cache_dir is correctly configured${NC}"
+    fi
+  # Check if cache_dir line is commented out
+  elif grep -q "^[[:space:]]*#.*cache_dir:" "$SETTINGS_LOCAL_YML"; then
+    echo -e "${YELLOW}  ⚠ cache_dir is commented out${NC}"
+    echo "  Uncommenting and setting to: $MOCKDATA_RELATIVE_PATH"
+
+    # Uncomment and update the cache_dir line
+    if command -v gsed &> /dev/null; then
+      gsed -i "s|^[[:space:]]*#[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+    else
+      sed -i '' "s|^[[:space:]]*#[[:space:]]*cache_dir:.*|  cache_dir: $MOCKDATA_RELATIVE_PATH|" "$SETTINGS_LOCAL_YML"
+    fi
+    echo -e "${GREEN}  ✓ Uncommented and set cache_dir to: $MOCKDATA_RELATIVE_PATH${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ cache_dir not found in settings.local.yml${NC}"
+    echo "  You may need to add it manually under betamocks:"
+  fi
+else
+  echo -e "${RED}  ✗ settings.local.yml not found${NC}"
+  echo "  Create it from settings.local.yml.example if needed"
+fi
+echo ""
+
 # Check Ruby version
 echo -e "${BLUE}→ Checking Ruby version...${NC}"
 RUBY_VERSION=$(ruby --version)
