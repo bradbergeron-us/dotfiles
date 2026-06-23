@@ -222,17 +222,36 @@ echo ""
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
 
-# Start the Rails server
+# Server mode selection
 echo "========================================"
-echo "Starting Rails server with foreman..."
+echo "Select Rails server mode"
 echo "========================================"
 echo ""
-echo "Starting server with: foreman start -m all=1,clamd=0,freshclam=0"
+echo "Options:"
+echo "  1) Foreman (with Sidekiq) - Full stack with background jobs"
+echo "  2) Rails server only - Cleaner logs, no background processing"
+echo ""
+read -p "Enter choice [1-2] (default: 1): " SERVER_MODE
 echo ""
 
-# Start foreman in a new Hyper tab
-echo "Opening Rails server in new Hyper tab..."
-osascript <<EOF
+# Default to foreman if no choice made
+if [[ -z "$SERVER_MODE" ]]; then
+  SERVER_MODE="1"
+fi
+
+case $SERVER_MODE in
+  1)
+    # Start with foreman (original behavior)
+    echo "========================================"
+    echo "Starting Rails server with foreman..."
+    echo "========================================"
+    echo ""
+    echo "Starting server with: foreman start -m all=1,clamd=0,freshclam=0"
+    echo ""
+
+    # Start foreman in a new Hyper tab
+    echo "Opening Rails server in new Hyper tab..."
+    osascript <<EOF
 tell application "Hyper"
     activate
     delay 0.3
@@ -244,6 +263,52 @@ tell application "Hyper"
     end tell
 end tell
 EOF
+    ;;
+  2)
+    # Start with plain Rails server
+    echo "========================================"
+    echo "Starting Rails server (without foreman)..."
+    echo "========================================"
+    echo ""
+    echo "Starting server with: bundle exec rails s -p 3000"
+    echo -e "${YELLOW}Note: Sidekiq jobs will NOT run in this mode${NC}"
+    echo ""
+
+    # Start rails server in a new Hyper tab
+    echo "Opening Rails server in new Hyper tab..."
+    osascript <<EOF
+tell application "Hyper"
+    activate
+    delay 0.3
+    tell application "System Events"
+        keystroke "t" using {command down}
+        delay 0.5
+        keystroke "cd '$VETS_API_DIR' && bundle exec rails s -p 3000"
+        keystroke return
+    end tell
+end tell
+EOF
+    ;;
+  *)
+    echo -e "${RED}Invalid choice. Defaulting to foreman mode.${NC}"
+    echo ""
+
+    # Start foreman in a new Hyper tab
+    echo "Opening Rails server in new Hyper tab..."
+    osascript <<EOF
+tell application "Hyper"
+    activate
+    delay 0.3
+    tell application "System Events"
+        keystroke "t" using {command down}
+        delay 0.5
+        keystroke "cd '$VETS_API_DIR' && foreman start -m all=1,clamd=0,freshclam=0"
+        keystroke return
+    end tell
+end tell
+EOF
+    ;;
+esac
 
 # Wait for server to be ready
 echo "Waiting for Rails server to start..."
