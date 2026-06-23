@@ -55,6 +55,11 @@ fi
 export GOPATH="${GOPATH:-$HOME/go}"
 [[ -d "$GOPATH/bin" ]] && export PATH="$PATH:$GOPATH/bin"
 
+# Go module proxy — use JFrog Artifactory virtual repository (corporate network requirement)
+# Uses afs-vgo-proxy (virtual repo) which aggregates remote Go repositories
+# Falls back to direct if proxy is unavailable
+export GOPROXY="https://jfrog.accenturefederaldev.com/artifactory/afs-vgo-proxy/,direct"
+
 # Local binaries (Claude Code, pipx, etc.)
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
 

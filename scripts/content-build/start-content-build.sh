@@ -201,7 +201,7 @@ open_terminal_tab "cd '$CONTENT_BUILD_DIR' && yarn watch"
 # Wait for server to be ready
 echo "Waiting for watch server to start..."
 echo "(This may take a few minutes on first run while building content)"
-for i in {1..120}; do
+for _ in {1..120}; do
   if curl -s -o /dev/null http://localhost:3002; then
     echo -e "${GREEN}✓ Watch server is ready at http://localhost:3002${NC}"
     break

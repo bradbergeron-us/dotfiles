@@ -170,7 +170,7 @@ open_terminal_tab "cd '$VETS_WEBSITE_DIR' && yarn watch --entry=auth,login-page,
 
 # Wait for server to be ready
 echo "Waiting for dev server to start..."
-for i in {1..30}; do
+for _ in {1..30}; do
   if curl -s -o /dev/null http://localhost:3001; then
     echo -e "${GREEN}✓ Dev server is ready at http://localhost:3001${NC}"
     break
