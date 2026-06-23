@@ -236,6 +236,67 @@ setup_claude_cli() {
   fi
 }
 
+setup_jfrog_netrc() {
+  echo ""
+  info "Setting up JFrog authentication for Go modules..."
+
+  # Check if JFrog CLI is authenticated
+  if [[ ! -f "$HOME/.jfrog/jfrog-cli.conf.v6" ]]; then
+    warn "JFrog CLI not configured"
+    info "Please run: jf login"
+    info "Then re-run this script to setup .netrc"
+    return 1
+  fi
+
+  # Check if .netrc already exists
+  if [[ -f "$HOME/.netrc" ]]; then
+    # Check if it already has JFrog entry
+    if grep -q "machine jfrog.accenturefederaldev.com" "$HOME/.netrc"; then
+      success "~/.netrc already configured for JFrog"
+      return 0
+    fi
+
+    warn "~/.netrc already exists (but no JFrog entry found)"
+    read -rp "  Add JFrog credentials to existing .netrc? [Y/n] " add_jfrog
+    if [[ "$add_jfrog" =~ ^[Nn]$ ]]; then
+      info "Skipped JFrog .netrc configuration"
+      return 0
+    fi
+
+    cp "$HOME/.netrc" "$HOME/.netrc.backup"
+    info "Backed up existing .netrc to .netrc.backup"
+  fi
+
+  # Extract credentials from JFrog CLI config
+  if command -v jq &>/dev/null; then
+    local jfrog_user jfrog_token
+    jfrog_user=$(jq -r '.servers[0].user // empty' "$HOME/.jfrog/jfrog-cli.conf.v6" 2>/dev/null)
+    jfrog_token=$(jq -r '.servers[0].accessToken // empty' "$HOME/.jfrog/jfrog-cli.conf.v6" 2>/dev/null)
+
+    if [[ -n "$jfrog_user" && -n "$jfrog_token" ]]; then
+      # Append or create .netrc with JFrog credentials
+      {
+        echo ""
+        echo "machine jfrog.accenturefederaldev.com"
+        echo "login $jfrog_user"
+        echo "password $jfrog_token"
+      } >> "$HOME/.netrc"
+
+      chmod 600 "$HOME/.netrc"
+      success "Created ~/.netrc with JFrog credentials"
+      info "Go modules can now authenticate with JFrog Artifactory"
+    else
+      error "Could not extract JFrog credentials"
+      info "Please run: jf login"
+      return 1
+    fi
+  else
+    error "jq not installed (required to parse JFrog config)"
+    info "Install with: brew install jq"
+    return 1
+  fi
+}
+
 # Main execution
 main() {
   echo ""
@@ -284,6 +345,11 @@ main() {
     setup_claude_cli
   fi
 
+  read -rp "Setup JFrog authentication (.netrc for Go modules)? [Y/n] " do_jfrog
+  if [[ ! "$do_jfrog" =~ ^[Nn]$ ]]; then
+    setup_jfrog_netrc
+  fi
+
   echo ""
   echo "╔════════════════════════════════════════════════╗"
   echo "║  Work Configuration Setup Complete             ║"
@@ -294,7 +360,8 @@ main() {
   echo "  1. Review generated configuration files"
   echo "  2. Install certificates: bash $DOTFILES_DIR/scripts/install_zscaler_cert.sh"
   echo "  3. Configure AWS credentials: aws configure sso --profile bedrock"
-  echo "  4. Test your setup: bash $DOTFILES_DIR/verify.sh"
+  echo "  4. If you skipped JFrog setup, authenticate with: jf login"
+  echo "  5. Test your setup: bash $DOTFILES_DIR/verify.sh"
   echo ""
 }
 
