@@ -24,29 +24,33 @@ get_terminal_emulator() {
   echo "This script needs to open new terminal tabs."
   echo "Please select your terminal emulator:"
   echo ""
-  echo "  1) Hyper"
-  echo "  2) macOS Terminal (Terminal.app)"
-  echo "  3) iTerm2"
+  echo "  1) Ghostty (Recommended)"
+  echo "  2) Hyper"
+  echo "  3) macOS Terminal (Terminal.app)"
+  echo "  4) iTerm2"
   echo ""
   echo "Your choice will be saved for future use."
   echo "(Run 'reset_terminal_preference' to change later)"
   echo ""
-  read -r -p "Enter choice [1-3] (default: 2): " TERMINAL_CHOICE
+  read -r -p "Enter choice [1-4] (default: 1): " TERMINAL_CHOICE
   echo ""
 
   case $TERMINAL_CHOICE in
-    1)
+    1|"")
+      TERMINAL="Ghostty"
+      ;;
+    2)
       TERMINAL="Hyper"
       ;;
-    2|"")
+    3)
       TERMINAL="Terminal"
       ;;
-    3)
+    4)
       TERMINAL="iTerm"
       ;;
     *)
-      echo "⚠️  Invalid choice. Defaulting to macOS Terminal."
-      TERMINAL="Terminal"
+      echo "⚠️  Invalid choice. Defaulting to Ghostty."
+      TERMINAL="Ghostty"
       ;;
   esac
 
@@ -80,6 +84,20 @@ open_terminal_tab() {
   TERMINAL=$(get_terminal_emulator)
 
   case $TERMINAL in
+    Ghostty)
+      osascript <<EOF
+tell application "Ghostty"
+    activate
+    delay 0.3
+    tell application "System Events"
+        keystroke "t" using {command down}
+        delay 0.5
+        keystroke "$COMMAND"
+        keystroke return
+    end tell
+end tell
+EOF
+      ;;
     Hyper)
       osascript <<EOF
 tell application "Hyper"
