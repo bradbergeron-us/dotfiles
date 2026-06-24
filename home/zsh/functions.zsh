@@ -86,3 +86,13 @@ _set_terminal_title
 
 grn() { git rebase -i HEAD~"$1"; }
 grbic() { git rebase -i "$1"; }
+
+# ------------------
+# Terminal helpers
+# ------------------
+
+# Source terminal helper functions from scripts directory
+# Provides: reset_terminal_preference, get_terminal_emulator, open_terminal_tab
+if [[ -f "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh" ]]; then
+  source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+fi

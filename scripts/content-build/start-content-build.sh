@@ -51,21 +51,25 @@ CURRENT_BRANCH=$(git branch --show-current)
 echo "  Current branch: $CURRENT_BRANCH"
 
 # Check for uncommitted changes
+HAS_UNCOMMITTED_CHANGES=false
 if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+  HAS_UNCOMMITTED_CHANGES=true
   echo -e "${YELLOW}  ⚠ You have uncommitted changes${NC}"
-  echo "  Skipping git operations (commit or stash your changes first)"
+  echo "  Skipping git pull (unsafe with uncommitted changes)"
   echo ""
-  BRANCH_TO_USE="$CURRENT_BRANCH"
-else
+fi
+
+# Only do git pull operations if working directory is clean
+if [ "$HAS_UNCOMMITTED_CHANGES" = false ]; then
   # Checkout and pull from main
   if [ "$CURRENT_BRANCH" != "main" ]; then
     echo "  Switching to main branch..."
     if git checkout main; then
       echo -e "${GREEN}  ✓ Switched to main${NC}"
+      CURRENT_BRANCH="main"
     else
       echo -e "${RED}  ✗ Failed to checkout main${NC}"
       echo "  Continuing with current branch: $CURRENT_BRANCH"
-      BRANCH_TO_USE="$CURRENT_BRANCH"
     fi
   fi
 
@@ -78,38 +82,41 @@ else
     echo "  Continuing anyway..."
   fi
   echo ""
+fi
 
-  # Interactive branch selection
-  echo -e "${BLUE}→ Branch selection for watch server...${NC}"
-  echo "  Current branch: main"
+# Interactive branch selection (always shown, even with uncommitted changes)
+echo -e "${BLUE}→ Branch selection for watch server...${NC}"
+echo "  Current branch: $CURRENT_BRANCH"
+echo ""
+read -p "Run watch server on a different branch? (y/N): " SWITCH_BRANCH
+
+if [[ $SWITCH_BRANCH =~ ^[Yy]$ ]]; then
   echo ""
-  read -p "Run watch server on a different branch? (y/N): " SWITCH_BRANCH
+  read -p "Enter branch name: " BRANCH_NAME
 
-  if [[ $SWITCH_BRANCH =~ ^[Yy]$ ]]; then
-    echo ""
-    read -p "Enter branch name: " BRANCH_NAME
-
-    if [ -n "$BRANCH_NAME" ]; then
-      echo "  Switching to branch: $BRANCH_NAME"
-      if git checkout "$BRANCH_NAME"; then
-        echo -e "${GREEN}  ✓ Switched to $BRANCH_NAME${NC}"
-        BRANCH_TO_USE="$BRANCH_NAME"
-      else
-        echo -e "${RED}  ✗ Failed to checkout $BRANCH_NAME${NC}"
-        echo "  Continuing with main branch"
-        BRANCH_TO_USE="main"
-      fi
+  if [ -n "$BRANCH_NAME" ]; then
+    echo "  Switching to branch: $BRANCH_NAME"
+    if git checkout "$BRANCH_NAME"; then
+      echo -e "${GREEN}  ✓ Switched to $BRANCH_NAME${NC}"
+      BRANCH_TO_USE="$BRANCH_NAME"
     else
-      echo -e "${YELLOW}  No branch name provided, using main${NC}"
-      BRANCH_TO_USE="main"
+      echo -e "${RED}  ✗ Failed to checkout $BRANCH_NAME${NC}"
+      if [ "$HAS_UNCOMMITTED_CHANGES" = true ]; then
+        echo -e "${YELLOW}  (Checkout may have failed due to uncommitted changes)${NC}"
+      fi
+      echo "  Continuing with current branch: $CURRENT_BRANCH"
+      BRANCH_TO_USE="$CURRENT_BRANCH"
     fi
   else
-    BRANCH_TO_USE="main"
+    echo -e "${YELLOW}  No branch name provided, using current branch${NC}"
+    BRANCH_TO_USE="$CURRENT_BRANCH"
   fi
-  echo ""
-  echo -e "${GREEN}  → Watch server will run on branch: $BRANCH_TO_USE${NC}"
-  echo ""
+else
+  BRANCH_TO_USE="$CURRENT_BRANCH"
 fi
+echo ""
+echo -e "${GREEN}  → Watch server will run on branch: $BRANCH_TO_USE${NC}"
+echo ""
 
 # Check Node version
 echo -e "${BLUE}→ Checking Node version...${NC}"
