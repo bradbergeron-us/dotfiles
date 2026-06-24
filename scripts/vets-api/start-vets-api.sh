@@ -300,36 +300,24 @@ else
 fi
 echo ""
 
-# Run database migrations
-echo -e "${BLUE}→ Running database migrations...${NC}"
-MIGRATE_OUTPUT=$(bundle exec rails db:migrate 2>&1)
-MIGRATE_STATUS=$?
+# Prepare database (creates, loads schema, or migrates as needed)
+echo -e "${BLUE}→ Preparing database...${NC}"
+PREPARE_OUTPUT=$(bundle exec rails db:prepare 2>&1)
+PREPARE_STATUS=$?
 
-if [ $MIGRATE_STATUS -eq 0 ]; then
-  # Check if there were any migrations to run
-  if echo "$MIGRATE_OUTPUT" | grep -q "Migrating to"; then
-    echo -e "${GREEN}  ✓ Database migrations applied${NC}"
-    echo "$MIGRATE_OUTPUT" | grep "Migrating to" | sed 's/^/    /'
+if [ $PREPARE_STATUS -eq 0 ]; then
+  # Check if there were any migrations applied
+  if echo "$PREPARE_OUTPUT" | grep -q "Migrating to"; then
+    echo -e "${GREEN}  ✓ Database prepared with migrations applied${NC}"
+    echo "$PREPARE_OUTPUT" | grep "Migrating to" | sed 's/^/    /'
   else
-    echo -e "${GREEN}  ✓ Database is up to date (no pending migrations)${NC}"
+    echo -e "${GREEN}  ✓ Database prepared${NC}"
   fi
 else
-  echo -e "${YELLOW}  ⚠ Database migrations failed${NC}"
-  echo "$MIGRATE_OUTPUT" | sed 's/^/    /'
-  echo ""
-  echo -e "${BLUE}  → Attempting fallback: rails db:schema:load...${NC}"
-
-  SCHEMA_OUTPUT=$(bundle exec rails db:schema:load 2>&1)
-  SCHEMA_STATUS=$?
-
-  if [ $SCHEMA_STATUS -eq 0 ]; then
-    echo -e "${GREEN}  ✓ Database schema loaded successfully${NC}"
-  else
-    echo -e "${RED}  ✗ Both db:migrate and db:schema:load failed${NC}"
-    echo "$SCHEMA_OUTPUT" | sed 's/^/    /'
-    echo "  Cannot start server without a valid database"
-    exit 1
-  fi
+  echo -e "${RED}  ✗ Database preparation failed${NC}"
+  echo "$PREPARE_OUTPUT" | sed 's/^/    /'
+  echo "  Cannot start server without a valid database"
+  exit 1
 fi
 echo ""
 
