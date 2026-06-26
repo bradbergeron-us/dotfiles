@@ -58,8 +58,10 @@ ICON_PR="🔀"
 MODEL=$(echo "$input" | jq -r '.model.display_name // "Claude"')
 PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
 DIR=$(echo "$input" | jq -r '.workspace.current_dir // "."')
-COST=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
+COST_RAW=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
+COST=$(printf "%.2f" "$COST_RAW")
 DURATION_MS=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
+SESSION_ID=$(echo "$input" | jq -r '.session_id // ""')
 
 # ============================================================================
 # Advanced Git Status
@@ -317,8 +319,13 @@ format_picard_line() {
 # Output Status Lines
 # ============================================================================
 
-# Line 1: Claude Code session info with context bar, duration, and cost
-echo -e "${CYAN}[${MODEL}]${RESET} ${BAR_COLOR}${BAR}${RESET} ${CONTEXT_WARNING}${PCT}% | ${DURATION} | ${COST_DISPLAY}"
+# Line 1: Claude Code session info with context bar, duration, cost, and session ID
+SESSION_DISPLAY=""
+if [ -n "$SESSION_ID" ]; then
+    SESSION_SHORT="${SESSION_ID:0:8}"
+    SESSION_DISPLAY=" | ${GRAY}🔑 ${SESSION_SHORT}${RESET}"
+fi
+echo -e "${CYAN}[${MODEL}]${RESET} ${BAR_COLOR}${BAR}${RESET} ${CONTEXT_WARNING}${PCT}% | ${DURATION} | ${COST_DISPLAY}${SESSION_DISPLAY}"
 
 # Line 2: Directory and advanced Git info
 echo -e "${ICON_FOLDER} ${BOLD}${DIR##*/}${RESET} | ${GIT_BRANCH}${GIT_STATUS}${GIT_AHEAD_BEHIND}"
