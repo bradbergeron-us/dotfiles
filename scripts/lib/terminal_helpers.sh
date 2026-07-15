@@ -85,28 +85,34 @@ open_terminal_tab() {
 
   case $TERMINAL in
     Ghostty)
+      # Use clipboard to avoid keystroke issues with long commands
       osascript <<EOF
+set the clipboard to "$COMMAND"
 tell application "Ghostty"
     activate
     delay 0.3
     tell application "System Events"
         keystroke "t" using {command down}
         delay 0.5
-        keystroke "$COMMAND"
+        keystroke "v" using {command down}
+        delay 0.2
         keystroke return
     end tell
 end tell
 EOF
       ;;
     Hyper)
+      # Use clipboard to avoid keystroke issues with long commands
       osascript <<EOF
+set the clipboard to "$COMMAND"
 tell application "Hyper"
     activate
     delay 0.3
     tell application "System Events"
         keystroke "t" using {command down}
         delay 0.5
-        keystroke "$COMMAND"
+        keystroke "v" using {command down}
+        delay 0.2
         keystroke return
     end tell
 end tell
