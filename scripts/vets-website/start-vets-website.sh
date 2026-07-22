@@ -130,12 +130,102 @@ YARN_VERSION=$(yarn --version)
 echo "  Yarn version: $YARN_VERSION (Required: 1.19.1)"
 echo ""
 
-# Install dependencies using jfrog proxy
+# Clear yarn cache for fresh install
+echo -e "${BLUE}→ Clearing yarn cache...${NC}"
+yarn cache clean
+echo ""
+
+# Function to update JFrog token in .npmrc
+update_jfrog_token() {
+  local new_token="$1"
+  if [ -f ".npmrc" ]; then
+    # Update existing token line
+    sed -i '' "s|//jfrog.accenturefederaldev.com/artifactory/api/npm/afs-npm-proxy/:_authToken=.*|//jfrog.accenturefederaldev.com/artifactory/api/npm/afs-npm-proxy/:_authToken=$new_token|" .npmrc
+    echo -e "${GREEN}  ✓ Updated JFrog token in .npmrc${NC}"
+  else
+    echo -e "${RED}  ✗ .npmrc file not found${NC}"
+    return 1
+  fi
+}
+
+# Install dependencies using jfrog proxy with retry on auth failure
 # The --ignore-scripts flag prevents potentially untrusted scripts from running
 # The postinstall script runs only trusted package postinstall scripts
-echo -e "${BLUE}→ Installing dependencies via jfrog proxy...${NC}"
-echo "  (This uses NODE_TLS_REJECT_UNAUTHORIZED=0 for jfrog SSL)"
-NODE_TLS_REJECT_UNAUTHORIZED=0 yarn install-safe
+MAX_RETRIES=2
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+  echo -e "${BLUE}→ Installing dependencies via jfrog proxy...${NC}"
+  echo "  (This uses NODE_TLS_REJECT_UNAUTHORIZED=0 for jfrog SSL)"
+  echo ""
+
+  # Use temporary file to capture output while showing it in real-time
+  TEMP_LOG=$(mktemp)
+
+  # Run installation with tee to show output and capture it
+  if NODE_TLS_REJECT_UNAUTHORIZED=0 yarn install-safe 2>&1 | tee "$TEMP_LOG"; then
+    INSTALL_EXIT_CODE=0
+  else
+    INSTALL_EXIT_CODE=$?
+  fi
+
+  # Read the captured output for error detection
+  INSTALL_OUTPUT=$(cat "$TEMP_LOG")
+  rm -f "$TEMP_LOG"
+
+  if [ $INSTALL_EXIT_CODE -eq 0 ]; then
+    echo ""
+    echo -e "${GREEN}✓ Installation successful!${NC}"
+    break
+  else
+    # Check if it's an authentication error
+    if echo "$INSTALL_OUTPUT" | grep -qiE "(401|403|unauthorized|forbidden|authentication|auth.*failed)"; then
+      RETRY_COUNT=$((RETRY_COUNT + 1))
+
+      if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+        echo ""
+        echo -e "${RED}✗ Authentication failed with JFrog${NC}"
+        echo ""
+
+        # Delete yarn.lock to force using JFrog registry
+        if [ -f "yarn.lock" ]; then
+          echo "  Deleting yarn.lock to use JFrog registry instead of hardcoded npmjs.org URLs"
+          rm yarn.lock
+        fi
+
+        echo "Your JFrog token may be expired or invalid."
+        echo "To get a new token:"
+        echo "  1. Visit: https://jfrog.accenturefederaldev.com/ui/admin/artifactory/user_profile"
+        echo "  2. Click 'Generate Identity Token' or use an existing token"
+        echo "  3. Copy the token"
+        echo ""
+        read -p "Enter new JFrog token (or press Enter to skip): " NEW_TOKEN
+
+        if [ -n "$NEW_TOKEN" ]; then
+          update_jfrog_token "$NEW_TOKEN"
+          echo ""
+          echo "Retrying installation with new token..."
+          echo "  (This may take 5-10 minutes on first run without yarn.lock)"
+          echo ""
+        else
+          echo -e "${YELLOW}Skipping token update${NC}"
+          break
+        fi
+      else
+        echo ""
+        echo -e "${RED}✗ Installation failed after $RETRY_COUNT attempts${NC}"
+        break
+      fi
+    else
+      # Non-auth error, show output and exit
+      echo ""
+      echo -e "${RED}✗ Installation failed (non-authentication error)${NC}"
+      echo "Check the output above for details"
+      break
+    fi
+  fi
+done
+
 echo ""
 
 # Note: yarn install-safe is equivalent to:
