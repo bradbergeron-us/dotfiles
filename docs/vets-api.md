@@ -51,11 +51,12 @@ The comprehensive daily startup script that syncs everything.
 4. Updates vets-api-mockdata repository (from master)
 5. Runs `make_table.rb` to generate mock data tables
 6. Validates Ruby version
-7. **Configures Gemfile and Bundler to use jfrog proxy** (replaces rubygems.org, sets mirror)
-8. **Optionally installs/updates bundle dependencies** (only prompts if gems are out of date)
-9. **Configures betamocks** - prompts to enable or disable betamocks in settings.local.yml
-10. **Returns to original branch** - switches back to the branch you started on
-11. Starts the Rails server with foreman in a new Hyper tab
+7. **Configures betamocks** - prompts to enable or disable betamocks in settings.local.yml
+8. **Configures gateway URL** - suggests fake URL for betamocks or real AIO URL
+9. **Configures Gemfile and Bundler to use jfrog proxy** (replaces rubygems.org, sets mirror)
+10. **Optionally installs/updates bundle dependencies** (only prompts if gems are out of date)
+11. **Returns to original branch** - switches back to the branch you started on
+12. Starts the Rails server with foreman in a new Hyper tab
 
 **Time**: 2-4 minutes
 
@@ -159,8 +160,8 @@ Enter branch name: feature/my-work
 → Configuring Gemfile for jfrog proxy...
   ✓ Gemfile configured for jfrog proxy
 
-→ Installing bundle dependencies...
-  ✓ Bundle install complete
+→ Checking Ruby version...
+  Ruby version: ruby 3.3.6
 
 ========================================
 Configure betamocks
@@ -169,6 +170,25 @@ Configure betamocks
 Enable betamocks? (Y/n): y
 → Enabling betamocks in settings.local.yml...
   ✓ Betamocks enabled
+
+========================================
+Configure gateway URL
+========================================
+
+→ Betamocks is enabled
+  When using betamocks, it's recommended to use a fake gateway URL
+  that won't resolve to prevent accidental external service calls.
+
+  Recommended: https://fake-dgi-vets.va.gov/vets-service/v1/
+
+Update gateway URL to fake URL? (Y/n): y
+  ✓ Updated development.yml with fake URL: https://fake-dgi-vets.va.gov/vets-service/v1/
+
+→ Configuring Gemfile for jfrog proxy...
+  ✓ Gemfile configured for jfrog proxy
+
+→ Installing bundle dependencies...
+  ✓ Bundle install complete
 
 → Returning to original branch: feature-branch
   ✓ Switched back to feature-branch
@@ -289,7 +309,7 @@ This ensures that:
 
 ## Betamocks Configuration
 
-The script provides interactive betamocks configuration to enable or disable mock external service responses.
+The script provides interactive betamocks configuration to enable or disable mock external service responses, and automatically configures the appropriate gateway URL based on your selection.
 
 ### What are Betamocks?
 
@@ -325,16 +345,67 @@ Enable betamocks? (Y/n): n
   ✓ Betamocks disabled
 ```
 
+### Gateway URL Configuration
+
+After configuring betamocks, the script automatically configures the appropriate gateway URL:
+
+**With betamocks enabled** (recommended: fake URL):
+```
+========================================
+Configure gateway URL
+========================================
+
+→ Betamocks is enabled
+  When using betamocks, it's recommended to use a fake gateway URL
+  that won't resolve to prevent accidental external service calls.
+
+  Recommended: https://fake-dgi-vets.va.gov/vets-service/v1/
+
+Update gateway URL to fake URL? (Y/n): y
+  ✓ Updated development.yml with fake URL: https://fake-dgi-vets.va.gov/vets-service/v1/
+```
+
+**With betamocks disabled** (use real AIO URL):
+```
+========================================
+Configure gateway URL
+========================================
+
+→ Betamocks is disabled
+  Configure your personal AIO gateway URL for real external service calls.
+
+Enter your AIO username (e.g., brabergeron) or press Enter to skip: brabergeron
+  ✓ Updated development.yml with AIO URL: http://apigw-brabergeron.ld.afsp.io:32512/vets-service/v1/
+```
+
+### Why Use a Fake URL with Betamocks?
+
+When betamocks is enabled, API calls are intercepted and served from local mock data. Using a fake URL that won't resolve provides an extra safety layer:
+- **Prevents accidental external calls**: If mock interception fails, requests will fail immediately rather than hitting real services
+- **Faster failures**: No DNS resolution or network timeout delays
+- **Clear intent**: Signals to other developers that you're using mock data
+- **Safer development**: Eliminates risk of accidentally modifying production data
+
 ### Configuration Details
 
-The script updates `config/settings.local.yml`:
+The script updates two files:
 
+**settings.local.yml** (betamocks):
 ```yaml
 betamocks:
   cache_dir: "../vets-api-mockdata"
   enabled: true          # or false
   recording: false
   services_config: config/betamocks/services_config.yml
+```
+
+**settings/development.yml** (gateway URL):
+```yaml
+# With betamocks enabled:
+base_url: 'https://fake-dgi-vets.va.gov/vets-service/v1/'
+
+# With betamocks disabled:
+base_url: 'http://apigw-yourusername.ld.afsp.io:32512/vets-service/v1/'
 ```
 
 ### When to Enable Betamocks
@@ -344,12 +415,14 @@ betamocks:
 - Testing API responses with consistent mock data
 - Working offline or with limited network connectivity
 - Developing new features that use existing backend endpoints
+- Running automated tests
 
 **Disable when**:
 - Testing actual backend integrations
 - Validating real API response formats
 - Debugging live service issues
 - Verifying authentication flows with real credentials
+- Testing network error handling
 
 ---
 

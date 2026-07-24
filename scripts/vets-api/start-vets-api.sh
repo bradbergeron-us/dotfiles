@@ -219,38 +219,153 @@ RUBY_VERSION=$(ruby --version)
 echo "  Ruby version: $RUBY_VERSION"
 echo ""
 
-# Configure AIO URL for local development
-echo -e "${BLUE}→ Configuring AIO URL...${NC}"
-echo "  This will update config/settings/development.yml with your AIO gateway URL"
+# Betamocks configuration
+echo "========================================"
+echo "Configure betamocks"
+echo "========================================"
 echo ""
-read -p "Enter your AIO username (e.g., brabergeron) or press Enter to skip: " AIO_USERNAME
+read -p "Enable betamocks? (Y/n): " ENABLE_BETAMOCKS
 
-if [ -n "$AIO_USERNAME" ]; then
-  DEVELOPMENT_YML="$VETS_API_DIR/config/settings/development.yml"
-  AIO_URL="http://apigw-${AIO_USERNAME}.ld.afsp.io:32512/vets-service/v1/"
+# Default to yes if empty
+if [[ -z "$ENABLE_BETAMOCKS" ]]; then
+  ENABLE_BETAMOCKS="y"
+fi
 
-  if [ -f "$DEVELOPMENT_YML" ]; then
-    # Replace the jenkins URL with the AIO URL
-    if grep -q "jenkins.ld.afsp.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
-      if command -v gsed &> /dev/null; then
-        gsed -i "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+if [[ $ENABLE_BETAMOCKS =~ ^[Yy]$ ]]; then
+  echo -e "${BLUE}→ Enabling betamocks in settings.local.yml...${NC}"
+
+  if [ -f "$SETTINGS_LOCAL_YML" ]; then
+    # Check if betamocks section exists
+    if grep -q "^betamocks:" "$SETTINGS_LOCAL_YML"; then
+      # Update enabled setting
+      if grep -q "^[[:space:]]*enabled:" "$SETTINGS_LOCAL_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: true/' "$SETTINGS_LOCAL_YML"
+        else
+          sed -i '' '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: true/' "$SETTINGS_LOCAL_YML"
+        fi
+        echo -e "${GREEN}  ✓ Betamocks enabled${NC}"
       else
-        sed -i '' "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+        echo -e "${YELLOW}  ⚠ betamocks.enabled not found in settings.local.yml${NC}"
+        echo "  You may need to add it manually under betamocks:"
       fi
-      echo -e "${GREEN}  ✓ Updated development.yml with AIO URL: ${AIO_URL}${NC}"
     else
-      # Check if it's already set to an AIO URL
-      if grep -q "apigw-.*\.ld\.afsp\.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
-        echo -e "${YELLOW}  ⚠ AIO URL already configured in development.yml${NC}"
-      else
-        echo -e "${YELLOW}  ⚠ Jenkins URL not found in expected format${NC}"
-      fi
+      echo -e "${YELLOW}  ⚠ betamocks section not found in settings.local.yml${NC}"
+      echo "  You may need to add it manually"
     fi
   else
-    echo -e "${RED}  ✗ development.yml not found${NC}"
+    echo -e "${RED}  ✗ settings.local.yml not found${NC}"
   fi
 else
-  echo -e "${YELLOW}  Skipping AIO configuration${NC}"
+  echo -e "${BLUE}→ Disabling betamocks in settings.local.yml...${NC}"
+
+  if [ -f "$SETTINGS_LOCAL_YML" ]; then
+    # Check if betamocks section exists
+    if grep -q "^betamocks:" "$SETTINGS_LOCAL_YML"; then
+      # Update enabled setting
+      if grep -q "^[[:space:]]*enabled:" "$SETTINGS_LOCAL_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: false/' "$SETTINGS_LOCAL_YML"
+        else
+          sed -i '' '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: false/' "$SETTINGS_LOCAL_YML"
+        fi
+        echo -e "${GREEN}  ✓ Betamocks disabled${NC}"
+      else
+        echo -e "${YELLOW}  ⚠ betamocks.enabled not found in settings.local.yml${NC}"
+      fi
+    else
+      echo -e "${YELLOW}  ⚠ betamocks section not found in settings.local.yml${NC}"
+    fi
+  fi
+fi
+echo ""
+
+# Configure gateway URL for local development
+echo "========================================"
+echo "Configure gateway URL"
+echo "========================================"
+echo ""
+
+if [[ $ENABLE_BETAMOCKS =~ ^[Yy]$ ]]; then
+  # Betamocks enabled - suggest fake URL
+  echo -e "${BLUE}→ Betamocks is enabled${NC}"
+  echo "  When using betamocks, it's recommended to use a fake gateway URL"
+  echo "  that won't resolve to prevent accidental external service calls."
+  echo ""
+  echo "  Recommended: https://fake-dgi-vets.va.gov/vets-service/v1/"
+  echo ""
+  read -p "Update gateway URL to fake URL? (Y/n): " USE_FAKE_URL
+
+  if [[ -z "$USE_FAKE_URL" ]] || [[ $USE_FAKE_URL =~ ^[Yy]$ ]]; then
+    DEVELOPMENT_YML="$VETS_API_DIR/config/settings/development.yml"
+    FAKE_URL="https://fake-dgi-vets.va.gov/vets-service/v1/"
+
+    if [ -f "$DEVELOPMENT_YML" ]; then
+      # Replace any existing gateway URL with fake URL
+      if grep -q "jenkins.ld.afsp.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${FAKE_URL}|g" "$DEVELOPMENT_YML"
+        else
+          sed -i '' "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${FAKE_URL}|g" "$DEVELOPMENT_YML"
+        fi
+        echo -e "${GREEN}  ✓ Updated development.yml with fake URL: ${FAKE_URL}${NC}"
+      elif grep -q "apigw-.*\.ld\.afsp\.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i "s|http://apigw-.*\.ld\.afsp\.io:32512/vets-service/v1/|${FAKE_URL}|g" "$DEVELOPMENT_YML"
+        else
+          sed -i '' "s|http://apigw-.*\.ld\.afsp\.io:32512/vets-service/v1/|${FAKE_URL}|g" "$DEVELOPMENT_YML"
+        fi
+        echo -e "${GREEN}  ✓ Updated development.yml with fake URL: ${FAKE_URL}${NC}"
+      else
+        echo -e "${YELLOW}  ⚠ No gateway URL found in expected format${NC}"
+      fi
+    else
+      echo -e "${RED}  ✗ development.yml not found${NC}"
+    fi
+  else
+    echo -e "${YELLOW}  Skipping fake URL configuration${NC}"
+  fi
+else
+  # Betamocks disabled - use real AIO URL
+  echo -e "${BLUE}→ Betamocks is disabled${NC}"
+  echo "  Configure your personal AIO gateway URL for real external service calls."
+  echo ""
+  read -p "Enter your AIO username (e.g., brabergeron) or press Enter to skip: " AIO_USERNAME
+
+  if [ -n "$AIO_USERNAME" ]; then
+    DEVELOPMENT_YML="$VETS_API_DIR/config/settings/development.yml"
+    AIO_URL="http://apigw-${AIO_USERNAME}.ld.afsp.io:32512/vets-service/v1/"
+
+    if [ -f "$DEVELOPMENT_YML" ]; then
+      # Replace the jenkins URL or fake URL with the AIO URL
+      if grep -q "jenkins.ld.afsp.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+        else
+          sed -i '' "s|https://jenkins.ld.afsp.io:32512/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+        fi
+        echo -e "${GREEN}  ✓ Updated development.yml with AIO URL: ${AIO_URL}${NC}"
+      elif grep -q "fake-dgi-vets.va.gov/vets-service/v1/" "$DEVELOPMENT_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i "s|https://fake-dgi-vets.va.gov/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+        else
+          sed -i '' "s|https://fake-dgi-vets.va.gov/vets-service/v1/|${AIO_URL}|g" "$DEVELOPMENT_YML"
+        fi
+        echo -e "${GREEN}  ✓ Updated development.yml with AIO URL: ${AIO_URL}${NC}"
+      else
+        # Check if it's already set to an AIO URL
+        if grep -q "apigw-.*\.ld\.afsp\.io:32512/vets-service/v1/" "$DEVELOPMENT_YML"; then
+          echo -e "${YELLOW}  ⚠ AIO URL already configured in development.yml${NC}"
+        else
+          echo -e "${YELLOW}  ⚠ Gateway URL not found in expected format${NC}"
+        fi
+      fi
+    else
+      echo -e "${RED}  ✗ development.yml not found${NC}"
+    fi
+  else
+    echo -e "${YELLOW}  Skipping AIO configuration${NC}"
+  fi
 fi
 echo ""
 
@@ -362,67 +477,6 @@ fi
 echo ""
 
 echo -e "${GREEN}✓ Installation complete!${NC}"
-echo ""
-
-# Betamocks configuration
-echo "========================================"
-echo "Configure betamocks"
-echo "========================================"
-echo ""
-read -p "Enable betamocks? (Y/n): " ENABLE_BETAMOCKS
-
-# Default to yes if empty
-if [[ -z "$ENABLE_BETAMOCKS" ]]; then
-  ENABLE_BETAMOCKS="y"
-fi
-
-if [[ $ENABLE_BETAMOCKS =~ ^[Yy]$ ]]; then
-  echo -e "${BLUE}→ Enabling betamocks in settings.local.yml...${NC}"
-
-  if [ -f "$SETTINGS_LOCAL_YML" ]; then
-    # Check if betamocks section exists
-    if grep -q "^betamocks:" "$SETTINGS_LOCAL_YML"; then
-      # Update enabled setting
-      if grep -q "^[[:space:]]*enabled:" "$SETTINGS_LOCAL_YML"; then
-        if command -v gsed &> /dev/null; then
-          gsed -i '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: true/' "$SETTINGS_LOCAL_YML"
-        else
-          sed -i '' '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: true/' "$SETTINGS_LOCAL_YML"
-        fi
-        echo -e "${GREEN}  ✓ Betamocks enabled${NC}"
-      else
-        echo -e "${YELLOW}  ⚠ betamocks.enabled not found in settings.local.yml${NC}"
-        echo "  You may need to add it manually under betamocks:"
-      fi
-    else
-      echo -e "${YELLOW}  ⚠ betamocks section not found in settings.local.yml${NC}"
-      echo "  You may need to add it manually"
-    fi
-  else
-    echo -e "${RED}  ✗ settings.local.yml not found${NC}"
-  fi
-else
-  echo -e "${BLUE}→ Disabling betamocks in settings.local.yml...${NC}"
-
-  if [ -f "$SETTINGS_LOCAL_YML" ]; then
-    # Check if betamocks section exists
-    if grep -q "^betamocks:" "$SETTINGS_LOCAL_YML"; then
-      # Update enabled setting
-      if grep -q "^[[:space:]]*enabled:" "$SETTINGS_LOCAL_YML"; then
-        if command -v gsed &> /dev/null; then
-          gsed -i '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: false/' "$SETTINGS_LOCAL_YML"
-        else
-          sed -i '' '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: false/' "$SETTINGS_LOCAL_YML"
-        fi
-        echo -e "${GREEN}  ✓ Betamocks disabled${NC}"
-      else
-        echo -e "${YELLOW}  ⚠ betamocks.enabled not found in settings.local.yml${NC}"
-      fi
-    else
-      echo -e "${YELLOW}  ⚠ betamocks section not found in settings.local.yml${NC}"
-    fi
-  fi
-fi
 echo ""
 
 # Server mode selection
