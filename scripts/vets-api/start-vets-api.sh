@@ -54,7 +54,8 @@ NC='\033[0m' # No Color
 
 # Git branch management and pull from master
 echo -e "${BLUE}→ Checking vets-api git status...${NC}"
-CURRENT_BRANCH=$(git branch --show-current)
+ORIGINAL_BRANCH=$(git branch --show-current)
+CURRENT_BRANCH="$ORIGINAL_BRANCH"
 echo "  Current branch: $CURRENT_BRANCH"
 
 # Check for uncommitted changes
@@ -363,6 +364,67 @@ echo ""
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
 
+# Betamocks configuration
+echo "========================================"
+echo "Configure betamocks"
+echo "========================================"
+echo ""
+read -p "Enable betamocks? (Y/n): " ENABLE_BETAMOCKS
+
+# Default to yes if empty
+if [[ -z "$ENABLE_BETAMOCKS" ]]; then
+  ENABLE_BETAMOCKS="y"
+fi
+
+if [[ $ENABLE_BETAMOCKS =~ ^[Yy]$ ]]; then
+  echo -e "${BLUE}→ Enabling betamocks in settings.local.yml...${NC}"
+
+  if [ -f "$SETTINGS_LOCAL_YML" ]; then
+    # Check if betamocks section exists
+    if grep -q "^betamocks:" "$SETTINGS_LOCAL_YML"; then
+      # Update enabled setting
+      if grep -q "^[[:space:]]*enabled:" "$SETTINGS_LOCAL_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: true/' "$SETTINGS_LOCAL_YML"
+        else
+          sed -i '' '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: true/' "$SETTINGS_LOCAL_YML"
+        fi
+        echo -e "${GREEN}  ✓ Betamocks enabled${NC}"
+      else
+        echo -e "${YELLOW}  ⚠ betamocks.enabled not found in settings.local.yml${NC}"
+        echo "  You may need to add it manually under betamocks:"
+      fi
+    else
+      echo -e "${YELLOW}  ⚠ betamocks section not found in settings.local.yml${NC}"
+      echo "  You may need to add it manually"
+    fi
+  else
+    echo -e "${RED}  ✗ settings.local.yml not found${NC}"
+  fi
+else
+  echo -e "${BLUE}→ Disabling betamocks in settings.local.yml...${NC}"
+
+  if [ -f "$SETTINGS_LOCAL_YML" ]; then
+    # Check if betamocks section exists
+    if grep -q "^betamocks:" "$SETTINGS_LOCAL_YML"; then
+      # Update enabled setting
+      if grep -q "^[[:space:]]*enabled:" "$SETTINGS_LOCAL_YML"; then
+        if command -v gsed &> /dev/null; then
+          gsed -i '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: false/' "$SETTINGS_LOCAL_YML"
+        else
+          sed -i '' '/^betamocks:/,/^[[:alpha:]]/ s/^[[:space:]]*enabled:.*/  enabled: false/' "$SETTINGS_LOCAL_YML"
+        fi
+        echo -e "${GREEN}  ✓ Betamocks disabled${NC}"
+      else
+        echo -e "${YELLOW}  ⚠ betamocks.enabled not found in settings.local.yml${NC}"
+      fi
+    else
+      echo -e "${YELLOW}  ⚠ betamocks section not found in settings.local.yml${NC}"
+    fi
+  fi
+fi
+echo ""
+
 # Server mode selection
 echo "========================================"
 echo "Select Rails server mode"
@@ -380,6 +442,19 @@ if [[ -z "$SERVER_MODE" ]]; then
   SERVER_MODE="1"
 fi
 
+# Return to original branch if needed
+CURRENT_BRANCH=$(git branch --show-current)
+if [ "$CURRENT_BRANCH" != "$ORIGINAL_BRANCH" ]; then
+  echo -e "${BLUE}→ Returning to original branch: $ORIGINAL_BRANCH${NC}"
+  if git checkout "$ORIGINAL_BRANCH"; then
+    echo -e "${GREEN}  ✓ Switched back to $ORIGINAL_BRANCH${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ Failed to switch back to $ORIGINAL_BRANCH${NC}"
+    echo "  Server will start on: $CURRENT_BRANCH"
+  fi
+  echo ""
+fi
+
 case $SERVER_MODE in
   1)
     # Start with foreman (original behavior)
@@ -388,6 +463,7 @@ case $SERVER_MODE in
     echo "========================================"
     echo ""
     echo "Starting server with: foreman start -m all=1,clamd=0,freshclam=0"
+    echo "Branch: $(git branch --show-current)"
     echo ""
 
     # Start foreman in a new terminal tab
@@ -401,6 +477,7 @@ case $SERVER_MODE in
     echo "========================================"
     echo ""
     echo "Starting server with: bundle exec rails s -p 3000"
+    echo "Branch: $(git branch --show-current)"
     echo -e "${YELLOW}Note: Sidekiq jobs will NOT run in this mode${NC}"
     echo ""
 
@@ -428,10 +505,16 @@ for _ in {1..60}; do
   sleep 1
 done
 
+FINAL_BRANCH=$(git branch --show-current)
+BETAMOCKS_STATUS=$(if [[ $ENABLE_BETAMOCKS =~ ^[Yy]$ ]]; then echo "enabled"; else echo "disabled"; fi)
+
 echo ""
 echo -e "${GREEN}✓ Setup complete!${NC}"
 echo ""
 echo "Rails server is running in the new terminal tab."
+echo "  Branch: $FINAL_BRANCH"
+echo "  Betamocks: $BETAMOCKS_STATUS"
+echo ""
 echo "You can monitor server logs and requests there."
 echo "To stop the server, use Ctrl+C in that tab."
 echo ""
