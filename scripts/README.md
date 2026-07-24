@@ -11,7 +11,9 @@ Automation scripts for system setup, configuration, and maintenance.
 - **`scripts/vets-website/`** — VA.gov vets-website startup scripts (work-specific)
 - **`scripts/content-build/`** — VA.gov content-build startup scripts (work-specific)
 
-**See also**: [Script Portability & Organization](../docs/scripts-portability.md) — Best practices, portability analysis, and proposed reorganization
+**See also**:
+- [Project Configuration](../docs/project-configuration.md) — Configure project paths for VA.gov scripts
+- [Script Portability & Organization](../docs/scripts-portability.md) — Best practices, portability analysis, and reorganization
 
 ---
 
@@ -518,25 +520,30 @@ source ~/dotfiles/scripts/my_script.sh
 
 ### Making Scripts More Portable
 
-**Current approach**:
+**Old approach** (pre-2026-07-24):
 ```bash
 # Hardcoded path
 VETS_API_DIR="$HOME/Code/va.gov/vets-api"
 ```
 
-**Proposed approach**:
+**Current approach** (implemented):
 ```bash
 # Load from configuration
-source "$DOTFILES_DIR/config/projects.env"
-cd "$VETS_API_DIR" || error "vets-api not found at: $VETS_API_DIR"
+source "$DOTFILES_DIR/scripts/lib/project_helpers.sh"
+load_project_config
+validate_project_dir "$VETS_API_DIR" "vets-api"
 ```
 
 **Benefits**:
-- New team members configure once in `config/projects.env`
-- Works with any directory structure
-- Easy to maintain across multiple machines
+- ✅ Configure once in `config/projects.env`
+- ✅ Works with any directory structure
+- ✅ Easy to maintain across multiple machines
+- ✅ Machine-specific overrides via `config/projects.local.env`
+- ✅ Backward compatible with fallback to defaults
 
-See [Script Portability & Organization](../docs/scripts-portability.md) for detailed analysis and improvement proposals.
+**Configuration**: See [Project Configuration](../docs/project-configuration.md) for setup guide.
+
+**Analysis**: See [Script Portability & Organization](../docs/scripts-portability.md) for detailed analysis.
 
 ---
 

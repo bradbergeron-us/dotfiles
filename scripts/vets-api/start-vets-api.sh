@@ -15,26 +15,22 @@ set -e  # Exit on error
 # Resolve script directory and source helpers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+source "$DOTFILES_DIR/scripts/lib/project_helpers.sh"
+
+# Initialize colors
+setup_colors
 
 # Ensure terminal is configured before starting
 ensure_terminal_configured
 
-# Navigate to vets-api directory
-VETS_API_DIR="$HOME/Code/va.gov/vets-api"
-VETS_API_MOCKDATA_DIR="$HOME/Code/va.gov/vets-api-mockdata"
+# Load project configuration
+load_project_config
 
-if [ ! -d "$VETS_API_DIR" ]; then
-  echo "ERROR: vets-api directory not found at $VETS_API_DIR"
-  echo "Please update VETS_API_DIR in this script to point to your vets-api location"
-  exit 1
-fi
-
-if [ ! -d "$VETS_API_MOCKDATA_DIR" ]; then
-  echo "ERROR: vets-api-mockdata directory not found at $VETS_API_MOCKDATA_DIR"
-  echo "Please update VETS_API_MOCKDATA_DIR in this script"
-  exit 1
-fi
+# Validate project directories exist
+validate_project_dir "$VETS_API_DIR" "vets-api"
+validate_project_dir "$VETS_API_MOCKDATA_DIR" "vets-api-mockdata"
 
 cd "$VETS_API_DIR"
 echo "Working directory: $VETS_API_DIR"

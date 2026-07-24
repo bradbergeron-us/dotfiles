@@ -15,19 +15,21 @@ set -e  # Exit on error
 # Resolve script directory and source helpers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+source "$DOTFILES_DIR/scripts/lib/project_helpers.sh"
+
+# Initialize colors
+setup_colors
 
 # Ensure terminal is configured before starting
 ensure_terminal_configured
 
-# Navigate to vets-website directory
-VETS_WEBSITE_DIR="$HOME/Code/va.gov/vets-website"
+# Load project configuration
+load_project_config
 
-if [ ! -d "$VETS_WEBSITE_DIR" ]; then
-  echo "ERROR: vets-website directory not found at $VETS_WEBSITE_DIR"
-  echo "Please update VETS_WEBSITE_DIR in this script to point to your vets-website location"
-  exit 1
-fi
+# Validate project directory exists
+validate_project_dir "$VETS_WEBSITE_DIR" "vets-website"
 
 cd "$VETS_WEBSITE_DIR"
 echo "Working directory: $VETS_WEBSITE_DIR"

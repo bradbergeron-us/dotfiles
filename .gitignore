@@ -1,5 +1,5 @@
 .DS_Store
-*.local
+*.local         # Includes config/projects.local.env for machine-specific overrides
 *.bak
 *.backup
 .zcompdump*
