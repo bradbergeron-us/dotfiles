@@ -54,9 +54,13 @@ validate_project_dir() {
   local project_name="$2"
 
   if [[ ! -d "$dir_path" ]]; then
+    # Convert project name to env var format (e.g., "vets-api" -> "VETS_API")
+    local env_var_name="${project_name^^}"
+    env_var_name="${env_var_name//-/_}"
+
     error "${project_name} directory not found at: $dir_path"
     info "Update project paths in: ${DOTFILES_DIR:-$HOME/dotfiles}/config/projects.env"
-    info "Or set ${project_name^^}_DIR environment variable"
+    info "Or set ${env_var_name}_DIR environment variable"
     exit 1
   fi
 
@@ -81,8 +85,11 @@ get_relative_path() {
   # Use realpath if available, otherwise use python
   if command -v realpath &> /dev/null; then
     realpath --relative-to="$source" "$target" 2>/dev/null
-  else
+  elif command -v python3 &> /dev/null; then
     python3 -c "import os.path; print(os.path.relpath('$target', '$source'))"
+  else
+    warn "Neither realpath nor python3 available for path calculation"
+    echo "$target"  # Return absolute path as fallback
   fi
 }
 
