@@ -45,7 +45,7 @@ The comprehensive daily startup script that syncs everything.
 
 **What it does:**
 
-1. Checks vets-api git status and branch
+1. Checks vets-api git status and branch (saves original branch for later)
 2. **Checks out and pulls latest from `origin/master`** (if no uncommitted changes)
 3. **Interactive branch selection** - prompts to run server on a different branch
 4. Updates vets-api-mockdata repository (from master)
@@ -53,7 +53,9 @@ The comprehensive daily startup script that syncs everything.
 6. Validates Ruby version
 7. **Configures Gemfile and Bundler to use jfrog proxy** (replaces rubygems.org, sets mirror)
 8. **Optionally installs/updates bundle dependencies** (only prompts if gems are out of date)
-9. Starts the Rails server with foreman in a new Hyper tab
+9. **Configures betamocks** - prompts to enable or disable betamocks in settings.local.yml
+10. **Returns to original branch** - switches back to the branch you started on
+11. Starts the Rails server with foreman in a new Hyper tab
 
 **Time**: 2-4 minutes
 
@@ -160,9 +162,43 @@ Enter branch name: feature/my-work
 → Installing bundle dependencies...
   ✓ Bundle install complete
 
+========================================
+Configure betamocks
+========================================
+
+Enable betamocks? (Y/n): y
+→ Enabling betamocks in settings.local.yml...
+  ✓ Betamocks enabled
+
+→ Returning to original branch: feature-branch
+  ✓ Switched back to feature-branch
+
+========================================
+Select Rails server mode
+========================================
+
+Options:
+  1) Foreman (with Sidekiq) - Full stack with background jobs
+  2) Rails server only - Cleaner logs, no background processing
+
+Enter choice [1-2] (default: 1): 1
+
+========================================
+Starting Rails server with foreman...
+========================================
+
+Starting server with: foreman start -m all=1,clamd=0,freshclam=0
+Branch: feature-branch
+
+Opening Rails server in new terminal tab...
+Waiting for Rails server to start...
+✓ Rails server is ready at http://localhost:3000
+
 ✓ Setup complete!
 
-Rails server is running in the new Hyper tab.
+Rails server is running in the new terminal tab.
+  Branch: feature-branch
+  Betamocks: enabled
 ```
 
 ### Server Running in Hyper Tab
@@ -234,6 +270,86 @@ If you have uncommitted changes, the script skips all git operations:
 ```
 
 **Result**: Server runs on your current branch with uncommitted changes intact.
+
+### Returning to Original Branch
+
+After completing all setup steps (pulling master, updating dependencies, configuring betamocks), the script automatically returns to the branch you started on before launching the Rails server.
+
+```
+→ Returning to original branch: feature/my-work
+  ✓ Switched back to feature/my-work
+```
+
+This ensures that:
+- Your working branch is preserved
+- The server runs on your intended development branch
+- You don't accidentally leave the repository on master
+
+---
+
+## Betamocks Configuration
+
+The script provides interactive betamocks configuration to enable or disable mock external service responses.
+
+### What are Betamocks?
+
+Betamocks allow the vets-api to use pre-recorded responses from external services (VA backends, databases, APIs) instead of making real network calls. This is useful for:
+- Working offline or with limited network access
+- Consistent test data across developers
+- Faster API responses during development
+- Avoiding rate limits or API quotas
+
+### Interactive Configuration
+
+During startup, the script prompts:
+
+```
+========================================
+Configure betamocks
+========================================
+
+Enable betamocks? (Y/n):
+```
+
+**Enable betamocks (default)**:
+```
+Enable betamocks? (Y/n): y
+→ Enabling betamocks in settings.local.yml...
+  ✓ Betamocks enabled
+```
+
+**Disable betamocks**:
+```
+Enable betamocks? (Y/n): n
+→ Disabling betamocks in settings.local.yml...
+  ✓ Betamocks disabled
+```
+
+### Configuration Details
+
+The script updates `config/settings.local.yml`:
+
+```yaml
+betamocks:
+  cache_dir: "../vets-api-mockdata"
+  enabled: true          # or false
+  recording: false
+  services_config: config/betamocks/services_config.yml
+```
+
+### When to Enable Betamocks
+
+**Enable when**:
+- Working on frontend features that don't require real backend changes
+- Testing API responses with consistent mock data
+- Working offline or with limited network connectivity
+- Developing new features that use existing backend endpoints
+
+**Disable when**:
+- Testing actual backend integrations
+- Validating real API response formats
+- Debugging live service issues
+- Verifying authentication flows with real credentials
 
 ---
 
@@ -422,4 +538,7 @@ ps aux | grep foreman
 
 # Kill server process
 lsof -ti:3000 | xargs kill -9
+
+# Check betamocks status
+grep -A 1 "^betamocks:" ~/Code/va.gov/vets-api/config/settings.local.yml | grep "enabled:"
 ```
