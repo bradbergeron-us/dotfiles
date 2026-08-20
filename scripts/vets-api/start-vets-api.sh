@@ -3,12 +3,19 @@
 #
 # This script handles:
 # - Git pull from main (if conditions are right)
+# - Checking Redis installation and starting if needed
 # - Updating vets-api-mockdata and running make_table.rb
 # - Bundle install for dependencies
+# - Database preparation and seeding
 # - Starting the Rails server with foreman
 #
-# Usage: ~/dotfiles/scripts/vets-api/start-vets-api.sh
-#        Or use alias: vets-api-start
+# Prerequisites:
+# - Redis (script will check and start automatically)
+# - PostgreSQL (database)
+# - Ruby and Bundler
+#
+# Usage: ./start-vets-api.sh
+# Configuration: Edit projects.env with your local paths (copy from projects.env.example)
 
 set -e  # Exit on error
 
@@ -52,7 +59,7 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}→ Checking vets-api git status...${NC}"
 ORIGINAL_BRANCH=$(git branch --show-current)
 CURRENT_BRANCH="$ORIGINAL_BRANCH"
-echo "  Current branch: $CURRENT_BRANCH"
+echo "  Current branch: $ORIGINAL_BRANCH"
 
 # Check for uncommitted changes
 HAS_UNCOMMITTED_CHANGES=false
@@ -65,25 +72,46 @@ fi
 
 # Only do git pull operations if working directory is clean
 if [ "$HAS_UNCOMMITTED_CHANGES" = false ]; then
-  # Checkout and pull from master
-  if [ "$CURRENT_BRANCH" != "master" ]; then
-    echo "  Switching to master branch..."
-    if git checkout master; then
-      echo -e "${GREEN}  ✓ Switched to master${NC}"
-      CURRENT_BRANCH="master"
-    else
-      echo -e "${RED}  ✗ Failed to checkout master${NC}"
-      echo "  Continuing with current branch: $CURRENT_BRANCH"
-    fi
-  fi
+  echo ""
+  read -p "Pull latest changes from master? (y/N): " PULL_MASTER
 
-  # Pull latest from master
-  echo "  Pulling latest changes from origin/master..."
-  if git pull origin master; then
-    echo -e "${GREEN}  ✓ Successfully pulled from master${NC}"
+  if [[ $PULL_MASTER =~ ^[Yy]$ ]]; then
+    # Store original branch to return to it
+    TEMP_BRANCH="$CURRENT_BRANCH"
+
+    # Checkout and pull from master
+    if [ "$CURRENT_BRANCH" != "master" ]; then
+      echo "  Switching to master branch..."
+      if git checkout master; then
+        echo -e "${GREEN}  ✓ Switched to master${NC}"
+        CURRENT_BRANCH="master"
+      else
+        echo -e "${RED}  ✗ Failed to checkout master${NC}"
+        echo "  Continuing with current branch: $CURRENT_BRANCH"
+      fi
+    fi
+
+    # Pull latest from master
+    echo "  Pulling latest changes from origin/master..."
+    if git pull origin master; then
+      echo -e "${GREEN}  ✓ Successfully pulled from master${NC}"
+    else
+      echo -e "${RED}  ✗ Git pull failed${NC}"
+      echo "  Continuing anyway..."
+    fi
+
+    # Return to original branch if we switched
+    if [ "$TEMP_BRANCH" != "master" ] && [ "$CURRENT_BRANCH" = "master" ]; then
+      echo "  Returning to branch: $TEMP_BRANCH"
+      if git checkout "$TEMP_BRANCH"; then
+        echo -e "${GREEN}  ✓ Switched back to $TEMP_BRANCH${NC}"
+        CURRENT_BRANCH="$TEMP_BRANCH"
+      else
+        echo -e "${RED}  ✗ Failed to switch back to $TEMP_BRANCH${NC}"
+      fi
+    fi
   else
-    echo -e "${RED}  ✗ Git pull failed${NC}"
-    echo "  Continuing anyway..."
+    echo "  Skipping master pull"
   fi
   echo ""
 fi
@@ -108,15 +136,15 @@ if [[ $SWITCH_BRANCH =~ ^[Yy]$ ]]; then
       if [ "$HAS_UNCOMMITTED_CHANGES" = true ]; then
         echo -e "${YELLOW}  (Checkout may have failed due to uncommitted changes)${NC}"
       fi
-      echo "  Continuing with current branch: $CURRENT_BRANCH"
-      BRANCH_TO_USE="$CURRENT_BRANCH"
+      echo "  Continuing with original branch: $ORIGINAL_BRANCH"
+      BRANCH_TO_USE="$ORIGINAL_BRANCH"
     fi
   else
-    echo -e "${YELLOW}  No branch name provided, using current branch${NC}"
-    BRANCH_TO_USE="$CURRENT_BRANCH"
+    echo -e "${YELLOW}  No branch name provided, using original branch${NC}"
+    BRANCH_TO_USE="$ORIGINAL_BRANCH"
   fi
 else
-  BRANCH_TO_USE="$CURRENT_BRANCH"
+  BRANCH_TO_USE="$ORIGINAL_BRANCH"
 fi
 echo ""
 echo -e "${GREEN}  → Rails server will run on branch: $BRANCH_TO_USE${NC}"
@@ -213,6 +241,42 @@ echo ""
 echo -e "${BLUE}→ Checking Ruby version...${NC}"
 RUBY_VERSION=$(ruby --version)
 echo "  Ruby version: $RUBY_VERSION"
+echo ""
+
+# Check cmake installation (required for rugged gem)
+echo -e "${BLUE}→ Checking cmake (required for rugged gem)...${NC}"
+if ! command -v cmake &> /dev/null; then
+  echo -e "${YELLOW}  ⚠ cmake is not installed${NC}"
+  echo "  cmake is required for building the rugged gem dependency"
+  echo ""
+
+  if command -v brew &> /dev/null; then
+    read -p "Install cmake using Homebrew? (Y/n): " INSTALL_CMAKE
+
+    # Default to yes if empty
+    if [[ -z "$INSTALL_CMAKE" ]] || [[ $INSTALL_CMAKE =~ ^[Yy]$ ]]; then
+      echo "  Installing cmake via Homebrew..."
+      if brew install cmake; then
+        echo -e "${GREEN}  ✓ cmake installed successfully${NC}"
+      else
+        echo -e "${RED}  ✗ Failed to install cmake${NC}"
+        echo "  You may need to install cmake manually before running bundle install"
+        echo "  Run: brew install cmake"
+      fi
+    else
+      echo -e "${YELLOW}  Skipping cmake installation${NC}"
+      echo "  Note: bundle install may fail without cmake"
+    fi
+  else
+    echo -e "${RED}  ✗ Homebrew not found${NC}"
+    echo "  Please install cmake manually:"
+    echo "    brew install cmake"
+    echo "  Or install Homebrew first from: https://brew.sh"
+  fi
+else
+  CMAKE_VERSION=$(cmake --version | head -n1)
+  echo -e "${GREEN}  ✓ cmake is installed (${CMAKE_VERSION})${NC}"
+fi
 echo ""
 
 # Betamocks configuration
@@ -412,6 +476,63 @@ else
 fi
 echo ""
 
+# Check Redis installation and status
+echo -e "${BLUE}→ Checking Redis...${NC}"
+if ! command -v redis-server &> /dev/null && ! command -v redis-cli &> /dev/null; then
+  echo -e "${RED}  ✗ Redis is not installed${NC}"
+  echo ""
+  echo "Redis is required for vets-api to run."
+  echo "Install Redis using one of these methods:"
+  echo ""
+  echo "  Homebrew (recommended):"
+  echo "    brew install redis"
+  echo ""
+  echo "  MacPorts:"
+  echo "    sudo port install redis"
+  echo ""
+  exit 1
+fi
+
+# Check if Redis is already running
+if redis-cli ping &> /dev/null; then
+  echo -e "${GREEN}  ✓ Redis is already running${NC}"
+else
+  echo -e "${YELLOW}  ⚠ Redis is not running${NC}"
+  echo "  Starting Redis in the background..."
+
+  # Try to start Redis as a background service
+  if command -v brew &> /dev/null && brew services list | grep -q "^redis"; then
+    # Use Homebrew services if available
+    if brew services start redis &> /dev/null; then
+      echo -e "${GREEN}  ✓ Started Redis via Homebrew services${NC}"
+    else
+      echo -e "${YELLOW}  ⚠ Failed to start via Homebrew, trying direct launch...${NC}"
+      redis-server --daemonize yes &> /dev/null
+      echo -e "${GREEN}  ✓ Started Redis as daemon${NC}"
+    fi
+  else
+    # Start Redis directly as a daemon
+    redis-server --daemonize yes &> /dev/null
+    echo -e "${GREEN}  ✓ Started Redis as daemon${NC}"
+  fi
+
+  # Wait a moment for Redis to start
+  sleep 1
+
+  # Verify Redis is now running
+  if redis-cli ping &> /dev/null; then
+    echo -e "${GREEN}  ✓ Redis is now running${NC}"
+  else
+    echo -e "${RED}  ✗ Failed to start Redis${NC}"
+    echo "  Please start Redis manually before running this script:"
+    echo "    redis-server --daemonize yes"
+    echo "  Or:"
+    echo "    brew services start redis"
+    exit 1
+  fi
+fi
+echo ""
+
 # Prepare database (creates, loads schema, or migrates as needed)
 echo -e "${BLUE}→ Preparing database...${NC}"
 PREPARE_OUTPUT=$(bundle exec rails db:prepare 2>&1)
@@ -492,15 +613,16 @@ if [[ -z "$SERVER_MODE" ]]; then
   SERVER_MODE="1"
 fi
 
-# Return to original branch if needed
+# Ensure we're on the correct branch before starting server
 CURRENT_BRANCH=$(git branch --show-current)
-if [ "$CURRENT_BRANCH" != "$ORIGINAL_BRANCH" ]; then
-  echo -e "${BLUE}→ Returning to original branch: $ORIGINAL_BRANCH${NC}"
-  if git checkout "$ORIGINAL_BRANCH"; then
-    echo -e "${GREEN}  ✓ Switched back to $ORIGINAL_BRANCH${NC}"
+if [ "$CURRENT_BRANCH" != "$BRANCH_TO_USE" ]; then
+  echo -e "${BLUE}→ Switching to branch for server: $BRANCH_TO_USE${NC}"
+  if git checkout "$BRANCH_TO_USE"; then
+    echo -e "${GREEN}  ✓ Switched to $BRANCH_TO_USE${NC}"
   else
-    echo -e "${YELLOW}  ⚠ Failed to switch back to $ORIGINAL_BRANCH${NC}"
+    echo -e "${YELLOW}  ⚠ Failed to switch to $BRANCH_TO_USE${NC}"
     echo "  Server will start on: $CURRENT_BRANCH"
+    BRANCH_TO_USE="$CURRENT_BRANCH"
   fi
   echo ""
 fi
@@ -555,14 +677,13 @@ for _ in {1..60}; do
   sleep 1
 done
 
-FINAL_BRANCH=$(git branch --show-current)
 BETAMOCKS_STATUS=$(if [[ $ENABLE_BETAMOCKS =~ ^[Yy]$ ]]; then echo "enabled"; else echo "disabled"; fi)
 
 echo ""
 echo -e "${GREEN}✓ Setup complete!${NC}"
 echo ""
 echo "Rails server is running in the new terminal tab."
-echo "  Branch: $FINAL_BRANCH"
+echo "  Branch: $BRANCH_TO_USE"
 echo "  Betamocks: $BETAMOCKS_STATUS"
 echo ""
 echo "You can monitor server logs and requests there."

@@ -17,18 +17,21 @@
 #
 # Sets: VETS_API_DIR, VETS_WEBSITE_DIR, CONTENT_BUILD_DIR, VETS_API_MOCKDATA_DIR
 load_project_config() {
-  local config_file="${DOTFILES_DIR:-$HOME/dotfiles}/config/projects.env"
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local config_file="${script_dir}/projects.env"
 
   if [[ -f "$config_file" ]]; then
-    # shellcheck source=../../config/projects.env
+    # shellcheck source=./projects.env
     source "$config_file"
   else
-    # Fallback to legacy hardcoded paths with warning
+    # Fallback to auto-detected paths with warning
     warn "Project configuration not found: $config_file"
-    warn "Using legacy hardcoded paths. Consider creating config/projects.env"
-    info "Copy from: ${DOTFILES_DIR:-$HOME/dotfiles}/config/projects.env.example"
+    warn "Using auto-detected paths. Consider creating projects.env"
+    info "Create ${config_file} with your project paths"
+    echo ""
 
-    # Legacy defaults
+    # Auto-detect defaults
     export VAGOVDEV_BASE="${VAGOVDEV_BASE:-${HOME}/Code/va.gov}"
     export VETS_API_DIR="${VETS_API_DIR:-${VAGOVDEV_BASE}/vets-api}"
     export VETS_WEBSITE_DIR="${VETS_WEBSITE_DIR:-${VAGOVDEV_BASE}/vets-website}"
@@ -57,9 +60,11 @@ validate_project_dir() {
     # Convert project name to env var format (e.g., "vets-api" -> "VETS_API")
     local env_var_name="${project_name^^}"
     env_var_name="${env_var_name//-/_}"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-    error "${project_name} directory not found at: $dir_path"
-    info "Update project paths in: ${DOTFILES_DIR:-$HOME/dotfiles}/config/projects.env"
+    echo -e "${RED}✗ ${project_name} directory not found at: $dir_path${NC}"
+    info "Update project paths in: ${script_dir}/projects.env"
     info "Or set ${env_var_name}_DIR environment variable"
     exit 1
   fi
@@ -97,6 +102,9 @@ get_relative_path() {
 #
 # Useful for debugging and verifying configuration
 show_project_config() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
   info "Current project configuration:"
   echo "  VAGOVDEV_BASE:         ${VAGOVDEV_BASE:-<not set>}"
   echo "  VETS_API_DIR:          ${VETS_API_DIR:-<not set>}"
@@ -114,7 +122,7 @@ show_project_config() {
 
   if [[ ${#missing[@]} -gt 0 ]]; then
     warn "Missing directories: ${missing[*]}"
-    info "Update paths in: ${DOTFILES_DIR:-$HOME/dotfiles}/config/projects.env"
+    info "Update paths in: ${script_dir}/projects.env"
   else
     success "All project directories exist"
   fi
