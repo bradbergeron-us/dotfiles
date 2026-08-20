@@ -567,8 +567,70 @@ ruby --version
 
 ---
 
+## Script Portability
+
+### Portability Status: Work-Specific
+
+The `start-vets-api.sh` script is **not highly portable** and is designed for team use. It contains:
+
+**Hardcoded assumptions**:
+- Directory structure: `$HOME/Code/va.gov/vets-api`
+- Work proxy: JFrog artifactory URLs
+- Corporate gateway: AIO URL format
+- macOS terminal: Opens new tabs via `terminal_helpers.sh`
+
+**Dependencies**:
+- Ruby 3.3.6 (via rvm)
+- PostgreSQL (running locally or via Docker)
+- Redis (running locally or via Docker)
+- GNU sed (`gsed`) for configuration updates
+- Bundler for Ruby dependencies
+- Git for version control
+
+**Platform support**:
+- ✅ macOS (primary platform)
+- ⚠️  Linux (works with modifications to terminal helpers and sed commands)
+- ❌ Windows (not supported, use WSL2)
+
+### Making It Work on Your Machine
+
+If your directory structure differs from the defaults:
+
+1. **Option A**: Update the script (temporary solution)
+   ```bash
+   # Edit scripts/vets-api/start-vets-api.sh
+   VETS_API_DIR="$HOME/your/custom/path/vets-api"
+   VETS_API_MOCKDATA_DIR="$HOME/your/custom/path/vets-api-mockdata"
+   ```
+
+2. **Option B**: Wait for configuration system (recommended)
+
+   Future improvement: Scripts will read from `config/projects.env`:
+   ```bash
+   # config/projects.env
+   VETS_API_DIR="$HOME/your/custom/path/vets-api"
+   VETS_API_MOCKDATA_DIR="$HOME/your/custom/path/vets-api-mockdata"
+   ```
+
+   See [Script Portability](scripts-portability.md) for the full proposal.
+
+### CI/CD Usage
+
+These startup scripts are designed for **local development only**, not CI/CD:
+- Interactive prompts for betamocks, branch selection, etc.
+- Opens new terminal tabs
+- Assumes development tools installed globally
+
+For CI/CD pipelines:
+- Use project-native commands directly (`bundle exec rails server`)
+- Use Docker containers with fixed configurations
+- Skip interactive setup steps
+
+---
+
 ## Related Documentation
 
+- [Script Portability & Organization](scripts-portability.md) - Detailed portability analysis
 - [Vets-Website Scripts](vets-website.md) - Frontend development scripts
 - [Work Machine Setup](work-machine.md) - General work machine configuration
 - [Complete Work Setup Guide](work-setup-complete.md) - Full laptop setup walkthrough

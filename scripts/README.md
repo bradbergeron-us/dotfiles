@@ -4,9 +4,57 @@ Automation scripts for system setup, configuration, and maintenance.
 
 ## Layout
 
-- **`scripts/`** — runnable scripts (work setup, installers, `macos.sh`, `uninstall.sh`, `validate_templates.sh`, …).
-- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`, `status_helpers.sh`, `profile_helpers.sh`.
-- **`scripts/tests/`** — [bats-core](https://github.com/bats-core/bats-core) unit tests (`test_*.bats`) for the helpers and validators, plus the shared `test_helper.bash`.
+- **`scripts/`** — runnable scripts (work setup, installers, `macos.sh`, `uninstall.sh`, `validate_templates.sh`, …)
+- **`scripts/lib/`** — sourced helper libraries (no side effects): `bootstrap_helpers.sh`, `verify_helpers.sh`, `dryrun_helpers.sh`, `update_helpers.sh`, `status_helpers.sh`, `profile_helpers.sh`
+- **`scripts/tests/`** — [bats-core](https://github.com/bats-core/bats-core) unit tests (`test_*.bats`) for the helpers and validators, plus the shared `test_helper.bash`
+- **`scripts/vets-api/`** — VA.gov vets-api startup scripts (work-specific)
+- **`scripts/vets-website/`** — VA.gov vets-website startup scripts (work-specific)
+- **`scripts/content-build/`** — VA.gov content-build startup scripts (work-specific)
+
+**See also**: [Script Portability & Organization](../docs/scripts-portability.md) — Best practices, portability analysis, and proposed reorganization
+
+---
+
+## Categories
+
+### Core Dotfiles Scripts
+Scripts that manage the dotfiles themselves:
+- `bootstrap.sh` — Initial dotfiles installation
+- `verify.sh` — Validate dotfiles configuration
+- `update.sh` — Update dotfiles and dependencies
+- `cleanup.sh` — Remove dotfile cruft and backups
+- `install.sh` — Symlink management
+- `uninstall.sh` — Remove dotfiles
+
+### VA.gov Development Workflows
+Work-specific scripts for VA.gov projects:
+- `vets-api/start-vets-api.sh` — Start Rails backend with betamocks configuration
+- `vets-website/start-vets-website.sh` — Start React frontend
+- `content-build/start-content-build.sh` — Start static content generator
+- `start-all-vets.sh` — Launch all VA.gov services simultaneously
+
+**Portability**: These scripts contain work-specific configuration (JFrog proxy, AIO URLs, betamocks). See [VA.gov documentation](../docs/vets-api.md) for setup details.
+
+### Work Configuration Scripts
+Scripts for work machine setup:
+- `setup_work_configs.sh` — Configure Maven, Yarn, Bundle, AWS, etc.
+- `install_claude_code.sh` — Install Claude Code CLI
+- `install_zscaler_cert.sh` — Install corporate proxy certificate
+- `install_vscode_work_extensions.sh` — Batch install VS Code extensions
+
+### System & Platform Scripts
+Platform-specific system configuration:
+- `macos.sh` — macOS system preferences and defaults
+- `setup_gpg_signing.sh` — Configure GPG for git commit signing
+- `verify_git_signing.sh` — Verify GPG signing is working
+
+### Maintenance & Utilities
+Day-to-day maintenance tools:
+- `status.sh` — Check dotfiles health (git state, last update)
+- `profile.sh` — Show or set machine profile (personal/work/minimal/server)
+- `secrets.sh` — Manage encrypted secrets
+- `quick-fix.sh` — Quick troubleshooting helper
+- `validate_templates.sh` — Validate configuration templates
 
 ---
 
@@ -443,8 +491,86 @@ source ~/dotfiles/scripts/my_script.sh
 
 ---
 
+---
+
+## Portability Considerations
+
+### What's Portable?
+
+**Core dotfiles scripts** (`bootstrap.sh`, `verify.sh`, helper libraries):
+- ✅ Work on any Unix-like system (macOS, Linux)
+- ✅ No hardcoded paths
+- ✅ Minimal dependencies (bash, git)
+
+**System scripts** (`macos.sh`):
+- ⚠️  Platform-specific by design
+- ✅ Clearly documented as macOS-only
+
+### What's Not Portable?
+
+**VA.gov development scripts** (`vets-api/`, `vets-website/`, `content-build/`):
+- ❌ Hardcoded paths: `$HOME/Code/va.gov/vets-api`
+- ❌ Work-specific: JFrog proxy, AIO gateway URLs
+- ❌ Terminal integration: Opens new tabs (macOS only)
+- ❌ Dependencies: Ruby, Node.js, PostgreSQL, Redis, etc.
+
+**Why this is OK**: These are team workflow scripts optimized for local development, not general-purpose tools.
+
+### Making Scripts More Portable
+
+**Current approach**:
+```bash
+# Hardcoded path
+VETS_API_DIR="$HOME/Code/va.gov/vets-api"
+```
+
+**Proposed approach**:
+```bash
+# Load from configuration
+source "$DOTFILES_DIR/config/projects.env"
+cd "$VETS_API_DIR" || error "vets-api not found at: $VETS_API_DIR"
+```
+
+**Benefits**:
+- New team members configure once in `config/projects.env`
+- Works with any directory structure
+- Easy to maintain across multiple machines
+
+See [Script Portability & Organization](../docs/scripts-portability.md) for detailed analysis and improvement proposals.
+
+---
+
+## Proposed Reorganization
+
+The current flat structure mixes work-specific and general scripts. Proposed improvement:
+
+```
+scripts/
+├── core/           # Core dotfiles (bootstrap, verify, update)
+├── work/           # Work-specific scripts
+│   ├── setup/      # Initial setup (certs, tools)
+│   └── vagovdev/   # VA.gov development workflows
+├── system/         # Platform-specific (macos, linux)
+├── dev/            # General dev tools (gpg, git)
+├── maintenance/    # Status, profile, secrets
+├── lib/            # Helper libraries
+└── tests/          # Unit tests
+```
+
+**Benefits**:
+- Clear separation of concerns
+- Easier to fork for personal use
+- Simpler onboarding documentation
+- Can share core dotfiles publicly while keeping work scripts private
+
+**Implementation**: See [portability documentation](../docs/scripts-portability.md) for migration plan.
+
+---
+
 ## See Also
 
+- [Script Portability & Organization](../docs/scripts-portability.md) — Detailed portability analysis and proposals
+- [VA.gov Development](../docs/vets-api.md) — vets-api workflows and configuration
 - [Complete Work Setup Guide](../docs/work-setup-complete.md) — End-to-end work machine setup
 - [Work Machine Topics](../docs/work-machine.md) — Brewfile.work, zshrc.local, direnv
 - [Main README](../README.md) — Dotfiles overview
@@ -452,4 +578,4 @@ source ~/dotfiles/scripts/my_script.sh
 
 ---
 
-*Last updated: June 14, 2026*
+*Last updated: July 24, 2026*
