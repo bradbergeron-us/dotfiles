@@ -593,7 +593,7 @@ VETS_API_DIR="${VETS_API_DIR:-${VAGOVDEV_BASE}/vets-api}"
 
 ## Related Documentation
 
-- [Scripts README](../scripts/README.md) - Main scripts documentation
+- [Scripts README](https://github.com/bradbergeron-us/dotfiles/blob/main/scripts/README.md) - Main scripts documentation
 - [Work Setup Guide](work-setup-complete.md) - End-to-end work machine setup
 - [VA.gov Development](vets-api.md) - Project-specific workflows
 

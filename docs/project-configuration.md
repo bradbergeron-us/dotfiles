@@ -390,7 +390,7 @@ alias vets-staging="VAGOVDEV_BASE=$HOME/Code/va.gov-staging vets-api-start"
 
 - [Script Portability](scripts-portability.md) - Why configuration system was added
 - [VA.gov Development](vets-api.md) - Using vets-api startup script
-- [Scripts README](../scripts/README.md) - All available scripts
+- [Scripts README](https://github.com/bradbergeron-us/dotfiles/blob/main/scripts/README.md) - All available scripts
 
 ---
 

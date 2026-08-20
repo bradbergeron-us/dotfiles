@@ -19,7 +19,8 @@
 load_project_config() {
   local script_dir
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  local config_file="${script_dir}/projects.env"
+  local dotfiles_dir="${DOTFILES_DIR:-$(cd "${script_dir}/../.." && pwd)}"
+  local config_file="${dotfiles_dir}/config/projects.env"
 
   if [[ -f "$config_file" ]]; then
     # shellcheck source=./projects.env
@@ -28,7 +29,7 @@ load_project_config() {
     # Fallback to auto-detected paths with warning
     warn "Project configuration not found: $config_file"
     warn "Using auto-detected paths. Consider creating projects.env"
-    info "Create ${config_file} with your project paths"
+    info "→ Create ${config_file} with your project paths"
     echo ""
 
     # Auto-detect defaults
@@ -64,7 +65,8 @@ validate_project_dir() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     echo -e "${RED}✗ ${project_name} directory not found at: $dir_path${NC}"
-    info "Update project paths in: ${script_dir}/projects.env"
+    local dotfiles_dir="${DOTFILES_DIR:-$(cd "${script_dir}/../.." && pwd)}"
+    info "Update project paths in: ${dotfiles_dir}/config/projects.env"
     info "Or set ${env_var_name}_DIR environment variable"
     exit 1
   fi
