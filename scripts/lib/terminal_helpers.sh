@@ -2,7 +2,9 @@
 # terminal_helpers.sh - Helper functions for terminal emulator operations
 
 # Configuration file to store terminal preference
-TERMINAL_CONFIG_FILE="$HOME/.dotfiles_terminal_preference"
+# Store in the scripts directory for portability
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TERMINAL_CONFIG_FILE="${SCRIPT_DIR}/.terminal_preference"
 
 # Get the user's preferred terminal emulator
 # If not set, prompt them to choose and store the preference

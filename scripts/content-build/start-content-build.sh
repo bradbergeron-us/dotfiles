@@ -15,19 +15,21 @@ set -e  # Exit on error
 # Resolve script directory and source helpers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+source "$DOTFILES_DIR/scripts/lib/project_helpers.sh"
+
+# Initialize colors
+setup_colors
 
 # Ensure terminal is configured before starting
 ensure_terminal_configured
 
-# Navigate to content-build directory
-CONTENT_BUILD_DIR="$HOME/Code/va.gov/content-build"
+# Load project configuration
+load_project_config
 
-if [ ! -d "$CONTENT_BUILD_DIR" ]; then
-  echo "ERROR: content-build directory not found at $CONTENT_BUILD_DIR"
-  echo "Please update CONTENT_BUILD_DIR in this script to point to your content-build location"
-  exit 1
-fi
+# Validate project directory exists
+validate_project_dir "$CONTENT_BUILD_DIR" "content-build"
 
 cd "$CONTENT_BUILD_DIR"
 echo "Working directory: $CONTENT_BUILD_DIR"

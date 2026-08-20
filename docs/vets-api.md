@@ -22,8 +22,10 @@ Before using this script, ensure you have:
 - **Bundler** (Ruby dependency manager)
 - **gsed** (GNU sed) - install via `brew install gsed`
 - **jfrog proxy configured** for gem installation
-- **vets-api repository** cloned to `~/Code/va.gov/vets-api`
-- **vets-api-mockdata repository** cloned to `~/Code/va.gov/vets-api-mockdata`
+- **vets-api repository** cloned (default: `~/Code/va.gov/vets-api`)
+- **vets-api-mockdata repository** cloned (default: `~/Code/va.gov/vets-api-mockdata`)
+
+**Note**: Project paths are configurable. See [Project Configuration](project-configuration.md) if your directories are in different locations.
 
 ### JFrog Proxy Configuration
 
@@ -594,25 +596,30 @@ The `start-vets-api.sh` script is **not highly portable** and is designed for te
 
 ### Making It Work on Your Machine
 
-If your directory structure differs from the defaults:
+If your directory structure differs from the defaults (`~/Code/va.gov/*`):
 
-1. **Option A**: Update the script (temporary solution)
-   ```bash
-   # Edit scripts/vets-api/start-vets-api.sh
-   VETS_API_DIR="$HOME/your/custom/path/vets-api"
-   VETS_API_MOCKDATA_DIR="$HOME/your/custom/path/vets-api-mockdata"
-   ```
+**Recommended**: Use the configuration system (implemented 2026-07-24)
 
-2. **Option B**: Wait for configuration system (recommended)
+Create `config/projects.local.env` to override paths:
 
-   Future improvement: Scripts will read from `config/projects.env`:
-   ```bash
-   # config/projects.env
-   VETS_API_DIR="$HOME/your/custom/path/vets-api"
-   VETS_API_MOCKDATA_DIR="$HOME/your/custom/path/vets-api-mockdata"
-   ```
+```bash
+# config/projects.local.env
+VETS_API_DIR="$HOME/your/custom/path/vets-api"
+VETS_API_MOCKDATA_DIR="$HOME/your/custom/path/vets-api-mockdata"
+```
 
-   See [Script Portability](scripts-portability.md) for the full proposal.
+**Alternative**: Use environment variables (session-specific)
+
+```bash
+export VETS_API_DIR="$HOME/your/custom/path/vets-api"
+vets-api-start
+```
+
+**Complete Guide**: See [Project Configuration](project-configuration.md) for:
+- Configuration file options
+- Priority order (env vars > local config > main config)
+- Multiple machine setups
+- Troubleshooting
 
 ### CI/CD Usage
 

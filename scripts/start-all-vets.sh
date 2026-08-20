@@ -14,11 +14,19 @@ set -e  # Exit on error
 # Resolve script directory and source helpers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+source "$DOTFILES_DIR/scripts/lib/project_helpers.sh"
+
+# Initialize colors
+setup_colors
 
 # Ensure terminal is configured before starting
 # This prompts the user upfront if needed, not mid-execution
 ensure_terminal_configured
+
+# Load project configuration
+load_project_config
 
 # Colors for output
 GREEN='\033[0;32m'

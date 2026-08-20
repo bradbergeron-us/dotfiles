@@ -7,27 +7,29 @@
 # - Clean dependency installation via jfrog proxy (configured in ~/.npmrc)
 # - Starting the dev server with specific applications
 #
-# Usage: ~/dotfiles/scripts/vets-website/start-vets-website.sh
-#        Or use alias: vets-start
+# Usage: ./start-vets-website.sh
+# Configuration: Edit projects.env with your local paths (copy from projects.env.example)
 
 set -e  # Exit on error
 
 # Resolve script directory and source helpers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DOTFILES_DIR/scripts/lib/bootstrap_helpers.sh"
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 source "$DOTFILES_DIR/scripts/lib/terminal_helpers.sh"
+source "$DOTFILES_DIR/scripts/lib/project_helpers.sh"
+
+# Initialize colors
+setup_colors
 
 # Ensure terminal is configured before starting
 ensure_terminal_configured
 
-# Navigate to vets-website directory
-VETS_WEBSITE_DIR="$HOME/Code/va.gov/vets-website"
+# Load project configuration
+load_project_config
 
-if [ ! -d "$VETS_WEBSITE_DIR" ]; then
-  echo "ERROR: vets-website directory not found at $VETS_WEBSITE_DIR"
-  echo "Please update VETS_WEBSITE_DIR in this script to point to your vets-website location"
-  exit 1
-fi
+# Validate project directory exists
+validate_project_dir "$VETS_WEBSITE_DIR" "vets-website"
 
 cd "$VETS_WEBSITE_DIR"
 echo "Working directory: $VETS_WEBSITE_DIR"
@@ -47,8 +49,9 @@ NC='\033[0m' # No Color
 
 # Git branch management and pull from main
 echo -e "${BLUE}→ Checking git status...${NC}"
-CURRENT_BRANCH=$(git branch --show-current)
-echo "  Current branch: $CURRENT_BRANCH"
+ORIGINAL_BRANCH=$(git branch --show-current)
+CURRENT_BRANCH="$ORIGINAL_BRANCH"
+echo "  Current branch: $ORIGINAL_BRANCH"
 
 # Check for uncommitted changes
 HAS_UNCOMMITTED_CHANGES=false
@@ -61,25 +64,46 @@ fi
 
 # Only do git pull operations if working directory is clean
 if [ "$HAS_UNCOMMITTED_CHANGES" = false ]; then
-  # Checkout and pull from main
-  if [ "$CURRENT_BRANCH" != "main" ]; then
-    echo "  Switching to main branch..."
-    if git checkout main; then
-      echo -e "${GREEN}  ✓ Switched to main${NC}"
-      CURRENT_BRANCH="main"
-    else
-      echo -e "${RED}  ✗ Failed to checkout main${NC}"
-      echo "  Continuing with current branch: $CURRENT_BRANCH"
-    fi
-  fi
+  echo ""
+  read -p "Pull latest changes from main? (y/N): " PULL_MAIN
 
-  # Pull latest from main
-  echo "  Pulling latest changes from origin/main..."
-  if git pull origin main; then
-    echo -e "${GREEN}  ✓ Successfully pulled from main${NC}"
+  if [[ $PULL_MAIN =~ ^[Yy]$ ]]; then
+    # Store original branch to return to it
+    TEMP_BRANCH="$CURRENT_BRANCH"
+
+    # Checkout and pull from main
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+      echo "  Switching to main branch..."
+      if git checkout main; then
+        echo -e "${GREEN}  ✓ Switched to main${NC}"
+        CURRENT_BRANCH="main"
+      else
+        echo -e "${RED}  ✗ Failed to checkout main${NC}"
+        echo "  Continuing with current branch: $CURRENT_BRANCH"
+      fi
+    fi
+
+    # Pull latest from main
+    echo "  Pulling latest changes from origin/main..."
+    if git pull origin main; then
+      echo -e "${GREEN}  ✓ Successfully pulled from main${NC}"
+    else
+      echo -e "${RED}  ✗ Git pull failed${NC}"
+      echo "  Continuing anyway..."
+    fi
+
+    # Return to original branch if we switched
+    if [ "$TEMP_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" = "main" ]; then
+      echo "  Returning to branch: $TEMP_BRANCH"
+      if git checkout "$TEMP_BRANCH"; then
+        echo -e "${GREEN}  ✓ Switched back to $TEMP_BRANCH${NC}"
+        CURRENT_BRANCH="$TEMP_BRANCH"
+      else
+        echo -e "${RED}  ✗ Failed to switch back to $TEMP_BRANCH${NC}"
+      fi
+    fi
   else
-    echo -e "${RED}  ✗ Git pull failed${NC}"
-    echo "  Continuing anyway..."
+    echo "  Skipping main pull"
   fi
   echo ""
 fi
@@ -104,15 +128,15 @@ if [[ $SWITCH_BRANCH =~ ^[Yy]$ ]]; then
       if [ "$HAS_UNCOMMITTED_CHANGES" = true ]; then
         echo -e "${YELLOW}  (Checkout may have failed due to uncommitted changes)${NC}"
       fi
-      echo "  Continuing with current branch: $CURRENT_BRANCH"
-      BRANCH_TO_USE="$CURRENT_BRANCH"
+      echo "  Continuing with original branch: $ORIGINAL_BRANCH"
+      BRANCH_TO_USE="$ORIGINAL_BRANCH"
     fi
   else
-    echo -e "${YELLOW}  No branch name provided, using current branch${NC}"
-    BRANCH_TO_USE="$CURRENT_BRANCH"
+    echo -e "${YELLOW}  No branch name provided, using original branch${NC}"
+    BRANCH_TO_USE="$ORIGINAL_BRANCH"
   fi
 else
-  BRANCH_TO_USE="$CURRENT_BRANCH"
+  BRANCH_TO_USE="$ORIGINAL_BRANCH"
 fi
 echo ""
 echo -e "${GREEN}  → Dev server will run on branch: $BRANCH_TO_USE${NC}"
@@ -234,6 +258,20 @@ echo ""
 
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
+
+# Ensure we're on the correct branch before starting server
+CURRENT_BRANCH=$(git branch --show-current)
+if [ "$CURRENT_BRANCH" != "$BRANCH_TO_USE" ]; then
+  echo -e "${BLUE}→ Switching to branch for server: $BRANCH_TO_USE${NC}"
+  if git checkout "$BRANCH_TO_USE"; then
+    echo -e "${GREEN}  ✓ Switched to $BRANCH_TO_USE${NC}"
+  else
+    echo -e "${YELLOW}  ⚠ Failed to switch to $BRANCH_TO_USE${NC}"
+    echo "  Server will start on: $CURRENT_BRANCH"
+    BRANCH_TO_USE="$CURRENT_BRANCH"
+  fi
+  echo ""
+fi
 
 # Education app URLs (from manifest.json files)
 EDU_APP_URLS=(
